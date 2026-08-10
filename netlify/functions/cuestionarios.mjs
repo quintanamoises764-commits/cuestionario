@@ -19,7 +19,65 @@ function textoOnull(v) {
   return t === "" ? null : t;
 }
 
+// Convierte una fila de Supabase (snake_case) al formato que usa el formulario (camelCase)
+function aFormato(r) {
+  return {
+    id: r.id,
+    fechaCaptura: r.fecha,
+    razonSocial: r.razon_social,
+    giroDelNegocio: r.giro_negocio,
+    nombreComprador: r.comprador,
+    telefono: r.telefono,
+    rfc: r.rfc,
+    nombreComercial: r.nombre_comercial,
+    ciudadRuta: r.ruta,
+    puesto: r.puesto_empresa,
+    correoElectronico: r.correo_empresa,
+
+    consumoActual: r.consumo_actual,
+    presentacion1: r.presentacion_1,
+    presentacion2: r.presentacion_2,
+    presentacion3: r.presentacion_3,
+    consumoTotal: r.consumo_total,
+    participacionCompetencia: r.parti_provee_competencia,
+    mesesEstacionalidad: r.meses_estacionalidad,
+    proteinaCamaron: r.camaron_part,
+    proteinaTilapia: r.tilapia_part,
+    segmento: r.segmento,
+    proveedorCompetencia: r.nombre_provee_competencia,
+
+    facturacionMensual: r.facturas_mensuales,
+    condicionCompra: r.condiciones_compra,
+    establecimiento: r.establecimiento,
+
+    frecuencia: r.frecuencia,
+    diasRecepcion: r.dias_recepcion,
+    horarioRecepcion: r.hora_recepcion,
+    volumenPromedio: r.volumen_prom_entrega,
+    ubicacionEntrega: r.ubicacion_entrega,
+    requerimientosEspeciales: r.requerimiento_especial,
+
+    comentarios: r.comentarios,
+    guardadoEn: r.guardado_en,
+  };
+}
+
 export default async (req) => {
+  if (req.method === "GET") {
+    const { data, error } = await supabase
+      .from("cuestionarios")
+      .select("*")
+      .order("guardado_en", { ascending: false })
+      .limit(300);
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+    return new Response(JSON.stringify((data || []).map(aFormato)), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   if (req.method !== "POST") {
     return new Response("Método no permitido", { status: 405 });
   }
