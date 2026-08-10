@@ -257,6 +257,29 @@
   .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;line-height:1;transition:color .2s,transform .2s;}
   .modal-close:hover{color:var(--text);transform:rotate(90deg);}
 
+  /* ===== Vista de página completa (Mis cuestionarios) ===== */
+  .page-overlay{
+    display:none;position:fixed;inset:0;background:var(--bg);z-index:250;overflow-y:auto;
+  }
+  .page-overlay.show{display:block;animation:pageIn .3s cubic-bezier(.22,.68,0,1);}
+  @keyframes pageIn{from{opacity:0;transform:translateX(26px);}to{opacity:1;transform:none;}}
+  .page-head{
+    position:sticky;top:0;z-index:5;
+    background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;
+    padding:16px 18px;display:flex;align-items:center;gap:14px;
+    box-shadow:0 4px 14px -6px rgba(0,0,0,.3);
+  }
+  .page-head button.back{
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;
+    border-radius:10px;padding:9px 13px;font-weight:700;font-size:.84rem;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:background .2s,transform .2s;flex-shrink:0;
+  }
+  .page-head button.back:hover{background:rgba(255,255,255,.24);transform:translateX(-2px);}
+  .page-head .titles{flex:1;min-width:0;}
+  .page-head h3{margin:0;font-size:1.02rem;}
+  .page-head p{margin:2px 0 0;font-size:.76rem;opacity:.85;}
+  .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+
   /* Lista de cuestionarios */
   .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;}
   .q-row:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
@@ -590,18 +613,16 @@
   </div>
 </div>
 
-<!-- Modal: mis cuestionarios -->
-<div class="modal-overlay" id="listaModal">
-  <div class="modal modal-lg">
-    <div class="modal-head">
-      <div>
-        <h3>📋 Mis cuestionarios</h3>
-        <p class="sub">Solo lectura · guardados en este navegador.</p>
-      </div>
-      <button class="modal-close" onclick="closeModal('listaModal')">&times;</button>
+<!-- Página: mis cuestionarios -->
+<div class="page-overlay" id="listaModal">
+  <div class="page-head">
+    <button type="button" class="back" onclick="closeModal('listaModal')">← Volver</button>
+    <div class="titles">
+      <h3>📋 Mis cuestionarios</h3>
+      <p>Solo lectura · todas las respuestas guardadas en la base de datos</p>
     </div>
-    <div id="listaCuestionarios"></div>
   </div>
+  <div class="page-body" id="listaCuestionarios"></div>
 </div>
 
 <!-- Modal: ver cuestionario -->
@@ -851,29 +872,60 @@ async function saveNewClient(){
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-function getCuestionarios(){
+function getCuestionariosLocal(){
   try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
   catch(e){ return []; }
+}
+// Cache en memoria: aquí vive la lista que se muestra en pantalla.
+// Se llena desde la base de datos (Supabase) y, si no hay conexión, cae al respaldo local.
+let cuestionariosCache = [];
+let origenCuestionarios = "local"; // "db" o "local", solo informativo
+
+async function cargarCuestionarios(){
+  try{
+    const res = await fetch("/api/cuestionarios");
+    if(res.ok){
+      const rows = await res.json();
+      cuestionariosCache = rows.map(r => ({
+        fecha: r.guardadoEn || new Date().toISOString(),
+        cliente: r.razonSocial || "(sin cliente)",
+        data: r
+      }));
+      origenCuestionarios = "db";
+      actualizarBadge();
+      return cuestionariosCache;
+    }
+  }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
+  cuestionariosCache = getCuestionariosLocal();
+  origenCuestionarios = "local";
+  actualizarBadge();
+  return cuestionariosCache;
 }
 function contarRespuestas(data){
   return Object.values(data || {}).filter(v => v !== undefined && v !== null && String(v).trim() !== "").length;
 }
 function actualizarBadge(){
   const b = document.getElementById("qBadge");
-  if(b) b.textContent = getCuestionarios().length;
+  if(b) b.textContent = cuestionariosCache.length;
 }
-function openMisCuestionarios(){
-  listarMisCuestionarios();
+async function openMisCuestionarios(){
+  const cont = document.getElementById("listaCuestionarios");
+  cont.innerHTML = `<div class="empty-state">Cargando…</div>`;
   document.getElementById("listaModal").classList.add("show");
+  await cargarCuestionarios();
+  listarMisCuestionarios();
 }
 function listarMisCuestionarios(){
-  const list = getCuestionarios();
+  const list = cuestionariosCache;
   const cont = document.getElementById("listaCuestionarios");
   if(!list.length){
-    cont.innerHTML = `<div class="empty-state">📋 Aún no tienes cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
+    cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
     return;
   }
-  cont.innerHTML = list.map((q, i) => {
+  const nota = origenCuestionarios === "local"
+    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
+    : "";
+  cont.innerHTML = nota + list.map((q, i) => {
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -898,7 +950,7 @@ function campoPapel(label, val){
 }
 
 function verCuestionario(idx){
-  const list = getCuestionarios();
+  const list = cuestionariosCache;
   const q = list[idx];
   if(!q){ toast("No se encontró el cuestionario", "error"); return; }
   const d = q.data || {};
@@ -1073,7 +1125,7 @@ function resetForm(){
 }
 
 renderSteps();
-actualizarBadge();
+cargarCuestionarios(); // trae el conteo real de la base de datos al abrir la página
 </script>
 
 </body>
