@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acción Acuicultura · Panel Admin</title>
+<style>
+  :root{
+    --primary:#0e7490; --primary-dark:#155e75; --primary-light:#e0f2fe;
+    --accent:#f59e0b; --bg:#f4f7f9; --card:#fff; --text:#0f172a;
+    --muted:#64748b; --border:#e2e8f0; --ok:#059669; --error:#dc2626;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 2px 6px rgba(15,23,42,.06);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .topbar{background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;padding:20px 22px;}
+  .topbar .inner{max-width:980px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+  .brand h1{margin:0;font-size:1.05rem;}
+  .brand p{margin:2px 0 0;font-size:.75rem;opacity:.85;}
+  .topbar .btn{background:#fff;color:var(--primary-dark);border:none;border-radius:11px;padding:9px 14px;font-weight:700;font-size:.8rem;cursor:pointer;text-decoration:none;display:inline-block;}
+  .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);}
+  main{max-width:980px;margin:0 auto;padding:22px 16px 60px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px 24px;margin-bottom:18px;}
+  .card h2{margin:0 0 14px;font-size:.95rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-dark);display:flex;align-items:center;gap:9px;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);}
+  .stat b{display:block;font-size:1.5rem;color:var(--primary-dark);}
+  .stat span{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  .toolbar input{flex:1;min-width:180px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;}
+  .toolbar input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
+  .toolbar select{padding:10px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.84rem;background:#fff;}
+  .btn{border:none;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;font-size:.84rem;cursor:pointer;transition:transform .15s;}
+  .btn.primary{background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;}
+  .btn.ghost{background:#fff;border:1.5px solid var(--border);color:var(--primary-dark);}
+  .btn.small{padding:6px 10px;font-size:.76rem;border-radius:8px;}
+  .btn.ok{background:#ecfdf5;color:var(--ok);border:1px solid #a7f3d0;}
+  .btn.danger{background:#fef2f2;color:var(--error);border:1px solid #fecaca;}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+  tr:hover td{background:#f8fafc;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:800;text-transform:uppercase;}
+  .badge.rol-admin{background:#fef3c7;color:#92400e;}
+  .badge.rol-comercial{background:#e0f2fe;color:#075985;}
+  .badge.rol-oficina{background:#f0fdfa;color:#0f766e;}
+  .badge.act{background:#ecfdf5;color:#047857;}
+  .badge.inact{background:#fef2f2;color:#b91c1c;}
+  .empty{text-align:center;color:var(--muted);padding:26px 10px;font-size:.88rem;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:13px 18px;border-radius:13px;font-size:.86rem;font-weight:600;z-index:300;opacity:0;transition:all .4s;max-width:92vw;text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  .toast.ok{background:linear-gradient(135deg,#059669,#10b981);}
+  .toast.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
+  .page-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:250;overflow-y:auto;}
+  .page-overlay.show{display:block;}
+  .page-head{position:sticky;top:0;z-index:5;background:linear-gradient(120deg,#0b3c4d,#0e7490,#0891b2);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;}
+  .page-head .back{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer;}
+  .page-head h3{margin:0;font-size:1rem;flex:1;}
+  .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+  .paper{border:1px solid var(--border);border-radius:14px;padding:22px 24px;background:#fff;}
+  .paper-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid var(--primary-dark);padding-bottom:14px;margin-bottom:20px;flex-wrap:wrap;}
+  .paper-titles{flex:1;text-align:center;}
+  .paper-titles h3{margin:0;font-size:1rem;text-transform:uppercase;font-weight:800;}
+  .paper-titles p{margin:2px 0 0;font-size:.7rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;font-weight:700;}
+  .paper-sec{margin-bottom:18px;}
+  .paper-sec h4{font-size:.76rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+  .paper-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;}
+  @media(max-width:640px){.paper-cols{grid-template-columns:1fr;}}
+  .paper-field{margin-bottom:12px;}
+  .paper-field .lbl{display:block;font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px;}
+  .paper-field .val{border-bottom:1px dashed #c9d3dc;padding-bottom:4px;font-size:.88rem;font-weight:600;word-break:break-word;}
+  .paper-field .val.empty{color:#c3cbd4;}
+  .paper-comment .val{border:1px dashed #c9d3dc;border-radius:8px;padding:9px 11px;min-height:3em;white-space:pre-wrap;}
+  @media print{body *{visibility:hidden;}#printContent,#printContent *{visibility:visible;}#printContent{position:absolute;left:0;top:0;width:100%;}}
+</style>
+</head>
+<body style="opacity:0;transition:opacity .35s ease;">
+
+<header class="topbar">
+  <div class="inner">
+    <div class="brand">
+      <div class="logo">🛡️</div>
+      <div><h1>Acción Acuicultura</h1><p>Panel de administración</p></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span class="badge act" id="userBadge" style="display:none;"></span>
+      <a href="cuestionario.html" class="btn ghost">📝 Cuestionario</a>
+      <button class="btn ghost" onclick="logout()">🚪 Salir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><b id="stTotal">0</b><span>Respuestas</span></div>
+    <div class="stat"><b id="stClientes">0</b><span>Clientes únicos</span></div>
+    <div class="stat"><b id="stUsuarios">0</b><span>Usuarios activos</span></div>
+    <div class="stat"><b id="stComent">0</b><span>Con comentarios</span></div>
+  </div>
+
+  <div class="card">
+    <h2>📥 Respuestas recibidas</h2>
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Buscar por cliente o capturista…" oninput="renderTabla()">
+      <select id="filterUser" onchange="renderTabla()"><option value="">Todos los capturistas</option></select>
+      <button class="btn ghost" onclick="exportCSV()">⬇ Exportar CSV</button>
+    </div>
+    <table>
+      <thead><tr><th>Fecha</th><th>Cliente</th><th>Capturista</th><th>Respuestas</th><th></th></tr></thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+    <div class="empty" id="tablaEmpty" style="display:none;">Aún no hay respuestas en la base de datos.</div>
+  </div>
+
+  <div class="card">
+    <h2>👥 Usuarios del sistema</h2>
+    <table>
+      <thead><tr><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="usersBody"></tbody>
+    </table>
+    <div class="empty" id="usersEmpty" style="display:none;">Sin usuarios.</div>
+  </div>
+</main>
+
+<div class="page-overlay" id="detailOverlay">
+  <div class="page-head">
+    <button class="back" onclick="closeDetail()">← Volver</button>
+    <h3>👁 Respuesta del cliente</h3>
+    <button class="back no-print" onclick="window.print()">⬇ PDF</button>
+  </div>
+  <div class="page-body"><div id="printContent"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+/* ============ Utilidades ============ */
+let cuestionarios = [], usuarios = [], userMap = {}, __filt = [];
+
+async function authHeaders(extra = {}){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
+}
+function toast(msg, type){
+  const t = document.getElementById("toast");
+  t.textContent = (type === "ok" ? "✓ " : "✘ ") + msg;
+  t.className = "toast show " + (type || "");
+  clearTimeout(toast.__t);
+  toast.__t = setTimeout(() => t.classList.remove("show"), 3200);
+}
+function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtFecha(iso){
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}) + " " + d.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
+}
+function contarRespuestas(d){
+  return Object.values(d || {}).filter(v => v !== undefined && v !== null && String(v).trim() !== "").length;
+}
+
+/* ============ Guard de sesión (solo admin) ============ */
+async function guardarSesion(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session){ window.location.href = "login.html"; return; }
+  const { data, error } = await supabaseClient
+    .from("usuarios").select("rol, activo").eq("id", session.user.id).maybeSingle();
+  if (error || !data || !data.activo || data.rol !== "admin"){
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+    return;
+  }
+  const badge = document.getElementById("userBadge");
+  badge.textContent = "👤 " + session.user.email;
+  badge.style.display = "inline-flex";
+  document.body.style.opacity = "1";
+}
+async function logout(){
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+/* ============ Carga de datos ============ */
+async function cargarCuestionarios(){
+  try{
+    const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
+    if (!res.ok) throw new Error("red");
+    const rows = await res.json();
+    cuestionarios = rows.map(r => {
+      const d = (r.data && typeof r.data === "object") ? r.data : r;
+      return {
+        fecha: r.creado_en || r.guardadoEn || new Date().toISOString(),
+        cliente: d.razonSocial || "(sin cliente)",
+        creadoPor: r.creado_por || null,
+        data: d
+      };
+    });
+  }catch(e){
+    cuestionarios = [];
+    toast("No se pudo conectar a la base de datos", "error");
+  }
+}
+async function cargarUsuarios(){
+  const { data, error } = await supabaseClient.from("usuarios").select("id, email, rol, activo");
+  if (error){ toast("Error leyendo usuarios: " + error.message, "error"); return; }
+  usuarios = data || [];
+  userMap = Object.fromEntries(usuarios.map(u => [u.id, u.email]));
+  renderUsuarios();
+}
+
+/* ============ Render ============ */
+function capturistaDe(c){ return userMap[c.creadoPor] || "—"; }
+
+function renderTabla(){
+  const q = document.getElementById("searchBox").value.trim().toLowerCase();
+  const fu = document.getElementById("filterUser").value;
+  __filt = cuestionarios.filter(c =>
+    (!q || (c.cliente + " " + capturistaDe(c)).toLowerCase().includes(q)) &&
+    (!fu || capturistaDe(c) === fu)
+  );
+  document.getElementById("tablaEmpty").style.display = __filt.length ? "none" : "block";
+  document.getElementById("tablaBody").innerHTML = __filt.map((c, i) => `
+    <tr>
+      <td>${fmtFecha(c.fecha)}</td>
+      <td><b>${escapeHtml(c.cliente)}</b></td>
+      <td>${escapeHtml(capturistaDe(c))}</td>
+      <td>${contarRespuestas(c.data)}</td>
+      <td><button class="btn ghost small" onclick="verDetalle(${i})">👁 Ver</button></td>
+    </tr>`).join("");
+}
+function renderUsuarios(){
+  document.getElementById("usersEmpty").style.display = usuarios.length ? "none" : "block";
+  document.getElementById("usersBody").innerHTML = usuarios.map(u => `
+    <tr>
+      <td>${escapeHtml(u.email || "—")}</td>
+      <td><span class="badge rol-${u.rol}">${escapeHtml(u.rol)}</span></td>
+      <td><span class="badge ${u.activo ? "act" : "inact"}">${u.activo ? "Activo" : "Inactivo"}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select onchange="cambiarRol('${u.id}','${u.rol}',this.value)" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font:inherit;font-size:.78rem;">
+          ${["comercial","oficina","admin"].map(r => `<option value="${r}" ${r===u.rol?"selected":""}>${r}</option>`).join("")}
+        </select>
+        <button class="btn ${u.activo ? "danger" : "ok"} small" onclick="toggleActivo('${u.id}',${u.activo})">${u.activo ? "Desactivar" : "Activar"}</button>
+      </td>
+    </tr>`).join("");
+}
+async function cambiarRol(id, antes, nuevo){
+  if (antes === nuevo) return;
+  const { error } = await supabaseClient.from("usuarios").update({ rol: nuevo }).eq("id", id);
+  if (error) return toast("Error: " + error.message, "error");
+  toast("Rol actualizado a " + nuevo, "ok");
+  await cargarUsuarios();
+}
+async function toggleActivo(id, estado){
+  const { error } = await supabaseClient.from("usuarios").update({ activo: !estado }).eq("id", id);
+  if (error) return toast("Error: " + error.message, "error");
+  toast(estado ? "Usuario desactivado" : "Usuario activado", "ok");
+  await cargarUsuarios();
+}
+
+/* ============ Detalle estilo papel ============ */
+function campoPapel(label, val){
+  const v = (val === undefined || val === null) ? "" : String(val).trim();
+  return `<div class="paper-field"><span class="lbl">${escapeHtml(label)}</span><div class="val ${v ? "" : "empty"}">${v ? escapeHtml(v) : "—"}</div></div>`;
+}
+function verDetalle(idx){
+  const c = __filt[idx];
+  if (!c) return;
+  const d = c.data || {};
+  const fecha = d.fechaCaptura
+    ? new Date(d.fechaCaptura + "T00:00:00").toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"})
+    : fmtFecha(c.fecha);
+  document.getElementById("printContent").innerHTML = `
+  <div class="paper">
+    <div class="paper-head">
+      <div class="paper-titles">
+        <h3>Conocimiento Profundo del Cliente</h3>
+        <p>Capturó: ${escapeHtml(capturistaDe(c))}</p>
+      </div>
+      <div style="text-align:right;font-size:.8rem;"><span style="color:var(--muted);font-weight:700;">Fecha</span><br><b>${escapeHtml(fecha)}</b></div>
+    </div>
+    <div class="paper-sec"><h4>Datos generales</h4><div class="paper-cols"><div>
+      ${campoPapel("Razón Social", d.razonSocial)}${campoPapel("Giro del Negocio", d.giroDelNegocio)}
+      ${campoPapel("Nombre del Comprador", d.nombreComprador)}${campoPapel("Teléfono", d.telefono)}
+      ${campoPapel("RFC", d.rfc)}
+    </div><div>
+      ${campoPapel("Nombre Comercial", d.nombreComercial)}${campoPapel("Ciudad / Ruta", d.ciudadRuta)}
+      ${campoPapel("Puesto", d.puesto)}${campoPapel("Correo Electrónico", d.correoElectronico)}
+    </div></div></div>
+    <div class="paper-sec"><h4>Volumen y presentación</h4><div class="paper-cols"><div>
+      ${campoPapel("Consumo actual (Kg/mes)", d.consumoActual)}${campoPapel("Presentación 1", d.presentacion1)}
+      ${campoPapel("Presentación 2", d.presentacion2)}${campoPapel("Presentación 3", d.presentacion3)}
+      ${campoPapel("Consumo total (Kg/mes)", d.consumoTotal)}${campoPapel("Competencia (%)", d.participacionCompetencia)}
+    </div><div>
+      ${campoPapel("Estacionalidad", d.mesesEstacionalidad)}${campoPapel("Camarón (%)", d.proteinaCamaron)}
+      ${campoPapel("Tilapia (%)", d.proteinaTilapia)}${campoPapel("Segmento", d.segmento)}
+      ${campoPapel("Proveedor competencia", d.proveedorCompetencia)}
+    </div></div></div>
+    <div class="paper-sec"><h4>Capacidad financiera</h4><div class="paper-cols"><div>
+      ${campoPapel("Facturación mensual", d.facturacionMensual)}${campoPapel("Condición de compra", d.condicionCompra)}
+    </div><div>${campoPapel("Establecimiento", d.establecimiento)}</div></div></div>
+    <div class="paper-sec"><h4>Necesidades logísticas</h4><div class="paper-cols"><div>
+      ${campoPapel("Frecuencia", d.frecuencia)}${campoPapel("Días de recepción", d.diasRecepcion)}
+      ${campoPapel("Horario", d.horarioRecepcion)}
+    </div><div>
+      ${campoPapel("Volumen por entrega (Kg)", d.volumenPromedio)}${campoPapel("Ubicación entrega", d.ubicacionEntrega)}
+      ${campoPapel("Requerimientos especiales", d.requerimientosEspeciales)}
+    </div></div></div>
+    <div class="paper-sec paper-comment"><h4>Comentarios</h4>
+      <div class="paper-field"><div class="val">${d.comentarios && String(d.comentarios).trim() ? escapeHtml(d.comentarios) : "—"}</div></div>
+    </div>
+  </div>`;
+  document.getElementById("detailOverlay").classList.add("show");
+  document.getElementById("detailOverlay").scrollTop = 0;
+}
+function closeDetail(){ document.getElementById("detailOverlay").classList.remove("show"); }
+
+/* ============ Exportar CSV ============ */
+function exportCSV(){
+  if (!__filt.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Fecha","Cliente","Capturista","Razón Social","RFC","Giro","Consumo (Kg/mes)","Segmento","Frecuencia","Condición","Comentarios"];
+  const row = c => {
+    const d = c.data || {};
+    return [fmtFecha(c.fecha), c.cliente, capturistaDe(c), d.razonSocial || "", d.rfc || "",
+      d.giroDelNegocio || "", d.consumoActual || "", d.segmento || "", d.frecuencia || "",
+      d.condicionCompra || "", (d.comentarios || "").replace(/\n/g, " ")];
+  };
+  const csv = [headers, ...__filt.map(row)]
+    .map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+  a.download = "respuestas_acuicultura_" + new Date().toISOString().slice(0,10) + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("CSV exportado", "ok");
+}
+
+/* ============ Inicio ============ */
+(async () => {
+  await guardarSesion();
+  await Promise.all([cargarCuestionarios(), cargarUsuarios()]);
+  const set = new Set(cuestionarios.map(c => capturistaDe(c)).filter(Boolean));
+  document.getElementById("filterUser").innerHTML =
+    `<option value="">Todos los capturistas</option>` +
+    [...set].map(u => `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
+  document.getElementById("stTotal").textContent = cuestionarios.length;
+  document.getElementById("stClientes").textContent = new Set(cuestionarios.map(c => c.cliente)).size;
+  document.getElementById("stUsuarios").textContent = usuarios.filter(u => u.activo).length;
+  document.getElementById("stComent").textContent = cuestionarios.filter(c => c.data.comentarios && String(c.data.comentarios).trim()).length;
+  renderTabla();
+})();
+</script>
+</body>
+</html>
