@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -73,6 +75,11 @@
   .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.35);}
   .topbar .btn.ghost:hover{background:rgba(255,255,255,.22);}
   .topbar .btn .badge{background:var(--accent);color:#3b2f00;border-radius:99px;padding:1px 8px;font-size:.72rem;font-weight:800;}
+  .user-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);
+    color:#fff;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:99px;
+  }
   .topbar::after{
     content:"";position:absolute;left:0;right:0;bottom:-1px;height:38px;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48'%3E%3Cpath fill='%23f4f7f9' d='M0,24 C180,46 360,2 540,20 C720,38 900,6 1080,20 C1260,34 1350,10 1440,22 L1440,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom center/1440px 38px;
@@ -349,7 +356,9 @@
   }
 </style>
 </head>
-<body>
+<body style="opacity:0;transition:opacity .35s ease;">
+
+<div id="fatalError" style="display:none;background:#fef2f2;color:#b91c1c;padding:14px;text-align:center;font-size:.85rem;border-bottom:1px solid #fecaca;"></div>
 
 <header class="topbar">
   <div class="inner">
@@ -361,9 +370,11 @@
         <span class="demo-badge">● Modo demo · datos en este navegador</span>
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <span class="user-badge" id="userBadge" style="display:none;"></span>
       <button type="button" class="btn ghost" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
       <button type="button" class="btn" onclick="openClientModal()">+ Agregar cliente</button>
+      <button type="button" class="btn ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </div>
 </header>
@@ -572,7 +583,7 @@
     <div class="modal-head">
       <div>
         <h3>Agregar cliente nuevo</h3>
-        <p class="sub">Se guarda en la base local de prueba por ahora.</p>
+        <p class="sub">Se guarda en la base de datos.</p>
       </div>
       <button class="modal-close" onclick="closeClientModal()">&times;</button>
     </div>
@@ -634,6 +645,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
 /* =========================================================
    LISTAS DE COMBOS
@@ -757,7 +770,7 @@ document.getElementById("cuestionarioForm").addEventListener("input", () => {
 let clientes = [];
 async function cargarClientes(){
   try{
-    const res = await fetch("/api/clients");
+    const res = await fetch("/api/clients", { headers: await authHeaders() });
     if(res.ok){
       const data = await res.json();
       clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
@@ -838,7 +851,7 @@ async function saveNewClient(){
   try{
     const res = await fetch("/api/clients", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: await authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(nuevo)
     });
     if(res.ok) guardado = true;
@@ -876,7 +889,7 @@ let origenCuestionarios = "local";
 
 async function cargarCuestionarios(){
   try{
-    const res = await fetch("/api/cuestionarios");
+    const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
     if(res.ok){
       const rows = await res.json();
       cuestionariosCache = rows.map(r => ({
@@ -1054,19 +1067,17 @@ function verCuestionario(idx){
   document.getElementById("verDetalle").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "block";
   document.getElementById("listaSub").textContent = "Vista de solo lectura del cuestionario";
-  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio del documento
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
 function volverAlListado(){
   document.getElementById("verDetalle").style.display = "none";
   document.getElementById("listaCuestionarios").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "none";
-  listarMisCuestionarios(); // repone el texto correcto del subtítulo (db o local)
-  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio de la lista
+  listarMisCuestionarios();
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
-/* Botón "← Volver" del encabezado: si estás viendo el detalle, regresa a la lista;
-   si ya estás en la lista, ahí sí cierra todo el panel. Un solo botón, comportamiento lógico. */
 function backFromLista(){
   const enDetalle = document.getElementById("verDetalle").style.display !== "none";
   if(enDetalle){ volverAlListado(); }
@@ -1088,7 +1099,7 @@ function toast(msg, type){
 }
 
 /* =========================================================
-   ENVÍO: guarda en Supabase (vía función de Netlify) y respalda
+   ENVÍO: guarda en la base (vía función de Netlify) y respalda
    siempre en localStorage para "Mis cuestionarios"
    ========================================================= */
 function guardarDemo(data){
@@ -1111,12 +1122,16 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
   data.diasRecepcion = dias.join(", ");
 
+  // Quién capturó (UUID del usuario de Supabase)
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) data.creado_por = session.user.id;
+
   guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
 
   try{
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(data)
     });
     if(!res.ok){
@@ -1145,9 +1160,81 @@ function resetForm(){
   renderSteps();
 }
 
+/* =========================================================
+   AUTENTICACIÓN · SUPABASE (sesión + rol + salir)
+   ========================================================= */
+async function authHeaders(extra = {}){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
+}
+
+async function tieneRolValido(userId){
+  const { data, error } = await supabaseClient
+    .from("usuarios")
+    .select("rol, activo")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data || !data.activo) return false;
+  return ["comercial","oficina","admin"].includes(data.rol);
+}
+
+function mostrarUsuario(session){
+  const badge = document.getElementById("userBadge");
+  if (badge){
+    badge.style.display = "inline-flex";
+    badge.textContent = "👤 " + (session.user.email || "");
+  }
+}
+
+async function guardarSesion(){
+  try{
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session){ window.location.href = "login.html"; return; }
+    const ok = await tieneRolValido(session.user.id);
+    if (!ok){
+      await supabaseClient.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+    mostrarUsuario(session);
+    document.body.style.opacity = "1"; // revela la app
+  }catch(e){
+    throw e;
+  }
+}
+
+async function logout(){
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+// Si la sesión expira o se cierra en otra pestaña → vuelve al login
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") window.location.href = "login.html";
+});
+
+function fatal(msg){
+  const el = document.getElementById("fatalError");
+  if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
+  document.body.style.opacity = "1"; // nunca dejar la página en blanco
+}
+
+/* =========================================================
+   INICIO
+   ========================================================= */
 renderSteps();
 cargarCuestionarios();
+
+(async () => {
+  try{
+    await guardarSesion();
+    document.body.style.opacity = "1";
+  }catch(e){
+    console.error("Error al iniciar el cuestionario:", e);
+    fatal("No se pudo cargar: " + (e && e.message ? e.message : e) +
+      " — Revisa que config.js exista en la misma carpeta con tu URL y anon key reales (sin 'TU_').");
+  }
+})();
 </script>
 </body>
 </html>
-
