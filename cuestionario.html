@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Acción Acuicultura · Conocimiento Profundo del Cliente</title>
 <style>
   :root{
@@ -205,7 +205,7 @@
   .chip b{font-weight:800;margin-right:4px;color:#0f766e;}
   .summary .empty{color:var(--muted);font-size:.85rem;}
 
-  /* Botones */
+  /* Botones nav */
   .nav{
     position:sticky;bottom:14px;z-index:40;
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
@@ -214,6 +214,7 @@
     padding:12px 14px;margin-top:6px;
   }
   .nav .grow{flex:1;}
+  .nav-actions{display:flex;align-items:center;gap:10px;}
   .btn{
     display:inline-flex;align-items:center;gap:8px;justify-content:center;
     border:none;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;font-size:.9rem;
@@ -228,7 +229,7 @@
   .btn.link{background:none;color:var(--muted);padding:10px 8px;font-size:.85rem;}
   .btn.link:hover{color:var(--error);}
   .btn.small{padding:8px 14px;font-size:.8rem;border-radius:10px;}
-  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
   .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
 
   /* Toast */
@@ -285,13 +286,15 @@
   .page-head p{margin:2px 0 0;font-size:.76rem;opacity:.85;}
   .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
 
-  /* Lista de cuestionarios */
-  .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;}
+  /* Lista de cuestionarios y Paginación */
+  .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s; background:#fff;}
   .q-row:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
   .q-row .q-info{min-width:0;}
   .q-row .q-info b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .q-row .q-info small{color:var(--muted);font-size:.78rem;}
   .empty-state{text-align:center;color:var(--muted);padding:32px 10px;font-size:.9rem;line-height:1.6;}
+  .paginacion{display:flex;align-items:center;justify-content:space-between;padding-top:16px;margin-top:10px;border-top:1px solid var(--border);}
+  .paginacion span{font-size:0.85rem;font-weight:600;color:var(--muted);}
 
   /* ===== Vista de solo lectura estilo formato en papel ===== */
   .paper{
@@ -329,14 +332,39 @@
   .paper-field .val.empty{color:#c3cbd4;font-weight:400;}
   .paper-comment .val{min-height:3.2em;white-space:pre-wrap;border-bottom:none;border:1px dashed #c9d3dc;border-radius:8px;padding:10px 12px;}
 
+  /* ===== AJUSTES MÓVIL (espacios, inputs grandes, nav compacto) ===== */
   @media(max-width:640px){
     .brand h1{font-size:1.02rem;}
+    .brand .sub, .brand .demo-badge{display:none !important;}
     .dot-label{display:none;}
-    .card{padding:20px 18px;}
+    .dot-num{width:24px;height:24px;font-size:0.7rem;}
+    .progress-card{padding:12px 14px 10px;}
+    .card{padding:16px 14px;}
+    
+    .field input, .field select, .field textarea{
+      font-size:16px !important; /* evita zoom en iOS */
+      padding:14px;
+      min-height:48px;
+    }
+    .field textarea{min-height:90px;}
+
+    .nav{
+      flex-direction:column; align-items:stretch; gap:10px;
+      padding:10px; border-radius:14px; margin-top:2px;
+    }
+    .nav .grow{display:none;}
+    .nav-actions{display:flex; width:100%; gap:8px;}
+    .nav-actions .btn{flex:1;}
+    .nav #clearBtn{
+      border-bottom:1px solid var(--border); border-radius:0; 
+      padding-bottom:14px; padding-top:4px; margin-bottom:2px;
+    }
+
     .paper-head{flex-direction:column;}
     .paper-titles{text-align:left;}
     .paper-fecha{text-align:left;}
   }
+
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
     html{scroll-behavior:auto!important;}
@@ -566,9 +594,11 @@
     <div class="nav">
       <button type="button" class="btn link" id="clearBtn">⟲ Limpiar todo</button>
       <span class="grow"></span>
-      <button type="button" class="btn ghost" id="prevBtn" hidden>← Anterior</button>
-      <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
-      <button type="submit" class="btn primary" id="submitBtn" hidden>💾 Guardar cuestionario</button>
+      <div class="nav-actions">
+        <button type="button" class="btn ghost" id="prevBtn" hidden>← Anterior</button>
+        <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
+        <button type="submit" class="btn primary" id="submitBtn" hidden>💾 Guardar</button>
+      </div>
     </div>
   </form>
 </main>
@@ -646,6 +676,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
+/* =========================================================
+   VARIABLES GLOBALES DE USUARIO Y PAGINACIÓN
+   ========================================================= */
+let currentUser = null;
+let currentUserRole = null;
+let isAdmin = false;
+
+let paginaActual = 1;
+const porPagina = 5;
+
 /* =========================================================
    LISTAS DE COMBOS
    ========================================================= */
@@ -869,19 +909,25 @@ async function saveNewClient(){
 }
 
 /* =========================================================
-   MIS CUESTIONARIOS (solo lectura + PDF, formato tipo papel)
+   MIS CUESTIONARIOS (solo lectura + PDF + paginación + permisos)
    ========================================================= */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-/* Respaldo local (siempre disponible aunque no haya internet) */
+/* Respaldo local, filtrando por permisos si es necesario */
 function getCuestionariosLocal(){
-  try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
+  try{ 
+    let list = JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); 
+    // Si no es admin y tenemos usuario, filtrar solo los propios
+    if (!isAdmin && currentUser) {
+      list = list.filter(item => item.data && item.data.creado_por === currentUser.id);
+    }
+    return list;
+  }
   catch(e){ return []; }
 }
 
-/* Lista que se muestra en pantalla ahora mismo, y de dónde vino ("db" o "local") */
 let cuestionariosCache = [];
 let origenCuestionarios = "local";
 
@@ -889,7 +935,13 @@ async function cargarCuestionarios(){
   try{
     const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
     if(res.ok){
-      const rows = await res.json();
+      let rows = await res.json();
+      
+      // FILTRO POR PERMISOS DESDE DB (si el backend mandó todos)
+      if (!isAdmin && currentUser) {
+        rows = rows.filter(r => r.creado_por === currentUser.id);
+      }
+
       cuestionariosCache = rows.map(r => ({
         fecha: r.guardadoEn || new Date().toISOString(),
         cliente: r.razonSocial || "(sin cliente)",
@@ -899,7 +951,7 @@ async function cargarCuestionarios(){
       actualizarBadge();
       return cuestionariosCache;
     }
-  }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
+  }catch(e){ /* sin conexión, usa local */ }
   cuestionariosCache = getCuestionariosLocal();
   origenCuestionarios = "local";
   actualizarBadge();
@@ -916,7 +968,8 @@ function actualizarBadge(){
 
 async function openMisCuestionarios(){
   document.getElementById("listaModal").classList.add("show");
-  volverAlListado();
+  volverAlListado(); 
+  paginaActual = 1; // resetear paginación
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
   await cargarCuestionarios();
   listarMisCuestionarios();
@@ -926,17 +979,34 @@ async function openMisCuestionarios(){
 function listarMisCuestionarios(){
   const list = cuestionariosCache;
   const cont = document.getElementById("listaCuestionarios");
-  document.getElementById("listaSub").textContent = origenCuestionarios === "db"
-    ? "Solo lectura · todas las respuestas guardadas en la base de datos"
+  
+  let subTexto = origenCuestionarios === "db"
+    ? "Solo lectura · todas las respuestas en la base de datos"
     : "Solo lectura · guardados en este navegador";
+  
+  // Agregar indicador de admin si aplica
+  if (isAdmin) subTexto += " (Vista de Administrador)";
+  document.getElementById("listaSub").textContent = subTexto;
+
   if(!list.length){
     cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
     return;
   }
+  
   const nota = origenCuestionarios === "local"
-    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
+    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando local.</div>`
     : "";
-  cont.innerHTML = nota + list.map((q, i) => {
+
+  // PAGINACIÓN
+  const totalPaginas = Math.ceil(list.length / porPagina) || 1;
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  
+  const inicio = (paginaActual - 1) * porPagina;
+  const paginados = list.slice(inicio, inicio + porPagina);
+
+  let htmlLista = paginados.map((q, i) => {
+    // Calcular índice global para verDetalle
+    const indiceGlobal = inicio + i;
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -946,11 +1016,31 @@ function listarMisCuestionarios(){
         <b>${escapeHtml(q.cliente || "(sin cliente)")}</b>
         <small>${fechaTxt} · ${resp} respuestas</small>
       </div>
-      <button type="button" class="btn ghost small" onclick="verCuestionario(${i})">👁 Ver</button>
+      <button type="button" class="btn ghost small" onclick="verCuestionario(${indiceGlobal})">👁 Ver</button>
     </div>`;
   }).join("");
+
+  // Controles paginación
+  if (totalPaginas > 1) {
+    htmlLista += `
+      <div class="paginacion">
+        <button type="button" class="btn ghost small" onclick="cambiarPagina(-1)" ${paginaActual === 1 ? 'disabled' : ''}>← Anterior</button>
+        <span>Página ${paginaActual} de ${totalPaginas}</span>
+        <button type="button" class="btn ghost small" onclick="cambiarPagina(1)" ${paginaActual === totalPaginas ? 'disabled' : ''}>Siguiente →</button>
+      </div>
+    `;
+  }
+
+  cont.innerHTML = nota + htmlLista;
 }
 
+window.cambiarPagina = function(dir) {
+  paginaActual += dir;
+  listarMisCuestionarios();
+  document.getElementById("listaModal").scrollTop = 0;
+}
+
+/* Arma un campo estilo "papel" */
 function campoPapel(label, val){
   const v = (val === undefined || val === null) ? "" : String(val).trim();
   return `<div class="paper-field">
@@ -960,8 +1050,7 @@ function campoPapel(label, val){
 }
 
 function verCuestionario(idx){
-  const list = cuestionariosCache;
-  const q = list[idx];
+  const q = cuestionariosCache[idx];
   if(!q){ toast("No se encontró el cuestionario", "error"); return; }
   const d = q.data || {};
   const fechaCapturaTxt = d.fechaCaptura
@@ -1096,8 +1185,7 @@ function toast(msg, type){
 }
 
 /* =========================================================
-   ENVÍO: guarda en la base (vía función de Netlify) y respalda
-   siempre en localStorage para "Mis cuestionarios"
+   ENVÍO
    ========================================================= */
 function guardarDemo(data){
   try{
@@ -1105,7 +1193,8 @@ function guardarDemo(data){
     const list = JSON.parse(localStorage.getItem(key) || "[]");
     list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", data });
     localStorage.setItem(key, JSON.stringify(list));
-    actualizarBadge();
+    // Actualizar cuenta si somos el dueño o admin
+    if (isAdmin || data.creado_por === currentUser.id) actualizarBadge();
   }catch(e){}
 }
 
@@ -1114,44 +1203,31 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
+  const data = {};
+  new FormData(e.target).forEach((value, key) => { data[key] = value; });
+  const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
+  data.diasRecepcion = dias.join(", ");
+
+  if (currentUser) data.creado_por = currentUser.id;
+
+  guardarDemo(data);
+
   try{
-    const data = {};
-    new FormData(e.target).forEach((value, key) => { data[key] = value; });
-    const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
-    data.diasRecepcion = dias.join(", ");
-
-    // Quién capturó (UUID del usuario de Supabase)
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) data.creado_por = session.user.id;
-
-    guardarDemo(data); // respaldo local, siempre disponible
-
-    // Timeout de 15 s para que NUNCA se quede cargando
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-
-    try{
-      const res = await fetch("/api/cuestionarios", {
-        method: "POST",
-        headers: await authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify(data),
-        signal: ctrl.signal
-      });
-      clearTimeout(timer);
-      if(!res.ok){
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "red");
-      }
-      toast("Cuestionario guardado en la base de datos", "ok");
-    }catch(err){
-      toast("Guardado en este navegador (modo demo) · ya puedes verlo en 'Mis cuestionarios'", "ok");
+    const res = await fetch("/api/cuestionarios", {
+      method: "POST",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(data)
+    });
+    if(!res.ok){
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "red");
     }
+    toast("Cuestionario guardado en la base de datos", "ok");
   }catch(err){
-    toast("Error inesperado: " + (err && err.message ? err.message : err), "error");
+    toast("Guardado en este navegador (modo demo) · ya puedes verlo en 'Mis cuestionarios'", "ok");
   }finally{
-    // SIEMPRE se resetea el botón, pase lo que pase
     submitBtn.disabled = false;
-    submitBtn.textContent = "💾 Guardar cuestionario";
+    submitBtn.textContent = "💾 Guardar";
     resetForm();
   }
 });
@@ -1176,35 +1252,48 @@ async function authHeaders(extra = {}){
   return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
 }
 
-async function tieneRolValido(userId){
-  const { data, error } = await supabaseClient
-    .from("usuarios")
-    .select("rol, activo")
-    .eq("id", userId)
-    .maybeSingle();
-  if (error || !data || !data.activo) return false;
-  return ["comercial","oficina","admin"].includes(data.rol);
-}
-
 function mostrarUsuario(session){
   const badge = document.getElementById("userBadge");
   if (badge){
     badge.style.display = "inline-flex";
-    badge.textContent = "👤 " + (session.user.email || "");
+    badge.textContent = (isAdmin ? "🛡 Admin: " : "👤 ") + (session.user.email || "");
   }
 }
 
 async function guardarSesion(){
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session){ window.location.href = "login.html"; return; }
-  const ok = await tieneRolValido(session.user.id);
-  if (!ok){
-    await supabaseClient.auth.signOut();
-    window.location.href = "login.html";
-    return;
+  try{
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session){ window.location.href = "login.html"; return; }
+    
+    currentUser = session.user;
+
+    const { data, error } = await supabaseClient
+      .from("usuarios")
+      .select("rol, activo")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+      
+    if (error || !data || !data.activo){
+      await supabaseClient.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+    
+    const rolValido = ["comercial","oficina","admin"].includes(data.rol);
+    if (!rolValido){
+      await supabaseClient.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+    
+    currentUserRole = data.rol;
+    isAdmin = (currentUserRole === 'admin');
+
+    mostrarUsuario(session);
+    document.body.style.opacity = "1";
+  }catch(e){
+    throw e;
   }
-  mostrarUsuario(session);
-  document.body.style.opacity = "1"; // revela la app
 }
 
 async function logout(){
@@ -1212,7 +1301,6 @@ async function logout(){
   window.location.href = "login.html";
 }
 
-// Si la sesión expira o se cierra en otra pestaña → vuelve al login
 supabaseClient.auth.onAuthStateChange((event) => {
   if (event === "SIGNED_OUT") window.location.href = "login.html";
 });
@@ -1220,7 +1308,7 @@ supabaseClient.auth.onAuthStateChange((event) => {
 function fatal(msg){
   const el = document.getElementById("fatalError");
   if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
-  document.body.style.opacity = "1"; // nunca dejar la página en blanco
+  document.body.style.opacity = "1"; 
 }
 
 /* =========================================================
@@ -1236,10 +1324,12 @@ cargarCuestionarios();
   }catch(e){
     console.error("Error al iniciar el cuestionario:", e);
     fatal("No se pudo cargar: " + (e && e.message ? e.message : e) +
-      " — Revisa que config.js exista en la misma carpeta con tu URL y anon key reales (sin 'TU_').");
+      " — Revisa config.js");
   }
 })();
 </script>
 </body>
 </html>
+
+
 
