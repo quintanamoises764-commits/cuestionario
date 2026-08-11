@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acción Acuicultura · Conocimiento Profundo del Cliente</title>
+<title>Acción Acuicultura · Iniciar sesión</title>
 <style>
   :root{
     --primary:#0e7490;
@@ -15,1118 +15,142 @@
     --text:#0f172a;
     --muted:#64748b;
     --border:#e2e8f0;
-    --ok:#059669;
     --error:#dc2626;
-    --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 2px 6px rgba(15,23,42,.06);
     --shadow-md:0 8px 24px -8px rgba(15,23,42,.14);
     --shadow-lg:0 20px 45px -15px rgba(15,23,42,.22);
-    --radius:16px;
   }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
   body{
-    margin:0;
+    margin:0;min-height:100vh;
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    padding-bottom:70px;
-    min-height:100vh;
+    background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 55%,#0891b2 130%);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
   }
-  body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:-1;pointer-events:none;}
-  body::before{width:440px;height:440px;background:radial-gradient(circle,rgba(14,116,144,.16),transparent 70%);top:-140px;right:-110px;}
-  body::after{width:540px;height:540px;background:radial-gradient(circle,rgba(245,158,11,.10),transparent 70%);bottom:-180px;left:-130px;}
-
-  /* ===== Header ===== */
-  .topbar{
-    position:relative;
-    background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);
-    color:#fff;
-    padding:26px 22px 46px;
-    overflow:hidden;
-    animation:fadeDown .6s ease both;
-  }
-  .topbar .inner{max-width:880px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:14px;}
-  .logo{
-    width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.16);
-    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
-    animation:float 3.5s ease-in-out infinite;
-  }
-  .brand h1{margin:0;font-size:1.2rem;}
-  .brand .sub{margin:2px 0 0;font-size:.82rem;opacity:.85;}
-  .brand .demo-badge{
-    display:inline-flex;align-items:center;gap:6px;margin-top:7px;
-    background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.45);
-    color:#fde68a;font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:99px;
-    letter-spacing:.05em;text-transform:uppercase;
-  }
-  .topbar .btn{
-    background:#fff;color:var(--primary-dark);border:none;border-radius:12px;
-    padding:11px 16px;font-weight:700;font-size:.82rem;cursor:pointer;
-    box-shadow:0 8px 20px -8px rgba(0,0,0,.35);
-    transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
-    display:inline-flex;align-items:center;gap:6px;
-  }
-  .topbar .btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(0,0,0,.4);}
-  .topbar .btn:active{transform:translateY(0) scale(.97);}
-  .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.35);}
-  .topbar .btn.ghost:hover{background:rgba(255,255,255,.22);}
-  .topbar .btn .badge{background:var(--accent);color:#3b2f00;border-radius:99px;padding:1px 8px;font-size:.72rem;font-weight:800;}
-  .topbar::after{
-    content:"";position:absolute;left:0;right:0;bottom:-1px;height:38px;
-    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48'%3E%3Cpath fill='%23f4f7f9' d='M0,24 C180,46 360,2 540,20 C720,38 900,6 1080,20 C1260,34 1350,10 1440,22 L1440,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom center/1440px 38px;
-    animation:wave 9s linear infinite;
-  }
-  @keyframes wave{from{background-position-x:0;}to{background-position-x:-1440px;}}
-  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-  @keyframes fadeDown{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:none;}}
-
-  /* ===== Progreso ===== */
-  .progress-wrap{max-width:880px;margin:-24px auto 22px;padding:0 16px;position:relative;z-index:5;}
-  .progress-card{
-    background:#fff;border-radius:16px;box-shadow:var(--shadow-md);
-    padding:16px 20px 14px;border:1px solid var(--border);
-    animation:fadeUp .55s .1s ease both;
-  }
-  .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .progress-top .lbl{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
-  .progress-top .pct{font-size:.85rem;font-weight:800;color:var(--primary-dark);}
-  .progress-track{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden;}
-  .progress-bar{height:100%;width:20%;border-radius:99px;background:linear-gradient(90deg,var(--primary),#22d3ee);transition:width .55s cubic-bezier(.22,.68,0,1);}
-  .step-dots{display:flex;margin-top:16px;}
-  .step-dot{
-    flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;
-    position:relative;background:none;border:none;padding:0;font:inherit;color:inherit;text-align:center;
-  }
-  .step-dot::before{content:"";position:absolute;top:15px;right:50%;width:100%;height:3px;background:#e2e8f0;z-index:0;transition:background .4s;}
-  .step-dot:first-child::before{display:none;}
-  .step-dot.done::before,.step-dot.active::before{background:#10b981;}
-  .dot-num{
-    position:relative;z-index:1;width:31px;height:31px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;
-    background:#e2e8f0;color:#64748b;transition:all .3s ease;
-  }
-  .step-dot.done .dot-num{background:#10b981;color:#fff;}
-  .step-dot.active .dot-num{background:var(--primary);color:#fff;box-shadow:0 0 0 5px rgba(14,116,144,.16);transform:scale(1.06);}
-  .step-dot .dot-label{font-size:.68rem;font-weight:700;color:var(--muted);text-align:center;letter-spacing:.02em;}
-  .step-dot.active .dot-label{color:var(--primary-dark);}
-
-  /* ===== Layout / tarjetas ===== */
-  main{max-width:880px;margin:0 auto;padding:0 16px;min-height:55vh;}
   .card{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-    box-shadow:var(--shadow-sm);padding:26px 28px;margin-bottom:18px;
+    background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);
+    padding:34px 30px;max-width:380px;width:100%;
   }
-  .card h2{
-    display:flex;align-items:center;gap:11px;margin:0 0 4px;
-    font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-dark);
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .logo{
+    width:44px;height:44px;border-radius:13px;background:var(--primary-light);
+    display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0;
   }
-  .card h2 .ico{width:36px;height:36px;border-radius:11px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;}
-  .card .desc{margin:0 0 20px;font-size:.85rem;color:var(--muted);}
-  .step{display:none;}
-  .step.active{display:block;animation:stepIn .5s cubic-bezier(.22,.68,0,1);}
-  @keyframes stepIn{from{opacity:0;transform:translateY(24px) scale(.985);}to{opacity:1;transform:none;}}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
-
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
-  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
-  .field{display:flex;flex-direction:column;gap:6px;}
-  .field.full{grid-column:1/-1;}
+  .brand h1{margin:0;font-size:1.05rem;color:var(--text);}
+  .brand p{margin:2px 0 0;font-size:.78rem;color:var(--muted);}
+  .field{margin-bottom:16px;display:flex;flex-direction:column;gap:6px;}
   .field label{font-size:.72rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;}
-  .field input,.field select,.field textarea{
-    width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;
-    font:inherit;font-size:.92rem;color:var(--text);background:#fff;
-    transition:border-color .25s,box-shadow .25s,background .25s;
+  .field input{
+    padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;
+    font:inherit;font-size:.92rem;color:var(--text);
+    transition:border-color .2s,box-shadow .2s;
   }
-  .field textarea{resize:vertical;min-height:72px;}
-  .field input:focus,.field select:focus,.field textarea:focus{
-    outline:none;border-color:var(--primary);
-    box-shadow:0 0 0 4px rgba(14,116,144,.12);
-  }
-  .field input::placeholder,.field textarea::placeholder{color:#94a3b8;}
-  select{
-    appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;
-  }
-  .flash{animation:flashBg 1.2s ease;}
-  @keyframes flashBg{0%{background:#cffafe;box-shadow:0 0 0 4px rgba(14,116,144,.18);}100%{background:#fff;box-shadow:0 0 0 0 transparent;}}
-
-  /* Píldoras días */
-  .checks{display:flex;flex-wrap:wrap;gap:10px;}
-  .day-pill{
-    display:inline-flex;align-items:center;gap:8px;padding:9px 15px;
-    border:1.5px solid var(--border);border-radius:99px;cursor:pointer;
-    font-size:.84rem;font-weight:600;color:#475569;background:#fff;user-select:none;
-    transition:all .22s ease;
-  }
-  .day-pill input{display:none;}
-  .day-pill .ck{
-    width:18px;height:18px;border-radius:6px;border:2px solid #cbd5e1;
-    display:inline-flex;align-items:center;justify-content:center;
-    font-size:.68rem;color:transparent;transition:all .2s ease;
-  }
-  .day-pill:hover{border-color:#7dd3fc;}
-  .day-pill.on{background:var(--primary);border-color:var(--primary);color:#fff;transform:translateY(-1px);box-shadow:0 8px 16px -6px rgba(14,116,144,.5);}
-  .day-pill.on .ck{background:#fff;border-color:#fff;color:var(--primary);animation:pop .28s ease;}
-  @keyframes pop{0%{transform:scale(.4);}60%{transform:scale(1.25);}100%{transform:scale(1);}}
-
-  /* Buscador de clientes */
-  .client-search{position:relative;}
-  .client-results{
-    position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;
-    border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow-lg);
-    max-height:250px;overflow-y:auto;z-index:30;display:none;
-  }
-  .client-results.show{display:block;animation:dropIn .25s ease;}
-  @keyframes dropIn{from{opacity:0;transform:translateY(-8px) scale(.99);}to{opacity:1;transform:none;}}
-  .cr{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .15s;}
-  .cr:last-child{border-bottom:none;}
-  .cr:hover{background:#f0fdfa;}
-  .cr .avatar{
-    width:36px;height:36px;border-radius:11px;flex-shrink:0;
-    background:linear-gradient(135deg,var(--primary),#06b6d4);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.74rem;
-  }
-  .cr .info{min-width:0;}
-  .cr .info b{display:block;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .cr .info small{color:var(--muted);}
-  .client-results .none{padding:16px;color:var(--muted);font-size:.85rem;text-align:center;}
-
-  /* Resumen del último paso */
-  .summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-  .chip{background:#f0fdfa;border:1px solid #a5f3fc;color:#155e75;border-radius:99px;padding:6px 12px;font-size:.78rem;font-weight:600;}
-  .chip b{font-weight:800;margin-right:4px;color:#0f766e;}
-  .summary .empty{color:var(--muted);font-size:.85rem;}
-
-  /* Botones */
-  .nav{
-    position:sticky;bottom:14px;z-index:40;
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
-    border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);
-    padding:12px 14px;margin-top:6px;
-  }
-  .nav .grow{flex:1;}
+  .field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
   .btn{
-    display:inline-flex;align-items:center;gap:8px;justify-content:center;
-    border:none;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;font-size:.9rem;
-    cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+    width:100%;border:none;border-radius:12px;padding:12px;font:inherit;font-weight:700;font-size:.92rem;
+    background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;cursor:pointer;
+    box-shadow:0 10px 22px -8px rgba(14,116,144,.55);
+    transition:transform .2s ease,box-shadow .2s ease,opacity .2s;
+    margin-top:6px;
   }
-  .btn.primary{background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;box-shadow:0 10px 22px -8px rgba(14,116,144,.55);}
-  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px -8px rgba(14,116,144,.6);}
-  .btn.primary:active{transform:translateY(0) scale(.97);}
-  .btn.ghost{background:#fff;border:1.5px solid var(--border);color:var(--primary-dark);}
-  .btn.ghost:hover{border-color:var(--primary);background:var(--primary-light);}
-  .btn.ghost:active{transform:scale(.97);}
-  .btn.link{background:none;color:var(--muted);padding:10px 8px;font-size:.85rem;}
-  .btn.link:hover{color:var(--error);}
-  .btn.small{padding:8px 14px;font-size:.8rem;border-radius:10px;}
-  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;}
-  .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
-
-  /* Toast */
-  .toast{
-    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(90px);
-    background:#0f172a;color:#fff;padding:14px 20px;border-radius:14px;
-    box-shadow:var(--shadow-lg);font-size:.88rem;font-weight:600;z-index:300;
-    opacity:0;transition:all .45s cubic-bezier(.22,.68,0,1);max-width:92vw;text-align:center;
+  .btn:hover{transform:translateY(-1px);}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .msg{
+    margin-top:14px;padding:10px 12px;border-radius:10px;font-size:.82rem;font-weight:600;
+    display:none;
   }
-  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-  .toast.ok{background:linear-gradient(135deg,#059669,#10b981);}
-  .toast.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
-
-  /* Modal */
-  .modal-overlay{
-    display:none;position:fixed;inset:0;background:rgba(8,20,28,.55);
-    backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:200;padding:16px;
-  }
-  .modal-overlay.show{display:flex;}
-  .modal{
-    background:#fff;border-radius:20px;padding:24px;max-width:540px;width:100%;
-    max-height:86vh;overflow-y:auto;box-shadow:var(--shadow-lg);
-    animation:modalIn .3s cubic-bezier(.22,.68,0,1);
-  }
-  .modal-lg{max-width:620px;}
-  .modal-xl{max-width:760px;}
-  @keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.96);}to{opacity:1;transform:none;}}
-  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:18px;}
-  .modal h3{margin:0;color:var(--primary-dark);font-size:1.05rem;}
-  .modal .sub{margin:4px 0 0;font-size:.8rem;color:var(--muted);}
-  .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;line-height:1;transition:color .2s,transform .2s;}
-  .modal-close:hover{color:var(--text);transform:rotate(90deg);}
-
-  /* ===== Vista de página completa (Mis cuestionarios) ===== */
-  .page-overlay{
-    display:none;position:fixed;inset:0;background:var(--bg);z-index:250;overflow-y:auto;
-  }
-  .page-overlay.show{display:block;animation:pageIn .3s cubic-bezier(.22,.68,0,1);}
-  @keyframes pageIn{from{opacity:0;transform:translateX(26px);}to{opacity:1;transform:none;}}
-  .page-head{
-    position:sticky;top:0;z-index:5;
-    background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;
-    padding:16px 18px;display:flex;align-items:center;gap:14px;
-    box-shadow:0 4px 14px -6px rgba(0,0,0,.3);
-  }
-  .page-head button.back{
-    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;
-    border-radius:10px;padding:9px 13px;font-weight:700;font-size:.84rem;cursor:pointer;
-    display:inline-flex;align-items:center;gap:6px;transition:background .2s,transform .2s;flex-shrink:0;
-  }
-  .page-head button.back:hover{background:rgba(255,255,255,.24);transform:translateX(-2px);}
-  .page-head .titles{flex:1;min-width:0;}
-  .page-head h3{margin:0;font-size:1.02rem;}
-  .page-head p{margin:2px 0 0;font-size:.76rem;opacity:.85;}
-  .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
-
-  /* Lista de cuestionarios */
-  .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;}
-  .q-row:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
-  .q-row .q-info{min-width:0;}
-  .q-row .q-info b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .q-row .q-info small{color:var(--muted);font-size:.78rem;}
-  .empty-state{text-align:center;color:var(--muted);padding:32px 10px;font-size:.9rem;line-height:1.6;}
-
-  /* ===== Vista de solo lectura estilo formato en papel ===== */
-  .paper{
-    border:1px solid var(--border);border-radius:14px;
-    padding:22px 24px;background:#fff;
-  }
-  .paper-head{
-    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-    border-bottom:2px solid var(--primary-dark);padding-bottom:14px;margin-bottom:20px;
-  }
-  .paper-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
-  .paper-brand .ico{width:32px;height:32px;border-radius:9px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
-  .paper-brand b{display:block;font-size:.86rem;color:var(--primary-dark);white-space:nowrap;}
-  .paper-titles{flex:1;text-align:center;}
-  .paper-titles h3{margin:0;font-size:1rem;letter-spacing:.03em;color:var(--text);text-transform:uppercase;font-weight:800;}
-  .paper-titles p{margin:2px 0 0;font-size:.72rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;font-weight:700;}
-  .paper-fecha{text-align:right;font-size:.82rem;flex-shrink:0;}
-  .paper-fecha .lbl{color:var(--muted);font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;}
-  .paper-fecha .val{font-weight:700;border-bottom:1px dashed #c9d3dc;padding-bottom:3px;min-width:110px;}
-
-  .paper-sec{margin-bottom:20px;}
-  .paper-sec:last-child{margin-bottom:0;}
-  .paper-sec > h4{
-    font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--primary-dark);margin:0 0 12px;padding-bottom:5px;border-bottom:1px solid var(--border);
-  }
-  .paper-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;}
-  @media(max-width:640px){.paper-cols{grid-template-columns:1fr;}}
-  .paper-field{margin-bottom:13px;}
-  .paper-field .lbl{display:block;font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:3px;}
-  .paper-field .val{
-    border-bottom:1px dashed #c9d3dc;padding-bottom:5px;min-height:1.15em;
-    font-size:.9rem;font-weight:600;color:var(--text);word-break:break-word;
-  }
-  .paper-field .val.empty{color:#c3cbd4;font-weight:400;}
-  .paper-comment .val{min-height:3.2em;white-space:pre-wrap;border-bottom:none;border:1px dashed #c9d3dc;border-radius:8px;padding:10px 12px;}
-
-  @media(max-width:640px){
-    .brand h1{font-size:1.02rem;}
-    .dot-label{display:none;}
-    .card{padding:20px 18px;}
-    .paper-head{flex-direction:column;}
-    .paper-titles{text-align:left;}
-    .paper-fecha{text-align:left;}
-  }
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
-    html{scroll-behavior:auto!important;}
-  }
-
-  /* Impresión: solo el cuestionario abierto */
-  @media print{
-    body *{visibility:hidden;}
-    #printContent,#printContent *{visibility:visible;}
-    #printContent{
-      position:absolute;left:0;top:0;width:100%;background:#fff;padding:20px;
-    }
-    .modal{box-shadow:none;max-height:none;overflow:visible;}
-    .no-print{display:none!important;}
-  }
+  .msg.error{display:block;background:#fef2f2;color:var(--error);border:1px solid #fecaca;}
+  .msg.ok{display:block;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;}
+  .footer-note{margin-top:18px;text-align:center;font-size:.74rem;color:var(--muted);}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="inner">
-    <div class="brand">
-      <div class="logo">🐟</div>
-      <div>
-        <h1>Acción Acuicultura</h1>
-        <p class="sub">Conocimiento Profundo del Cliente · Cuestionario</p>
-        <span class="demo-badge">● Modo demo · datos en este navegador</span>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button type="button" class="btn ghost" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
-      <button type="button" class="btn" onclick="openClientModal()">+ Agregar cliente</button>
+<div class="card">
+  <div class="brand">
+    <div class="logo">🐟</div>
+    <div>
+      <h1>Acción Acuicultura</h1>
+      <p>Acceso · Comercial y Oficina</p>
     </div>
   </div>
-</header>
 
-<div class="progress-wrap">
-  <div class="progress-card">
-    <div class="progress-top">
-      <span class="lbl" id="stepLabel">Paso 1 de 5</span>
-      <span class="pct" id="stepPct">20%</span>
+  <form id="loginForm">
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" id="email" required autocomplete="username">
     </div>
-    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="step-dots" id="stepDots"></div>
-  </div>
-</div>
-
-<main>
-  <form id="cuestionarioForm">
-
-    <!-- ===== 1 · DATOS GENERALES ===== -->
-    <section class="card step" data-step="0" data-label="Datos">
-      <h2><span class="ico">🧾</span> Datos generales</h2>
-      <p class="desc">Busca un cliente para autocompletar (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
-      <div class="grid">
-        <div class="field full client-search">
-          <label>Buscar cliente · Razón Social o RFC</label>
-          <input type="text" id="clientSearch" placeholder="Escribe para buscar…" autocomplete="off">
-          <div class="client-results" id="clientResults"></div>
-        </div>
-        <div class="field">
-          <label>Razón Social</label>
-          <input type="text" name="razonSocial" id="razonSocial">
-        </div>
-        <div class="field">
-          <label>Giro del Negocio</label>
-          <select name="giroDelNegocio" id="giroDelNegocio"></select>
-        </div>
-        <div class="field">
-          <label>Nombre del Comprador</label>
-          <input type="text" name="nombreComprador" id="nombreComprador">
-        </div>
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="text" name="telefono" id="telefono">
-        </div>
-        <div class="field">
-          <label>RFC</label>
-          <input type="text" name="rfc" id="rfc">
-        </div>
-        <div class="field">
-          <label>Nombre Comercial</label>
-          <input type="text" name="nombreComercial" id="nombreComercial">
-        </div>
-        <div class="field">
-          <label>Ciudad / Ruta</label>
-          <input type="text" name="ciudadRuta" id="ciudadRuta">
-        </div>
-        <div class="field">
-          <label>Puesto</label>
-          <input type="text" name="puesto" placeholder="Ej. Gerente de compras">
-        </div>
-        <div class="field">
-          <label>Correo Electrónico</label>
-          <input type="email" name="correoElectronico" placeholder="correo@empresa.com">
-        </div>
-        <div class="field">
-          <label>Fecha de Captura</label>
-          <input type="date" name="fechaCaptura" id="fechaCaptura">
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 2 · VOLUMEN Y PRESENTACIÓN ===== -->
-    <section class="card step" data-step="1" data-label="Volumen">
-      <h2><span class="ico">📦</span> Volumen y presentación</h2>
-      <p class="desc">Volúmenes, presentaciones y participación de la competencia.</p>
-      <div class="grid">
-        <div class="field">
-          <label>Consumo actual (Kg / mes)</label>
-          <input type="number" min="0" step="1" name="consumoActual">
-        </div>
-        <div class="field">
-          <label>Meses de Estacionalidad</label>
-          <input type="text" name="mesesEstacionalidad" placeholder="Ej. Todo el año / Oct-Mar">
-        </div>
-        <div class="field">
-          <label>Presentación 1</label>
-          <input type="text" name="presentacion1" placeholder="Ej. 21/25">
-        </div>
-        <div class="field">
-          <label>Presentación 2</label>
-          <input type="text" name="presentacion2" placeholder="Ej. 31/35">
-        </div>
-        <div class="field">
-          <label>Presentación 3</label>
-          <input type="text" name="presentacion3" placeholder="Ej. 41/50">
-        </div>
-        <div class="field full">
-          <label>Participación aproximada por proteína (%)</label>
-          <div class="grid">
-            <div class="field">
-              <label style="text-transform:none;font-size:.8rem;font-weight:600;">Camarón</label>
-              <input type="number" min="0" max="100" name="proteinaCamaron" id="proteinaCamaron">
-            </div>
-            <div class="field">
-              <label style="text-transform:none;font-size:.8rem;font-weight:600;">Tilapia</label>
-              <input type="number" min="0" max="100" name="proteinaTilapia" id="proteinaTilapia">
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Consumo actual TOTAL del Cliente (Kg / mes)</label>
-          <input type="number" min="0" step="1" name="consumoTotal">
-        </div>
-        <div class="field">
-          <label>Segmento</label>
-          <select name="segmento" id="segmento"></select>
-        </div>
-        <div class="field">
-          <label>Participación Proveedores Competencia (%)</label>
-          <input type="number" min="0" max="100" name="participacionCompetencia">
-        </div>
-        <div class="field">
-          <label>Nombre Proveedor Competencia</label>
-          <input type="text" name="proveedorCompetencia">
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 3 · CAPACIDAD FINANCIERA ===== -->
-    <section class="card step" data-step="2" data-label="Finanzas">
-      <h2><span class="ico">💳</span> Capacidad financiera</h2>
-      <p class="desc">Facturación y condiciones de pago habituales.</p>
-      <div class="grid">
-        <div class="field">
-          <label>Facturación mensual emitidas</label>
-          <input type="text" name="facturacionMensual" placeholder="Ej. $50,000 o Sí/No">
-        </div>
-        <div class="field">
-          <label>Establecimiento</label>
-          <select name="establecimiento" id="establecimiento"></select>
-        </div>
-        <div class="field">
-          <label>Condición de compra habitual</label>
-          <select name="condicionCompra" id="condicionCompra"></select>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 4 · NECESIDADES LOGÍSTICAS ===== -->
-    <section class="card step" data-step="3" data-label="Logística">
-      <h2><span class="ico">🚚</span> Necesidades logísticas</h2>
-      <p class="desc">Frecuencias, horarios y requerimientos de entrega.</p>
-      <div class="grid">
-        <div class="field">
-          <label>Frecuencia</label>
-          <select name="frecuencia" id="frecuencia"></select>
-        </div>
-        <div class="field">
-          <label>Horario de Recepción</label>
-          <input type="text" name="horarioRecepcion" placeholder="Ej. 8:00 - 14:00">
-        </div>
-        <div class="field full">
-          <label>Días de Recepción</label>
-          <div class="checks" id="diasRecepcion"></div>
-        </div>
-        <div class="field">
-          <label>Volumen promedio por entrega (Kg)</label>
-          <input type="number" min="0" step="1" name="volumenPromedio">
-        </div>
-        <div class="field">
-          <label>Ubicación Entrega</label>
-          <input type="text" name="ubicacionEntrega">
-        </div>
-        <div class="field full">
-          <label>Requerimientos Especiales</label>
-          <textarea name="requerimientosEspeciales" placeholder="Cadena de frío, horarios específicos, accesos…"></textarea>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 5 · COMENTARIOS ===== -->
-    <section class="card step" data-step="4" data-label="Comentarios">
-      <h2><span class="ico">💬</span> Comentarios</h2>
-      <p class="desc">Revisa un resumen en vivo y agrega notas libres del levantamiento.</p>
-      <div class="summary" id="resumen"></div>
-      <div class="field">
-        <textarea name="comentarios" rows="5" placeholder="Escribe aquí cualquier observación…"></textarea>
-      </div>
-    </section>
-
-    <div class="nav">
-      <button type="button" class="btn link" id="clearBtn">⟲ Limpiar todo</button>
-      <span class="grow"></span>
-      <button type="button" class="btn ghost" id="prevBtn" hidden>← Anterior</button>
-      <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
-      <button type="submit" class="btn primary" id="submitBtn" hidden>💾 Guardar cuestionario</button>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="password" required autocomplete="current-password">
     </div>
+    <button type="submit" class="btn" id="loginBtn">Iniciar sesión</button>
+    <div class="msg" id="msg"></div>
   </form>
-</main>
 
-<div class="toast" id="toast" role="status"></div>
-
-<!-- Modal: agregar cliente -->
-<div class="modal-overlay" id="clientModal">
-  <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h3>Agregar cliente nuevo</h3>
-        <p class="sub">Se guarda en la base local de prueba por ahora.</p>
-      </div>
-      <button class="modal-close" onclick="closeClientModal()">&times;</button>
-    </div>
-    <div class="grid">
-      <div class="field full">
-        <label>Razón Social</label>
-        <input type="text" id="nc_razonSocial">
-      </div>
-      <div class="field">
-        <label>RFC</label>
-        <input type="text" id="nc_rfc">
-      </div>
-      <div class="field">
-        <label>Giro del Negocio</label>
-        <select id="nc_giroDelNegocio"></select>
-      </div>
-      <div class="field">
-        <label>Nombre del Comprador</label>
-        <input type="text" id="nc_nombreComprador">
-      </div>
-      <div class="field">
-        <label>Teléfono</label>
-        <input type="text" id="nc_telefono">
-      </div>
-      <div class="field">
-        <label>Nombre Comercial</label>
-        <input type="text" id="nc_nombreComercial">
-      </div>
-      <div class="field">
-        <label>Ciudad / Ruta</label>
-        <input type="text" id="nc_ciudadRuta">
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
-      <button type="button" class="btn ghost" onclick="closeClientModal()">Cancelar</button>
-      <button type="button" class="btn primary" onclick="saveNewClient()">Guardar cliente</button>
-    </div>
-  </div>
+  <p class="footer-note">¿No tienes cuenta? Pídele a tu administrador que te dé de alta.</p>
 </div>
 
-<!-- Página: mis cuestionarios -->
-<div class="page-overlay" id="listaModal">
-  <div class="page-head">
-    <button type="button" class="back" onclick="closeModal('listaModal')">← Volver</button>
-    <div class="titles">
-      <h3>📋 Mis cuestionarios</h3>
-      <p>Solo lectura · todas las respuestas guardadas en la base de datos</p>
-    </div>
-  </div>
-  <div class="page-body" id="listaCuestionarios"></div>
-</div>
-
-<!-- Modal: ver cuestionario -->
-<div class="modal-overlay" id="verModal">
-  <div class="modal modal-xl">
-    <div class="modal-head no-print">
-      <div>
-        <h3>👁 Cuestionario</h3>
-        <p class="sub">Vista de solo lectura · usa "Descargar PDF" si lo necesitas.</p>
-      </div>
-      <button class="modal-close" onclick="closeModal('verModal')">&times;</button>
-    </div>
-    <div id="printContent"></div>
-    <div class="no-print" style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
-      <button type="button" class="btn ghost" onclick="closeModal('verModal')">Cerrar</button>
-      <button type="button" class="btn primary" onclick="window.print()">⬇ Descargar PDF</button>
-    </div>
-  </div>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
-/* =========================================================
-   LISTAS DE COMBOS
-   ========================================================= */
-const LISTAS = {
-  giroDelNegocio: ["Restaurante","Hotel","Pescadería","Supermercado","Mayoreo Nacional","Mayoreo Rutas","Autoservicio Regional","Industrial"],
-  segmento: ["Detalle","Menudeo","Medio Mayoreo","Mayoreo Rutas","Mayoreo Nacional","Autoservicio Regional","Autoservicio Spot"],
-  condicionCompra: ["Contado","Crédito 7 días","Crédito 15 días","Crédito 30 días","Crédito 45 días","Crédito 60 días"],
-  frecuencia: ["Diaria","2 veces por semana","Semanal","Quincenal","Mensual","Eventual"],
-  diasRecepcion: ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"],
-  establecimiento: ["Propio","Rentado","Sucursal","Bodega","Mercado","Restaurante","Otro"]
-};
+const form = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+const btn = document.getElementById("loginBtn");
 
-/* =========================================================
-   DATOS DE PRUEBA LOCALES (clientes)
-   ========================================================= */
-const MOCK_CLIENTES = [
-  { razonSocial:"Mariscos del Golfo S.A. de C.V.",  rfc:"MGO8501012T4", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Carlos Márquez",   telefono:"993 318 4521", nombreComercial:"Mariscos del Golfo",  ciudadRuta:"Ciudad del Carmen, Campeche" },
-  { razonSocial:"Restaurante La Perla del Pacífico", rfc:"RPP910503K87", giroDelNegocio:"Restaurante",          nombreComprador:"Laura Ibarra",     telefono:"664 900 1823", nombreComercial:"La Perla",            ciudadRuta:"Tijuana, B.C." },
-  { razonSocial:"Pescadería El Muelle",              rfc:"PEM950617Q31", giroDelNegocio:"Pescadería",           nombreComprador:"Jorge Sánchez",    telefono:"229 220 9876", nombreComercial:"El Muelle",           ciudadRuta:"Veracruz, Ver." },
-  { razonSocial:"Grupo Camarón Dorado S.A.P.I.",     rfc:"GCD880214N56", giroDelNegocio:"Mayoreo Rutas",       nombreComprador:"Ana Beltrán",      telefono:"668 815 0047", nombreComercial:"Camarón Dorado",      ciudadRuta:"Mazatlán, Sin." },
-  { razonSocial:"Supermercados del Mar S.A.",        rfc:"SMA0001251C9", giroDelNegocio:"Supermercado",         nombreComprador:"Ricardo Fuentes",  telefono:"55 5240 1133", nombreComercial:"Súper del Mar",       ciudadRuta:"CDMX" },
-  { razonSocial:"Hotel Costa Azul S.A. de C.V.",     rfc:"HCA0603312F8", giroDelNegocio:"Hotel",                nombreComprador:"Mónica Salazar",   telefono:"998 884 2210", nombreComercial:"Hotel Costa Azul",    ciudadRuta:"Cancún, Q. Roo" },
-  { razonSocial:"Acuícola del Sureste S.A. de C.V.", rfc:"ASE0409053J1", giroDelNegocio:"Industrial",           nombreComprador:"Fernando Pech",    telefono:"981 816 7745", nombreComercial:"Acuícola Sureste",    ciudadRuta:"Campeche, Camp." },
-  { razonSocial:"Pescados El Anzuelo",               rfc:"PEA0712184D2", giroDelNegocio:"Pescadería",           nombreComprador:"Guadalupe Torres", telefono:"222 273 5581", nombreComercial:"El Anzuelo",          ciudadRuta:"Puebla, Pue." },
-  { razonSocial:"Grupo Pacific Shrimp S.A. de C.V.", rfc:"GPS0508123M5", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Héctor Ramos",     telefono:"667 710 4432", nombreComercial:"Pacific Shrimp",      ciudadRuta:"Culiacán, Sin." },
-  { razonSocial:"Mercado del Mar",                   rfc:"MDM0302247K9", giroDelNegocio:"Autoservicio Regional", nombreComprador:"Silvia Núñez",     telefono:"81 8123 7700", nombreComercial:"Mercado del Mar",     ciudadRuta:"Monterrey, N.L." }
-];
-
-/* =========================================================
-   Combos y fecha por defecto
-   ========================================================= */
-function llenarSelect(id, opciones, placeholder){
-  const el = document.getElementById(id);
-  el.innerHTML = `<option value="">${placeholder || "Selecciona…"}</option>` +
-    opciones.map(o => `<option value="${o}">${o}</option>`).join("");
-}
-function llenarChecks(){
-  const cont = document.getElementById("diasRecepcion");
-  cont.innerHTML = LISTAS.diasRecepcion.map(d =>
-    `<label class="day-pill"><input type="checkbox" value="${d}" class="dia-check"><span class="ck">✓</span> ${d}</label>`
-  ).join("");
-  cont.querySelectorAll(".dia-check").forEach(cb => {
-    cb.addEventListener("change", () => cb.closest(".day-pill").classList.toggle("on", cb.checked));
-  });
-}
-["giroDelNegocio","segmento","condicionCompra","frecuencia","establecimiento"].forEach(c => llenarSelect(c, LISTAS[c]));
-llenarSelect("nc_giroDelNegocio", LISTAS.giroDelNegocio);
-llenarChecks();
-document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
-
-/* =========================================================
-   WIZARD (asistente de 5 pasos)
-   ========================================================= */
-const steps = Array.from(document.querySelectorAll(".step"));
-const total = steps.length;
-const bar = document.getElementById("progressBar");
-const dotsWrap = document.getElementById("stepDots");
-const stepLabel = document.getElementById("stepLabel");
-const stepPct = document.getElementById("stepPct");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const submitBtn = document.getElementById("submitBtn");
-let current = 0;
-
-function renderResumen(){
-  const s = document.getElementById("resumen");
-  if(!s) return;
-  const v = id => { const el = document.getElementById(id); return el ? el.value : ""; };
-  const q = sel => { const el = document.querySelector(sel); return el ? el.value : ""; };
-  const picks = [
-    ["Razón social", v("razonSocial")],
-    ["Giro", v("giroDelNegocio")],
-    ["Consumo (Kg/mes)", q('[name="consumoActual"]')],
-    ["Segmento", v("segmento")],
-    ["Frecuencia", v("frecuencia")],
-    ["Condición", v("condicionCompra")]
-  ].filter(([,val]) => val && val.trim());
-  s.innerHTML = picks.length
-    ? picks.map(([k,val]) => `<span class="chip"><b>${k}</b> ${val}</span>`).join("")
-    : `<span class="empty">Aún no hay datos capturados — completa los pasos anteriores.</span>`;
-}
-
-function renderSteps(){
-  const pct = Math.round(((current+1)/total)*100);
-  bar.style.width = pct + "%";
-  stepLabel.textContent = `Paso ${current+1} de ${total} · ${steps[current].dataset.label}`;
-  stepPct.textContent = pct + "%";
-  dotsWrap.innerHTML = steps.map((s,i) => {
-    const state = i < current ? "done" : (i === current ? "active" : "");
-    return `<button type="button" class="step-dot ${state}" data-i="${i}">
-      <span class="dot-num">${i < current ? "✓" : i+1}</span>
-      <span class="dot-label">${s.dataset.label}</span>
-    </button>`;
-  }).join("");
-  dotsWrap.querySelectorAll(".step-dot").forEach(d => d.addEventListener("click", () => goStep(+d.dataset.i)));
-  steps.forEach((s,i) => s.classList.toggle("active", i === current));
-  prevBtn.hidden = current === 0;
-  nextBtn.hidden = current === total-1;
-  submitBtn.hidden = current !== total-1;
-  if(current === total-1) renderResumen();
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-function goStep(i){
-  if(i < 0 || i >= total || i === current) return;
-  current = i;
-  renderSteps();
-}
-prevBtn.addEventListener("click", () => goStep(current-1));
-nextBtn.addEventListener("click", () => goStep(current+1));
-document.getElementById("clearBtn").addEventListener("click", () => {
-  if(confirm("¿Seguro que quieres limpiar todo el cuestionario?")) resetForm();
-});
-document.getElementById("cuestionarioForm").addEventListener("input", () => {
-  if(current === total-1) renderResumen();
-});
-
-/* =========================================================
-   CLIENTES: carga con respaldo de datos de prueba
-   ========================================================= */
-let clientes = [];
-async function cargarClientes(){
-  try{
-    const res = await fetch("/api/clients");
-    if(res.ok){
-      const data = await res.json();
-      clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
-      return;
-    }
-  }catch(e){ /* sin backend todavía */ }
-  clientes = MOCK_CLIENTES; // modo demo
-}
-cargarClientes();
-
-const searchInput = document.getElementById("clientSearch");
-const resultsBox = document.getElementById("clientResults");
-
-function initials(n){
-  return (n || "?").split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
-}
-
-searchInput.addEventListener("input", () => {
-  const q = searchInput.value.trim().toLowerCase();
-  if(!q){ resultsBox.classList.remove("show"); resultsBox.innerHTML = ""; return; }
-  const matches = clientes
-    .filter(c => (c.razonSocial||"").toLowerCase().includes(q) || (c.rfc||"").toLowerCase().includes(q))
-    .slice(0,8);
-  resultsBox.innerHTML = matches.length
-    ? matches.map(c => `<div class="cr" data-rfc="${c.rfc}">
-        <span class="avatar">${initials(c.razonSocial)}</span>
-        <span class="info"><b>${c.razonSocial}</b><small>${c.rfc} · ${c.ciudadRuta || "—"}</small></span>
-      </div>`).join("")
-    : `<div class="none">Sin resultados. Usa "+ Agregar cliente".</div>`;
-  resultsBox.classList.add("show");
-});
-
-resultsBox.addEventListener("click", (e) => {
-  const el = e.target.closest(".cr[data-rfc]");
-  if(!el) return;
-  const c = clientes.find(x => x.rfc === el.dataset.rfc);
-  if(c){ aplicarCliente(c); searchInput.value = c.razonSocial; }
-  resultsBox.classList.remove("show");
-});
-
-document.addEventListener("click", e => {
-  if(!e.target.closest(".client-search")) resultsBox.classList.remove("show");
-});
-
-function aplicarCliente(c){
-  [["razonSocial","razonSocial"],["rfc","rfc"],["nombreComprador","nombreComprador"],
-   ["telefono","telefono"],["nombreComercial","nombreComercial"],["ciudadRuta","ciudadRuta"]
-  ].forEach(([id,k]) => {
-    const el = document.getElementById(id);
-    el.value = c[k] || "";
-    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
-  });
-  document.getElementById("giroDelNegocio").value = c.giroDelNegocio || "";
-  toast("Cliente cargado: campos autocompletados", "ok");
-}
-
-/* =========================================================
-   MODAL: agregar cliente nuevo
-   ========================================================= */
-function openClientModal(){ document.getElementById("clientModal").classList.add("show"); }
-function closeClientModal(){ document.getElementById("clientModal").classList.remove("show"); }
-
-async function saveNewClient(){
-  const nuevo = {
-    razonSocial: document.getElementById("nc_razonSocial").value.trim(),
-    rfc: document.getElementById("nc_rfc").value.trim(),
-    giroDelNegocio: document.getElementById("nc_giroDelNegocio").value,
-    nombreComprador: document.getElementById("nc_nombreComprador").value.trim(),
-    telefono: document.getElementById("nc_telefono").value.trim(),
-    nombreComercial: document.getElementById("nc_nombreComercial").value.trim(),
-    ciudadRuta: document.getElementById("nc_ciudadRuta").value.trim()
-  };
-  if(!nuevo.rfc || !nuevo.razonSocial){
-    toast("Razón Social y RFC son obligatorios", "error");
-    return;
+// Si ya hay sesión activa y con rol válido, saltamos directo al cuestionario.
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    const ok = await tieneRolValido(session.user.id);
+    if (ok) window.location.href = "cuestionario.html";
   }
-  let guardado = false;
-  try{
-    const res = await fetch("/api/clients", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(nuevo)
-    });
-    if(res.ok) guardado = true;
-  }catch(e){ /* sin backend */ }
-  if(guardado){
-    toast("Cliente guardado en la base", "ok");
-  }else{
-    clientes.push(nuevo);
-    toast("Modo demo: cliente guardado solo en este navegador", "ok");
-  }
-  aplicarCliente(nuevo);
-  searchInput.value = nuevo.razonSocial;
-  closeClientModal();
-  ["nc_razonSocial","nc_rfc","nc_nombreComprador","nc_telefono","nc_nombreComercial","nc_ciudadRuta"]
-    .forEach(id => document.getElementById(id).value = "");
-  document.getElementById("nc_giroDelNegocio").value = "";
+})();
+
+async function tieneRolValido(userId){
+  const { data, error } = await supabaseClient
+    .from("usuarios")
+    .select("rol, activo")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data || !data.activo) return false;
+  return ["comercial", "oficina", "admin"].includes(data.rol);
 }
 
-/* =========================================================
-   MIS CUESTIONARIOS (solo lectura + PDF, formato tipo papel)
-   ========================================================= */
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-function getCuestionariosLocal(){
-  try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
-  catch(e){ return []; }
-}
-// Cache en memoria: aquí vive la lista que se muestra en pantalla.
-// Se llena desde la base de datos (Supabase) y, si no hay conexión, cae al respaldo local.
-let cuestionariosCache = [];
-let origenCuestionarios = "local"; // "db" o "local", solo informativo
-
-async function cargarCuestionarios(){
-  try{
-    const res = await fetch("/api/cuestionarios");
-    if(res.ok){
-      const rows = await res.json();
-      cuestionariosCache = rows.map(r => ({
-        fecha: r.guardadoEn || new Date().toISOString(),
-        cliente: r.razonSocial || "(sin cliente)",
-        data: r
-      }));
-      origenCuestionarios = "db";
-      actualizarBadge();
-      return cuestionariosCache;
-    }
-  }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
-  cuestionariosCache = getCuestionariosLocal();
-  origenCuestionarios = "local";
-  actualizarBadge();
-  return cuestionariosCache;
-}
-function contarRespuestas(data){
-  return Object.values(data || {}).filter(v => v !== undefined && v !== null && String(v).trim() !== "").length;
-}
-function actualizarBadge(){
-  const b = document.getElementById("qBadge");
-  if(b) b.textContent = cuestionariosCache.length;
-}
-async function openMisCuestionarios(){
-  const cont = document.getElementById("listaCuestionarios");
-  cont.innerHTML = `<div class="empty-state">Cargando…</div>`;
-  document.getElementById("listaModal").classList.add("show");
-  await cargarCuestionarios();
-  listarMisCuestionarios();
-}
-function listarMisCuestionarios(){
-  const list = cuestionariosCache;
-  const cont = document.getElementById("listaCuestionarios");
-  if(!list.length){
-    cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
-    return;
-  }
-  const nota = origenCuestionarios === "local"
-    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
-    : "";
-  cont.innerHTML = nota + list.map((q, i) => {
-    const fecha = new Date(q.fecha);
-    const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
-      + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
-    const resp = contarRespuestas(q.data);
-    return `<div class="q-row">
-      <div class="q-info">
-        <b>${escapeHtml(q.cliente || "(sin cliente)")}</b>
-        <small>${fechaTxt} · ${resp} respuestas</small>
-      </div>
-      <button type="button" class="btn ghost small" onclick="verCuestionario(${i})">👁 Ver</button>
-    </div>`;
-  }).join("");
-}
-
-/* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
-function campoPapel(label, val){
-  const v = (val === undefined || val === null) ? "" : String(val).trim();
-  return `<div class="paper-field">
-    <span class="lbl">${escapeHtml(label)}</span>
-    <div class="val ${v ? "" : "empty"}">${v ? escapeHtml(v) : "—"}</div>
-  </div>`;
-}
-
-function verCuestionario(idx){
-  const list = cuestionariosCache;
-  const q = list[idx];
-  if(!q){ toast("No se encontró el cuestionario", "error"); return; }
-  const d = q.data || {};
-  const fechaCapturaTxt = d.fechaCaptura
-    ? new Date(d.fechaCaptura + "T00:00:00").toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
-    : "";
-
-  const html = `
-    <div class="paper">
-      <div class="paper-head">
-        <div class="paper-brand"><span class="ico">🐟</span><b>Acción<br>Acuicultura</b></div>
-        <div class="paper-titles">
-          <h3>Conocimiento Profundo del Cliente</h3>
-          <p>Cuestionario</p>
-        </div>
-        <div class="paper-fecha">
-          <span class="lbl">Fecha Captura</span>
-          <span class="val">${fechaCapturaTxt ? escapeHtml(fechaCapturaTxt) : "—"}</span>
-        </div>
-      </div>
-
-      <div class="paper-sec">
-        <h4>Datos generales</h4>
-        <div class="paper-cols">
-          <div>
-            ${campoPapel("Razón Social", d.razonSocial)}
-            ${campoPapel("Giro del Negocio", d.giroDelNegocio)}
-            ${campoPapel("Nombre del Comprador", d.nombreComprador)}
-            ${campoPapel("Teléfono", d.telefono)}
-            ${campoPapel("RFC", d.rfc)}
-          </div>
-          <div>
-            ${campoPapel("Nombre Comercial", d.nombreComercial)}
-            ${campoPapel("Ciudad / Ruta", d.ciudadRuta)}
-            ${campoPapel("Puesto", d.puesto)}
-            ${campoPapel("Correo Electrónico", d.correoElectronico)}
-          </div>
-        </div>
-      </div>
-
-      <div class="paper-sec">
-        <h4>Volumen y presentación</h4>
-        <div class="paper-cols">
-          <div>
-            ${campoPapel("Consumo actual (Kg/mes)", d.consumoActual)}
-            ${campoPapel("Presentación 1", d.presentacion1)}
-            ${campoPapel("Presentación 2", d.presentacion2)}
-            ${campoPapel("Presentación 3", d.presentacion3)}
-            ${campoPapel("Consumo actual TOTAL del Cliente (Kg/mes)", d.consumoTotal)}
-            ${campoPapel("Participación Proveedores Competencia (%)", d.participacionCompetencia)}
-          </div>
-          <div>
-            ${campoPapel("Meses de Estacionalidad", d.mesesEstacionalidad)}
-            ${campoPapel("Participación aprox. por proteína · Camarón (%)", d.proteinaCamaron)}
-            ${campoPapel("Participación aprox. por proteína · Tilapia (%)", d.proteinaTilapia)}
-            ${campoPapel("Segmento", d.segmento)}
-            ${campoPapel("Nombre Proveedor Competencia", d.proveedorCompetencia)}
-          </div>
-        </div>
-      </div>
-
-      <div class="paper-sec">
-        <h4>Capacidad financiera</h4>
-        <div class="paper-cols">
-          <div>
-            ${campoPapel("Facturación mensual emitidas", d.facturacionMensual)}
-            ${campoPapel("Condición de compra habitual", d.condicionCompra)}
-          </div>
-          <div>
-            ${campoPapel("Establecimiento", d.establecimiento)}
-          </div>
-        </div>
-      </div>
-
-      <div class="paper-sec">
-        <h4>Necesidades logísticas</h4>
-        <div class="paper-cols">
-          <div>
-            ${campoPapel("Frecuencia", d.frecuencia)}
-            ${campoPapel("Días de Recepción", d.diasRecepcion)}
-            ${campoPapel("Horario de Recepción", d.horarioRecepcion)}
-            ${campoPapel("Volumen promedio por entrega (Kg)", d.volumenPromedio)}
-          </div>
-          <div>
-            ${campoPapel("Ubicación Entrega", d.ubicacionEntrega)}
-            ${campoPapel("Requerimientos Especiales", d.requerimientosEspeciales)}
-          </div>
-        </div>
-      </div>
-
-      <div class="paper-sec paper-comment">
-        <h4>Comentarios</h4>
-        <div class="paper-field">
-          <div class="val">${d.comentarios && String(d.comentarios).trim() ? escapeHtml(d.comentarios) : "—"}</div>
-        </div>
-      </div>
-    </div>`;
-
-  document.getElementById("printContent").innerHTML = html;
-  document.getElementById("verModal").classList.add("show");
-}
-function closeModal(id){ document.getElementById(id).classList.remove("show"); }
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-let toastTimer;
-function toast(msg, type){
-  const t = document.getElementById("toast");
-  t.textContent = (type === "ok" ? "✓ " : "✘ ") + msg;
-  t.className = "toast show " + (type || "");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 3800);
-}
-
-/* =========================================================
-   ENVÍO: guarda en Supabase (vía función de Netlify) y respalda
-   siempre en localStorage para "Mis cuestionarios"
-   ========================================================= */
-function guardarDemo(data){
-  try{
-    const key = "cuestionarios_demo";
-    const list = JSON.parse(localStorage.getItem(key) || "[]");
-    list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", data });
-    localStorage.setItem(key, JSON.stringify(list));
-    actualizarBadge();
-  }catch(e){}
-}
-
-document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Guardando…";
+  msg.className = "msg";
+  msg.textContent = "";
+  btn.disabled = true;
+  btn.textContent = "Entrando…";
 
-  const data = {};
-  new FormData(e.target).forEach((value, key) => { data[key] = value; });
-  const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
-  data.diasRecepcion = dias.join(", ");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-  guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-  try{
-    const res = await fetch("/api/cuestionarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if(!res.ok){
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "red");
-    }
-    toast("Cuestionario guardado en la base de datos", "ok");
-  }catch(err){
-    toast("Guardado en este navegador (modo demo) · ya puedes verlo en 'Mis cuestionarios'", "ok");
-  }finally{
-    submitBtn.disabled = false;
-    submitBtn.textContent = "💾 Guardar cuestionario";
-    resetForm();
+  if (error) {
+    msg.className = "msg error";
+    msg.textContent = "Correo o contraseña incorrectos.";
+    btn.disabled = false;
+    btn.textContent = "Iniciar sesión";
+    return;
   }
+
+  const ok = await tieneRolValido(data.user.id);
+  if (!ok) {
+    msg.className = "msg error";
+    msg.textContent = "Tu cuenta no tiene un rol asignado o está desactivada. Contacta al administrador.";
+    await supabaseClient.auth.signOut();
+    btn.disabled = false;
+    btn.textContent = "Iniciar sesión";
+    return;
+  }
+
+  msg.className = "msg ok";
+  msg.textContent = "¡Bienvenido! Entrando…";
+  window.location.href = "cuestionario.html";
 });
-
-function resetForm(){
-  document.getElementById("cuestionarioForm").reset();
-  document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
-  document.querySelectorAll(".dia-check").forEach(c => {
-    c.checked = false;
-    c.closest(".day-pill").classList.remove("on");
-  });
-  searchInput.value = "";
-  current = 0;
-  renderSteps();
-}
-
-renderSteps();
-cargarCuestionarios(); // trae el conteo real de la base de datos al abrir la página
 </script>
-
 </body>
 </html>
