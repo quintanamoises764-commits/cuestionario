@@ -189,7 +189,7 @@
   .day-pill.on .ck{background:#fff;border-color:#fff;color:var(--primary);animation:pop .28s ease;}
   @keyframes pop{0%{transform:scale(.4);}60%{transform:scale(1.25);}100%{transform:scale(1);}}
 
-  /* Buscador de clientes */
+  /* Buscador de clientes (formulario) */
   .client-search{position:relative;}
   .client-results{
     position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;
@@ -296,6 +296,27 @@
   .page-head h3{margin:0;font-size:1.02rem;}
   .page-head p{margin:2px 0 0;font-size:.76rem;opacity:.85;}
   .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+
+  /* ===== Buscador + filtros de la lista ===== */
+  .filtro-bar{display:flex;gap:10px;align-items:stretch;margin-bottom:16px;flex-wrap:wrap;}
+  .filtro-search{position:relative;flex:1;min-width:220px;}
+  .filtro-search .fs-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.95rem;opacity:.65;}
+  .filtro-search input{
+    width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:12px;
+    font:inherit;font-size:.9rem;background:#fff;color:var(--text);
+    transition:border-color .25s,box-shadow .25s;
+  }
+  .filtro-search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
+  .filtro-results{
+    position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);
+    border-radius:13px;box-shadow:var(--shadow-lg);max-height:230px;overflow-y:auto;z-index:30;display:none;
+  }
+  .filtro-results.show{display:block;animation:dropIn .25s ease;}
+  .fr{display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:.85rem;transition:background .15s;}
+  .fr:last-child{border-bottom:none;}
+  .fr:hover{background:#f0fdfa;}
+  .fr.none{color:var(--muted);cursor:default;}
+  .filtro-count{font-size:.76rem;color:var(--muted);font-weight:700;margin:0 0 10px;}
 
   /* Lista de cuestionarios */
   .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;}
@@ -650,6 +671,14 @@
     </div>
   </div>
   <div class="page-body">
+    <div class="filtro-bar no-print">
+      <div class="filtro-search">
+        <span class="fs-ico">🔎</span>
+        <input type="text" id="filtroBusqueda" placeholder="Buscar por cliente, RFC o ciudad…" autocomplete="off">
+        <div class="filtro-results" id="filtroResults"></div>
+      </div>
+      <button type="button" class="btn primary small" id="btnExportarExcel" onclick="exportarExcel()" style="display:none;">⬇ Descargar Excel</button>
+    </div>
     <div id="listaCuestionarios"></div>
     <div id="verDetalle" style="display:none;">
       <button type="button" class="btn ghost small no-print" style="margin-bottom:16px;" onclick="volverAlListado()">← Volver al listado</button>
@@ -660,6 +689,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
    LISTAS DE COMBOS
@@ -884,7 +914,7 @@ async function saveNewClient(){
 }
 
 /* =========================================================
-   MIS CUESTIONARIOS (solo lectura + PDF, formato tipo papel)
+   MIS CUESTIONARIOS (solo lectura + PDF + buscador + Excel)
    ========================================================= */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -901,6 +931,7 @@ let cuestionariosCache = [];
 let origenCuestionarios = "local";
 let paginaActual = 1;
 const POR_PAGINA = 5; // cuestionarios por página
+let busquedaFiltro = ""; // texto del buscador
 
 async function cargarCuestionarios(){
   try{
@@ -936,6 +967,18 @@ function filtrarPorRol(){
   }
 }
 
+/* Aplica el texto del buscador sobre la lista ya filtrada por rol */
+function listadoFiltrado(){
+  const q = busquedaFiltro.trim().toLowerCase();
+  if (!q) return cuestionariosCache;
+  return cuestionariosCache.filter(item => {
+    const d = item.data || {};
+    const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.ciudadRuta, item.cliente]
+      .filter(Boolean).join(" ").toLowerCase();
+    return texto.includes(q);
+  });
+}
+
 function contarRespuestas(data){
   return Object.values(data || {}).filter(v => v !== undefined && v !== null && String(v).trim() !== "").length;
 }
@@ -947,7 +990,9 @@ function actualizarBadge(){
 async function openMisCuestionarios(){
   document.getElementById("listaModal").classList.add("show");
   volverAlListado();
-  paginaActual = 1; // siempre empieza en la página 1
+  paginaActual = 1;
+  const fi = document.getElementById("filtroBusqueda");
+  if (fi) { fi.value = ""; busquedaFiltro = ""; }
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
   await cargarCuestionarios();
   listarMisCuestionarios();
@@ -955,7 +1000,7 @@ async function openMisCuestionarios(){
 }
 
 function listarMisCuestionarios(){
-  const list = cuestionariosCache;
+  const list = listadoFiltrado();
   const cont = document.getElementById("listaCuestionarios");
   const soloMios = usuarioActual && usuarioActual.rol !== "admin";
 
@@ -964,7 +1009,9 @@ function listarMisCuestionarios(){
     : (soloMios ? "Solo lectura · tus cuestionarios en este navegador" : "Solo lectura · guardados en este navegador");
 
   if(!list.length){
-    cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
+    cont.innerHTML = busquedaFiltro.trim()
+      ? `<div class="empty-state">🔎 Sin resultados para "<b>${escapeHtml(busquedaFiltro.trim())}</b>"<br><small>Prueba con otro cliente, RFC o ciudad.</small></div>`
+      : `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
     return;
   }
 
@@ -976,8 +1023,9 @@ function listarMisCuestionarios(){
   const nota = origenCuestionarios === "local"
     ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
     : "";
+  const contador = `<div class="filtro-count">${list.length} cuestionario${list.length !== 1 ? "s" : ""}${busquedaFiltro.trim() ? ' para "' + escapeHtml(busquedaFiltro.trim()) + '"' : ""}</div>`;
 
-  cont.innerHTML = nota + paginado.map((q, i) => {
+  cont.innerHTML = nota + contador + paginado.map((q, i) => {
     const idx = inicio + i; // índice real en la lista completa
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
@@ -1003,11 +1051,114 @@ function paginadorHTML(total, totalPaginas){
 }
 
 function cambiarPagina(p){
-  const totalPaginas = Math.max(1, Math.ceil(cuestionariosCache.length / POR_PAGINA));
+  const totalPaginas = Math.max(1, Math.ceil(listadoFiltrado().length / POR_PAGINA));
   if (p < 1 || p > totalPaginas) return;
   paginaActual = p;
   listarMisCuestionarios();
   document.getElementById("listaModal").scrollTop = 0;
+}
+
+/* ===== Buscador con autocompletado de la lista ===== */
+const filtroInput = document.getElementById("filtroBusqueda");
+const filtroResults = document.getElementById("filtroResults");
+
+if (filtroInput) {
+  filtroInput.addEventListener("input", () => {
+    busquedaFiltro = filtroInput.value;
+    paginaActual = 1;
+    listarMisCuestionarios();
+    renderSugerencias();
+  });
+
+  filtroInput.addEventListener("focus", renderSugerencias);
+}
+
+function renderSugerencias(){
+  if (!filtroResults) return;
+  const q = filtroInput.value.trim().toLowerCase();
+  if (!q) { filtroResults.classList.remove("show"); filtroResults.innerHTML = ""; return; }
+  const nombres = [...new Set(
+    cuestionariosCache
+      .map(i => (i.data && (i.data.razonSocial || i.data.nombreComercial)) || i.cliente)
+      .filter(Boolean)
+  )].filter(n => n.toLowerCase().includes(q)).slice(0,8);
+  filtroResults.innerHTML = nombres.length
+    ? nombres.map(n => `<div class="fr" data-nombre="${escapeHtml(n)}">🔎 ${escapeHtml(n)}</div>`).join("")
+    : `<div class="fr none">Sin coincidencias</div>`;
+  filtroResults.classList.add("show");
+}
+
+if (filtroResults) {
+  filtroResults.addEventListener("click", (e) => {
+    const el = e.target.closest(".fr[data-nombre]");
+    if (!el) return;
+    filtroInput.value = el.dataset.nombre;
+    busquedaFiltro = el.dataset.nombre;
+    filtroResults.classList.remove("show");
+    paginaActual = 1;
+    listarMisCuestionarios();
+  });
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".filtro-search")) {
+    if (filtroResults) filtroResults.classList.remove("show");
+  }
+});
+
+/* ===== Exportar a Excel (solo admin) ===== */
+function exportarExcel(){
+  if (typeof XLSX === "undefined") {
+    toast("La librería de Excel no cargó. Revisa tu conexión e intenta de nuevo", "error");
+    return;
+  }
+  if (!cuestionariosCache.length) {
+    toast("No hay cuestionarios para exportar", "error");
+    return;
+  }
+  const filas = cuestionariosCache.map(q => {
+    const d = q.data || {};
+    return {
+      "Razón Social": d.razonSocial || "",
+      "Nombre Comercial": d.nombreComercial || "",
+      "RFC": d.rfc || "",
+      "Giro del Negocio": d.giroDelNegocio || "",
+      "Nombre del Comprador": d.nombreComprador || "",
+      "Teléfono": d.telefono || "",
+      "Correo Electrónico": d.correoElectronico || "",
+      "Ciudad / Ruta": d.ciudadRuta || "",
+      "Puesto": d.puesto || "",
+      "Consumo (Kg/mes)": d.consumoActual || "",
+      "Consumo Total (Kg/mes)": d.consumoTotal || "",
+      "Meses Estacionalidad": d.mesesEstacionalidad || "",
+      "Presentación 1": d.presentacion1 || "",
+      "Presentación 2": d.presentacion2 || "",
+      "Presentación 3": d.presentacion3 || "",
+      "Camarón (%)": d.proteinaCamaron || "",
+      "Tilapia (%)": d.proteinaTilapia || "",
+      "Segmento": d.segmento || "",
+      "Competencia (%)": d.participacionCompetencia || "",
+      "Proveedor Competencia": d.proveedorCompetencia || "",
+      "Facturación Mensual": d.facturacionMensual || "",
+      "Condición de Compra": d.condicionCompra || "",
+      "Establecimiento": d.establecimiento || "",
+      "Frecuencia": d.frecuencia || "",
+      "Días de Recepción": d.diasRecepcion || "",
+      "Horario Recepción": d.horarioRecepcion || "",
+      "Volumen por Entrega (Kg)": d.volumenPromedio || "",
+      "Ubicación Entrega": d.ubicacionEntrega || "",
+      "Requerimientos Especiales": d.requerimientosEspeciales || "",
+      "Comentarios": d.comentarios || "",
+      "Fecha Captura": d.fechaCaptura || ""
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(filas);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Cuestionarios");
+  const hoy = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, "cuestionarios_acuicultura_" + hoy + ".xlsx");
+  toast("Excel descargado: " + filas.length + " cuestionarios", "ok");
 }
 
 /* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
@@ -1157,7 +1308,6 @@ function toast(msg, type){
 
 /* =========================================================
    ENVÍO: validación estricta de obligatorios + guardado
-   (el token nunca bloquea el guardado)
    ========================================================= */
 document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1312,6 +1462,8 @@ function aplicarPermisos(){
   const el = id => document.getElementById(id);
   if (el("btnAgregarCliente"))   el("btnAgregarCliente").style.display   = p.agregarCliente   ? "" : "none";
   if (el("btnMisCuestionarios")) el("btnMisCuestionarios").style.display = p.misCuestionarios ? "" : "none";
+  // Excel masivo: solo admin
+  if (el("btnExportarExcel"))    el("btnExportarExcel").style.display    = usuarioActual.rol === "admin" ? "" : "none";
 }
 
 function mostrarUsuario(){
@@ -1338,6 +1490,7 @@ iniciarSesionSupabase();
 </script>
 </body>
 </html>
+
 
 
 
