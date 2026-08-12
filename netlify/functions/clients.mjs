@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // Endpoint: /api/clients
 // GET    -> devuelve arreglo con todos los clientes guardados en Supabase
-// POST   -> guarda/actualiza un cliente (usa RFC como llave única)
+// POST   -> guarda/actualiza un cliente (usa RFC para saber si ya existe)
 // DELETE -> elimina un cliente por RFC (?rfc=...)
 
 const supabase = createClient(
@@ -10,16 +10,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-function aFormato(c) {
-  return {
-    rfc: c.rfc,
-    razonSocial: c.razon_social,
-    giroDelNegocio: c.giro_negocio,
-    nombreComprador: c.comprador,
-    telefono: c.telefono,
-    nombreComercial: c.nombre_comercial,
-    ciudadRuta: c.ruta,
-  };
+function limpio(v) {
+  return (v || "").toString().trim();
 }
 
 export default async (req) => {
@@ -27,12 +19,12 @@ export default async (req) => {
     const { data, error } = await supabase
       .from("clientes")
       .select("*")
-      .order("razon_social", { ascending: true });
+      .order("razonSocial", { ascending: true });
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
-    return new Response(JSON.stringify((data || []).map(aFormato)), {
+    return new Response(JSON.stringify(data || []), {
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -45,38 +37,57 @@ export default async (req) => {
       return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 });
     }
 
-    const rfc = (body.rfc || "").trim().toUpperCase();
+    const rfc = limpio(body.rfc).toUpperCase();
     if (!rfc) {
       return new Response(JSON.stringify({ error: "El RFC es obligatorio" }), { status: 400 });
     }
 
     const row = {
       rfc,
-      razon_social: (body.razonSocial || "").trim(),
-      giro_negocio: (body.giroDelNegocio || "").trim(),
-      comprador: (body.nombreComprador || "").trim(),
-      telefono: (body.telefono || "").trim(),
-      nombre_comercial: (body.nombreComercial || "").trim(),
-      ruta: (body.ciudadRuta || "").trim(),
+      razonSocial: limpio(body.razonSocial),
+      giroDelNegocio: limpio(body.giroDelNegocio),
+      nombreComprador: limpio(body.nombreComprador),
+      telefono: limpio(body.telefono),
+      nombreComercial: limpio(body.nombreComercial),
+      ciudadRuta: limpio(body.ciudadRuta),
     };
 
-    const { data, error } = await supabase
+    // No hay restricción única sobre rfc en la tabla, así que revisamos
+    // manualmente si ya existe un cliente con ese RFC para actualizar
+    // en vez de duplicar.
+    const { data: existente } = await supabase
       .from("clientes")
-      .upsert(row, { onConflict: "rfc" })
-      .select()
-      .single();
+      .select("id")
+      .eq("rfc", rfc)
+      .maybeSingle();
+
+    let data, error;
+    if (existente) {
+      ({ data, error } = await supabase
+        .from("clientes")
+        .update(row)
+        .eq("id", existente.id)
+        .select()
+        .single());
+    } else {
+      ({ data, error } = await supabase
+        .from("clientes")
+        .insert(row)
+        .select()
+        .single());
+    }
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
-    return new Response(JSON.stringify({ ok: true, client: aFormato(data) }), {
+    return new Response(JSON.stringify({ ok: true, client: data }), {
       headers: { "Content-Type": "application/json" },
     });
   }
 
   if (req.method === "DELETE") {
     const url = new URL(req.url);
-    const rfc = (url.searchParams.get("rfc") || "").trim().toUpperCase();
+    const rfc = limpio(url.searchParams.get("rfc")).toUpperCase();
     if (!rfc) {
       return new Response(JSON.stringify({ error: "Falta RFC" }), { status: 400 });
     }
