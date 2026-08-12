@@ -73,6 +73,11 @@
   .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.35);}
   .topbar .btn.ghost:hover{background:rgba(255,255,255,.22);}
   .topbar .btn .badge{background:var(--accent);color:#3b2f00;border-radius:99px;padding:1px 8px;font-size:.72rem;font-weight:800;}
+  .user-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);
+    color:#fff;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:99px;
+  }
   .topbar::after{
     content:"";position:absolute;left:0;right:0;bottom:-1px;height:38px;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48'%3E%3Cpath fill='%23f4f7f9' d='M0,24 C180,46 360,2 540,20 C720,38 900,6 1080,20 C1260,34 1350,10 1440,22 L1440,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom center/1440px 38px;
@@ -153,19 +158,8 @@
   .flash{animation:flashBg 1.2s ease;}
   @keyframes flashBg{0%{background:#cffafe;box-shadow:0 0 0 4px rgba(14,116,144,.18);}100%{background:#fff;box-shadow:0 0 0 0 transparent;}}
 
-  /* ===== Campos obligatorios: resaltado de faltantes ===== */
-  .field input.falta-dato,
-  .field select.falta-dato,
-  .field textarea.falta-dato{
-    border-color:var(--error);
-    box-shadow:0 0 0 4px rgba(220,38,38,.12);
-    animation:shake .3s ease;
-  }
-  @keyframes shake{
-    0%,100%{transform:translateX(0);}
-    25%{transform:translateX(-4px);}
-    75%{transform:translateX(4px);}
-  }
+  /* Campos obligatorios */
+  .campo-faltante{border-color:var(--error)!important;box-shadow:0 0 0 4px rgba(220,38,38,.12)!important;}
 
   /* Píldoras días */
   .checks{display:flex;flex-wrap:wrap;gap:10px;}
@@ -363,7 +357,9 @@
   }
 </style>
 </head>
-<body>
+<body style="opacity:0;transition:opacity .35s ease;">
+
+<div id="fatalError" style="display:none;background:#fef2f2;color:#b91c1c;padding:14px;text-align:center;font-size:.85rem;border-bottom:1px solid #fecaca;"></div>
 
 <header class="topbar">
   <div class="inner">
@@ -372,12 +368,14 @@
       <div>
         <h1>Acción Acuicultura</h1>
         <p class="sub">Conocimiento Profundo del Cliente · Cuestionario</p>
-      
+        <span class="demo-badge">● Modo demo · datos en este navegador</span>
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <span class="user-badge" id="userBadge" style="display:none;"></span>
       <button type="button" class="btn ghost" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
       <button type="button" class="btn" onclick="openClientModal()">+ Agregar cliente</button>
+      <button type="button" class="btn ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </div>
 </header>
@@ -407,11 +405,11 @@
           <div class="client-results" id="clientResults"></div>
         </div>
         <div class="field">
-          <label>Razón Social *</label>
+          <label>Razón Social</label>
           <input type="text" name="razonSocial" id="razonSocial">
         </div>
         <div class="field">
-          <label>Giro del Negocio *</label>
+          <label>Giro del Negocio</label>
           <select name="giroDelNegocio" id="giroDelNegocio"></select>
         </div>
         <div class="field">
@@ -423,7 +421,7 @@
           <input type="text" name="telefono" id="telefono">
         </div>
         <div class="field">
-          <label>RFC *</label>
+          <label>RFC</label>
           <input type="text" name="rfc" id="rfc">
         </div>
         <div class="field">
@@ -492,7 +490,7 @@
           <input type="number" min="0" step="1" name="consumoTotal">
         </div>
         <div class="field">
-          <label>Segmento *</label>
+          <label>Segmento</label>
           <select name="segmento" id="segmento"></select>
         </div>
         <div class="field">
@@ -532,7 +530,7 @@
       <p class="desc">Frecuencias, horarios y requerimientos de entrega.</p>
       <div class="grid">
         <div class="field">
-          <label>Frecuencia *</label>
+          <label>Frecuencia</label>
           <select name="frecuencia" id="frecuencia"></select>
         </div>
         <div class="field">
@@ -564,7 +562,7 @@
       <p class="desc">Revisa un resumen en vivo y agrega notas libres del levantamiento.</p>
       <div class="summary" id="resumen"></div>
       <div class="field">
-        <textarea name="comentarios" rows="5" placeholder="Escribe aquí cualquier observación…"></textarea>
+        <textarea name="comentarios" rows="5" placeholder="Escribe aquí cualquier observación… (opcional)"></textarea>
       </div>
     </section>
 
@@ -586,7 +584,7 @@
     <div class="modal-head">
       <div>
         <h3>Agregar cliente nuevo</h3>
-        <p class="sub">Se guarda en la base local de prueba por ahora.</p>
+        <p class="sub">Se guarda en la base de datos.</p>
       </div>
       <button class="modal-close" onclick="closeClientModal()">&times;</button>
     </div>
@@ -648,6 +646,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
 /* =========================================================
    LISTAS DE COMBOS
@@ -691,7 +691,10 @@ function llenarChecks(){
     `<label class="day-pill"><input type="checkbox" value="${d}" class="dia-check"><span class="ck">✓</span> ${d}</label>`
   ).join("");
   cont.querySelectorAll(".dia-check").forEach(cb => {
-    cb.addEventListener("change", () => cb.closest(".day-pill").classList.toggle("on", cb.checked));
+    cb.addEventListener("change", () => {
+      cb.closest(".day-pill").classList.toggle("on", cb.checked);
+      document.getElementById("diasRecepcion").classList.remove("campo-faltante");
+    });
   });
 }
 ["giroDelNegocio","segmento","condicionCompra","frecuencia","establecimiento"].forEach(c => llenarSelect(c, LISTAS[c]));
@@ -761,7 +764,8 @@ nextBtn.addEventListener("click", () => goStep(current+1));
 document.getElementById("clearBtn").addEventListener("click", () => {
   if(confirm("¿Seguro que quieres limpiar todo el cuestionario?")) resetForm();
 });
-document.getElementById("cuestionarioForm").addEventListener("input", () => {
+document.getElementById("cuestionarioForm").addEventListener("input", (e) => {
+  if (e.target) e.target.classList.remove("campo-faltante");
   if(current === total-1) renderResumen();
 });
 
@@ -771,7 +775,7 @@ document.getElementById("cuestionarioForm").addEventListener("input", () => {
 let clientes = [];
 async function cargarClientes(){
   try{
-    const res = await fetch("/api/clients");
+    const res = await fetch("/api/clients", { headers: await authHeaders() });
     if(res.ok){
       const data = await res.json();
       clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
@@ -852,7 +856,7 @@ async function saveNewClient(){
   try{
     const res = await fetch("/api/clients", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: await authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(nuevo)
     });
     if(res.ok) guardado = true;
@@ -890,7 +894,7 @@ let origenCuestionarios = "local";
 
 async function cargarCuestionarios(){
   try{
-    const res = await fetch("/api/cuestionarios");
+    const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
     if(res.ok){
       const rows = await res.json();
       cuestionariosCache = rows.map(r => ({
@@ -919,7 +923,7 @@ function actualizarBadge(){
 
 async function openMisCuestionarios(){
   document.getElementById("listaModal").classList.add("show");
-  volverAlListado(); // siempre entra mostrando la lista, nunca un detalle viejo
+  volverAlListado();
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
   await cargarCuestionarios();
   listarMisCuestionarios();
@@ -954,7 +958,6 @@ function listarMisCuestionarios(){
   }).join("");
 }
 
-/* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
 function campoPapel(label, val){
   const v = (val === undefined || val === null) ? "" : String(val).trim();
   return `<div class="paper-field">
@@ -1068,19 +1071,17 @@ function verCuestionario(idx){
   document.getElementById("verDetalle").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "block";
   document.getElementById("listaSub").textContent = "Vista de solo lectura del cuestionario";
-  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio del documento
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
 function volverAlListado(){
   document.getElementById("verDetalle").style.display = "none";
   document.getElementById("listaCuestionarios").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "none";
-  listarMisCuestionarios(); // repone el texto correcto del subtítulo (db o local)
-  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio de la lista
+  listarMisCuestionarios();
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
-/* Botón "← Volver" del encabezado: si estás viendo el detalle, regresa a la lista;
-   si ya estás en la lista, ahí sí cierra todo el panel. Un solo botón, comportamiento lógico. */
 function backFromLista(){
   const enDetalle = document.getElementById("verDetalle").style.display !== "none";
   if(enDetalle){ volverAlListado(); }
@@ -1102,83 +1103,94 @@ function toast(msg, type){
 }
 
 /* =========================================================
-   ENVÍO: validación estricta de obligatorios + guardado.
-   No se guarda si faltan campos obligatorios; se avisa qué falta.
+   VALIDACIÓN: todos los campos obligatorios excepto comentarios
    ========================================================= */
+function validarFormulario(){
+  const faltantes = [];
+  document.querySelectorAll("#cuestionarioForm input, #cuestionarioForm select, #cuestionarioForm textarea").forEach(c => {
+    if (c.name === "comentarios") return; // comentarios = opcional
+    if (!c.value || !String(c.value).trim()) faltantes.push(c);
+  });
+  if (!document.querySelectorAll(".dia-check:checked").length) faltantes.push(document.getElementById("diasRecepcion"));
+  return faltantes;
+}
+function marcarFaltantes(faltantes){
+  document.querySelectorAll(".campo-faltante").forEach(el => el.classList.remove("campo-faltante"));
+  faltantes.forEach(el => { if (el) el.classList.add("campo-faltante"); });
+  const primero = faltantes[0];
+  if (primero && primero.closest){
+    const paso = primero.closest(".step");
+    if (paso && !paso.classList.contains("active")) goStep(+paso.dataset.step);
+  }
+}
+
+/* =========================================================
+   ENVÍO: guarda en la base (vía función de Netlify) y respalda
+   siempre en localStorage para "Mis cuestionarios"
+   ========================================================= */
+function guardarDemo(data){
+  try{
+    const key = "cuestionarios_demo";
+    const list = JSON.parse(localStorage.getItem(key) || "[]");
+    list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", data });
+    localStorage.setItem(key, JSON.stringify(list));
+    actualizarBadge();
+  }catch(e){}
+}
+
 document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // 1. Limpiar marcas anteriores
-  document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
-
-  // 2. Campos obligatorios (agrega o quita a tu gusto)
-  const importantes = {
-    razonSocial: "Razón Social",
-    rfc: "RFC",
-    giroDelNegocio: "Giro del Negocio",
-    segmento: "Segmento",
-    frecuencia: "Frecuencia"
-  };
-
-  // 3. Revisar qué falta
-  const faltantes = [];
-  Object.entries(importantes).forEach(([name, label]) => {
-    const el = document.querySelector(`[name="${name}"]`);
-    if (el && !el.value.trim()) {
-      el.classList.add("falta-dato");
-      faltantes.push(label);
-    }
-  });
-
-  // 4. Si falta algo → NO se guarda, se avisa y se va al paso donde está lo faltante
-  if (faltantes.length) {
-    toast("Faltan: " + faltantes.join(", "), "error");
-    const pasoDeCampo = {
-      razonSocial:0, rfc:0, giroDelNegocio:0, nombreComprador:0, telefono:0,
-      nombreComercial:0, ciudadRuta:0, puesto:0, correoElectronico:0, fechaCaptura:0,
-      consumoActual:1, mesesEstacionalidad:1, presentacion1:1, presentacion2:1,
-      presentacion3:1, proteinaCamaron:1, proteinaTilapia:1, consumoTotal:1,
-      segmento:1, participacionCompetencia:1, proveedorCompetencia:1,
-      facturacionMensual:2, establecimiento:2, condicionCompra:2,
-      frecuencia:3, horarioRecepcion:3, volumenPromedio:3, ubicacionEntrega:3,
-      requerimientosEspeciales:3
-    };
-    const primerFaltante = Object.keys(importantes).find(name =>
-      document.querySelector(`[name="${name}"]`)?.classList.contains("falta-dato")
-    );
-    goStep(pasoDeCampo[primerFaltante] ?? 0);
-    return; // 🚫 NO guarda
+  // VALIDACIÓN: todos los campos obligatorios excepto comentarios
+  const faltantes = validarFormulario();
+  if (faltantes.length){
+    marcarFaltantes(faltantes);
+    toast("⚠ Completa los campos marcados en rojo — todos son obligatorios (comentarios opcional)", "error");
+    return;
   }
 
-  // 5. Todo completo → guardado normal
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
-  const data = {};
-  new FormData(e.target).forEach((value, key) => { data[key] = value; });
-  const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
-  data.diasRecepcion = dias.join(", ");
+  try{
+    const data = {};
+    new FormData(e.target).forEach((value, key) => { data[key] = value; });
+    const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
+    data.diasRecepcion = dias.join(", ");
 
-  guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+    // Quién capturó (UUID del usuario de Supabase)
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) data.creado_por = session.user.id;
 
-  try {
-    const res = await fetch("/api/cuestionarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "red");
+    guardarDemo(data); // respaldo local, siempre disponible
+
+    // Timeout de 15 s para que NUNCA se quede cargando
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+
+    try{
+      const res = await fetch("/api/cuestionarios", {
+        method: "POST",
+        headers: await authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(data),
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      if(!res.ok){
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "red");
+      }
+      toast("Cuestionario guardado en la base de datos", "ok");
+    }catch(err){
+      toast("Guardado en este navegador (modo demo) · ya puedes verlo en 'Mis cuestionarios'", "ok");
     }
-    toast("Cuestionario guardado en la base de datos", "ok");
-  } catch (err) {
-    toast("Guardado en este navegador · ya puedes verlo en 'Mis cuestionarios'", "ok");
-  } finally {
+  }catch(err){
+    toast("Error inesperado: " + (err && err.message ? err.message : err), "error");
+  }finally{
+    // SIEMPRE se resetea el botón, pase lo que pase
     submitBtn.disabled = false;
     submitBtn.textContent = "💾 Guardar cuestionario";
     resetForm();
-    document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   }
 });
 
@@ -1190,12 +1202,82 @@ function resetForm(){
     c.closest(".day-pill").classList.remove("on");
   });
   searchInput.value = "";
+  document.querySelectorAll(".campo-faltante").forEach(el => el.classList.remove("campo-faltante"));
   current = 0;
   renderSteps();
 }
 
+/* =========================================================
+   AUTENTICACIÓN · SUPABASE (sesión + rol + salir)
+   ========================================================= */
+async function authHeaders(extra = {}){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
+}
+
+async function tieneRolValido(userId){
+  const { data, error } = await supabaseClient
+    .from("usuarios")
+    .select("rol, activo")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data || !data.activo) return false;
+  return ["comercial","oficina","admin"].includes(data.rol);
+}
+
+function mostrarUsuario(session){
+  const badge = document.getElementById("userBadge");
+  if (badge){
+    badge.style.display = "inline-flex";
+    badge.textContent = "👤 " + (session.user.email || "");
+  }
+}
+
+async function guardarSesion(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session){ window.location.href = "login.html"; return; }
+  const ok = await tieneRolValido(session.user.id);
+  if (!ok){
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+    return;
+  }
+  mostrarUsuario(session);
+  document.body.style.opacity = "1"; // revela la app
+}
+
+async function logout(){
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+// Si la sesión expira o se cierra en otra pestaña → vuelve al login
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") window.location.href = "login.html";
+});
+
+function fatal(msg){
+  const el = document.getElementById("fatalError");
+  if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
+  document.body.style.opacity = "1"; // nunca dejar la página en blanco
+}
+
+/* =========================================================
+   INICIO
+   ========================================================= */
 renderSteps();
 cargarCuestionarios();
+
+(async () => {
+  try{
+    await guardarSesion();
+    document.body.style.opacity = "1";
+  }catch(e){
+    console.error("Error al iniciar el cuestionario:", e);
+    fatal("No se pudo cargar: " + (e && e.message ? e.message : e) +
+      " — Revisa que config.js exista en la misma carpeta con tu URL y anon key reales (sin 'TU_').");
+  }
+})();
 </script>
 </body>
 </html>
