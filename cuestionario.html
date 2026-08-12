@@ -305,6 +305,10 @@
   .q-row .q-info small{color:var(--muted);font-size:.78rem;}
   .empty-state{text-align:center;color:var(--muted);padding:32px 10px;font-size:.9rem;line-height:1.6;}
 
+  /* ===== Paginador ===== */
+  .paginador{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .paginador .info{font-size:.8rem;color:var(--muted);font-weight:700;}
+
   /* ===== Vista de solo lectura estilo formato en papel ===== */
   .paper{
     border:1px solid var(--border);border-radius:14px;
@@ -895,6 +899,8 @@ function getCuestionariosLocal(){
 /* Lista que se muestra en pantalla ahora mismo, y de dónde vino ("db" o "local") */
 let cuestionariosCache = [];
 let origenCuestionarios = "local";
+let paginaActual = 1;
+const POR_PAGINA = 5; // cuestionarios por página
 
 async function cargarCuestionarios(){
   try{
@@ -904,17 +910,30 @@ async function cargarCuestionarios(){
       cuestionariosCache = rows.map(r => ({
         fecha: r.guardadoEn || new Date().toISOString(),
         cliente: r.razonSocial || "(sin cliente)",
+        creadoPor: r.creadoPor || (r.data && r.data.creadoPor) || null,
         data: r
       }));
       origenCuestionarios = "db";
+      filtrarPorRol();
       actualizarBadge();
       return cuestionariosCache;
     }
   }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
   cuestionariosCache = getCuestionariosLocal();
   origenCuestionarios = "local";
+  filtrarPorRol();
   actualizarBadge();
   return cuestionariosCache;
+}
+
+/* Solo el admin ve todos; oficina y comercial solo ven los suyos */
+function filtrarPorRol(){
+  if (usuarioActual && usuarioActual.rol !== "admin") {
+    cuestionariosCache = cuestionariosCache.filter(q =>
+      (q.creadoPor && q.creadoPor === usuarioActual.id) ||
+      (q.data && q.data.creadoPor === usuarioActual.id)
+    );
+  }
 }
 
 function contarRespuestas(data){
@@ -927,7 +946,8 @@ function actualizarBadge(){
 
 async function openMisCuestionarios(){
   document.getElementById("listaModal").classList.add("show");
-  volverAlListado(); // siempre entra mostrando la lista, nunca un detalle viejo
+  volverAlListado();
+  paginaActual = 1; // siempre empieza en la página 1
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
   await cargarCuestionarios();
   listarMisCuestionarios();
@@ -937,17 +957,28 @@ async function openMisCuestionarios(){
 function listarMisCuestionarios(){
   const list = cuestionariosCache;
   const cont = document.getElementById("listaCuestionarios");
+  const soloMios = usuarioActual && usuarioActual.rol !== "admin";
+
   document.getElementById("listaSub").textContent = origenCuestionarios === "db"
-    ? "Solo lectura · todas las respuestas guardadas en la base de datos"
-    : "Solo lectura · guardados en este navegador";
+    ? (soloMios ? "Solo lectura · tus cuestionarios guardados" : "Solo lectura · todas las respuestas guardadas en la base de datos")
+    : (soloMios ? "Solo lectura · tus cuestionarios en este navegador" : "Solo lectura · guardados en este navegador");
+
   if(!list.length){
     cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
     return;
   }
+
+  const totalPaginas = Math.max(1, Math.ceil(list.length / POR_PAGINA));
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  const inicio = (paginaActual - 1) * POR_PAGINA;
+  const paginado = list.slice(inicio, inicio + POR_PAGINA);
+
   const nota = origenCuestionarios === "local"
     ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
     : "";
-  cont.innerHTML = nota + list.map((q, i) => {
+
+  cont.innerHTML = nota + paginado.map((q, i) => {
+    const idx = inicio + i; // índice real en la lista completa
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -957,9 +988,26 @@ function listarMisCuestionarios(){
         <b>${escapeHtml(q.cliente || "(sin cliente)")}</b>
         <small>${fechaTxt} · ${resp} respuestas</small>
       </div>
-      <button type="button" class="btn ghost small" onclick="verCuestionario(${i})">👁 Ver</button>
+      <button type="button" class="btn ghost small" onclick="verCuestionario(${idx})">👁 Ver</button>
     </div>`;
-  }).join("");
+  }).join("") + paginadorHTML(list.length, totalPaginas);
+}
+
+function paginadorHTML(total, totalPaginas){
+  if (totalPaginas <= 1) return "";
+  return `<div class="paginador">
+    <button type="button" class="btn ghost small" ${paginaActual === 1 ? "disabled" : ""} onclick="cambiarPagina(${paginaActual - 1})">← Anterior</button>
+    <span class="info">Página ${paginaActual} de ${totalPaginas} · ${total} cuestionarios</span>
+    <button type="button" class="btn ghost small" ${paginaActual === totalPaginas ? "disabled" : ""} onclick="cambiarPagina(${paginaActual + 1})">Siguiente →</button>
+  </div>`;
+}
+
+function cambiarPagina(p){
+  const totalPaginas = Math.max(1, Math.ceil(cuestionariosCache.length / POR_PAGINA));
+  if (p < 1 || p > totalPaginas) return;
+  paginaActual = p;
+  listarMisCuestionarios();
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
 /* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
@@ -1163,6 +1211,7 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   new FormData(e.target).forEach((value, key) => { data[key] = value; });
   const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
   data.diasRecepcion = dias.join(", ");
+  data.creadoPor = usuarioActual ? usuarioActual.id : ""; // ← quién lo capturó
 
   guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
 
@@ -1191,7 +1240,7 @@ function guardarDemo(data){
   try{
     const key = "cuestionarios_demo";
     const list = JSON.parse(localStorage.getItem(key) || "[]");
-    list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", data });
+    list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", creadoPor: data.creadoPor || null, data });
     localStorage.setItem(key, JSON.stringify(list));
     actualizarBadge();
   }catch(e){}
@@ -1218,7 +1267,7 @@ let usuarioActual = null; // { id, email, rol }
 const PERMISOS = {
   admin:     { agregarCliente: true,  misCuestionarios: true,  formulario: true },
   oficina:   { agregarCliente: false, misCuestionarios: true,  formulario: true },
-  comercial: { agregarCliente: false, misCuestionarios: false, formulario: true }
+  comercial: { agregarCliente: false, misCuestionarios: true,  formulario: true }
 };
 
 async function iniciarSesionSupabase(){
