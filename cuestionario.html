@@ -1157,6 +1157,7 @@ function toast(msg, type){
 
 /* =========================================================
    ENVÍO: validación estricta de obligatorios + guardado
+   (el token nunca bloquea el guardado)
    ========================================================= */
 document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1207,23 +1208,29 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
-  const data = {};
-  new FormData(e.target).forEach((value, key) => { data[key] = value; });
-  const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
-  data.diasRecepcion = dias.join(", ");
-  data.creadoPor = usuarioActual ? usuarioActual.id : ""; // respaldo local
-
-  guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
-
-  // Obtener el token de sesión para que el servidor sepa quién guarda (seguro)
-  const { data: { session } } = await supabaseClient.auth.getSession();
-
   try {
+    const data = {};
+    new FormData(e.target).forEach((value, key) => { data[key] = value; });
+    const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
+    data.diasRecepcion = dias.join(", ");
+    data.creadoPor = (usuarioActual && usuarioActual.id) || "";
+
+    guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+
+    // Token de sesión (opcional, nunca bloquea el guardado)
+    let token = "";
+    try {
+      if (typeof supabaseClient !== "undefined") {
+        const s = await supabaseClient.auth.getSession();
+        token = s && s.data && s.data.session ? s.data.session.access_token : "";
+      }
+    } catch (e) { token = ""; }
+
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": session ? "Bearer " + session.access_token : ""
+        ...(token ? { "Authorization": "Bearer " + token } : {})
       },
       body: JSON.stringify(data)
     });
@@ -1277,24 +1284,27 @@ const PERMISOS = {
 };
 
 async function iniciarSesionSupabase(){
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) { window.location.href = "login.html"; return; }
+  try {
+    if (typeof supabaseClient === "undefined") return; // sin Supabase: modo demo
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "login.html"; return; }
 
-  const { data } = await supabaseClient
-    .from("usuarios")
-    .select("rol, activo")
-    .eq("id", session.user.id)
-    .maybeSingle();
+    const { data } = await supabaseClient
+      .from("usuarios")
+      .select("rol, activo")
+      .eq("id", session.user.id)
+      .maybeSingle();
 
-  if (!data || !data.activo || !PERMISOS[data.rol]) {
-    await supabaseClient.auth.signOut();
-    window.location.href = "login.html";
-    return;
-  }
+    if (!data || !data.activo || !PERMISOS[data.rol]) {
+      await supabaseClient.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
 
-  usuarioActual = { id: session.user.id, email: session.user.email, rol: data.rol };
-  aplicarPermisos();
-  mostrarUsuario();
+    usuarioActual = { id: session.user.id, email: session.user.email, rol: data.rol };
+    aplicarPermisos();
+    mostrarUsuario();
+  } catch (e) { /* sin Supabase: modo demo, la app sigue funcionando */ }
 }
 
 function aplicarPermisos(){
@@ -1313,7 +1323,9 @@ function mostrarUsuario(){
 }
 
 async function logout(){
-  await supabaseClient.auth.signOut();
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (e) {}
   window.location.href = "login.html";
 }
 
@@ -1326,4 +1338,5 @@ iniciarSesionSupabase();
 </script>
 </body>
 </html>
+
 
