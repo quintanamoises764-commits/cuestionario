@@ -689,7 +689,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
    LISTAS DE COMBOS
@@ -1106,7 +1106,7 @@ document.addEventListener("click", e => {
   }
 });
 
-/* ===== Exportar a Excel (solo admin) ===== */
+/* ===== Exportar a Excel con formato (solo admin) ===== */
 function exportarExcel(){
   if (typeof XLSX === "undefined") {
     toast("La librería de Excel no cargó. Revisa tu conexión e intenta de nuevo", "error");
@@ -1116,49 +1116,116 @@ function exportarExcel(){
     toast("No hay cuestionarios para exportar", "error");
     return;
   }
-  const filas = cuestionariosCache.map(q => {
+
+  // [Título de columna, función que extrae el valor]
+  const campos = [
+    ["Razón Social", d => d.razonSocial],
+    ["Nombre Comercial", d => d.nombreComercial],
+    ["RFC", d => d.rfc],
+    ["Giro del Negocio", d => d.giroDelNegocio],
+    ["Nombre del Comprador", d => d.nombreComprador],
+    ["Teléfono", d => d.telefono],
+    ["Correo Electrónico", d => d.correoElectronico],
+    ["Ciudad / Ruta", d => d.ciudadRuta],
+    ["Puesto", d => d.puesto],
+    ["Consumo (Kg/mes)", d => d.consumoActual],
+    ["Consumo Total (Kg/mes)", d => d.consumoTotal],
+    ["Meses Estacionalidad", d => d.mesesEstacionalidad],
+    ["Presentación 1", d => d.presentacion1],
+    ["Presentación 2", d => d.presentacion2],
+    ["Presentación 3", d => d.presentacion3],
+    ["Camarón (%)", d => d.proteinaCamaron],
+    ["Tilapia (%)", d => d.proteinaTilapia],
+    ["Segmento", d => d.segmento],
+    ["Competencia (%)", d => d.participacionCompetencia],
+    ["Proveedor Competencia", d => d.proveedorCompetencia],
+    ["Facturación Mensual", d => d.facturacionMensual],
+    ["Condición de Compra", d => d.condicionCompra],
+    ["Establecimiento", d => d.establecimiento],
+    ["Frecuencia", d => d.frecuencia],
+    ["Días de Recepción", d => d.diasRecepcion],
+    ["Horario Recepción", d => d.horarioRecepcion],
+    ["Volumen por Entrega (Kg)", d => d.volumenPromedio],
+    ["Ubicación Entrega", d => d.ubicacionEntrega],
+    ["Requerimientos Especiales", d => d.requerimientosEspeciales],
+    ["Comentarios", d => d.comentarios],
+    ["Fecha Captura", d => d.fechaCaptura]
+  ];
+  const N = campos.length;
+  const hoy = new Date().toISOString().slice(0,10);
+
+  // 1) Matriz: título + encabezados + datos
+  const aoa = [];
+  const filaTitulo = new Array(N).fill("");
+  filaTitulo[0] = "Acción Acuicultura · Conocimiento Profundo del Cliente";
+  aoa.push(filaTitulo);
+  aoa.push(campos.map(c => c[0]));
+  cuestionariosCache.forEach(q => {
     const d = q.data || {};
-    return {
-      "Razón Social": d.razonSocial || "",
-      "Nombre Comercial": d.nombreComercial || "",
-      "RFC": d.rfc || "",
-      "Giro del Negocio": d.giroDelNegocio || "",
-      "Nombre del Comprador": d.nombreComprador || "",
-      "Teléfono": d.telefono || "",
-      "Correo Electrónico": d.correoElectronico || "",
-      "Ciudad / Ruta": d.ciudadRuta || "",
-      "Puesto": d.puesto || "",
-      "Consumo (Kg/mes)": d.consumoActual || "",
-      "Consumo Total (Kg/mes)": d.consumoTotal || "",
-      "Meses Estacionalidad": d.mesesEstacionalidad || "",
-      "Presentación 1": d.presentacion1 || "",
-      "Presentación 2": d.presentacion2 || "",
-      "Presentación 3": d.presentacion3 || "",
-      "Camarón (%)": d.proteinaCamaron || "",
-      "Tilapia (%)": d.proteinaTilapia || "",
-      "Segmento": d.segmento || "",
-      "Competencia (%)": d.participacionCompetencia || "",
-      "Proveedor Competencia": d.proveedorCompetencia || "",
-      "Facturación Mensual": d.facturacionMensual || "",
-      "Condición de Compra": d.condicionCompra || "",
-      "Establecimiento": d.establecimiento || "",
-      "Frecuencia": d.frecuencia || "",
-      "Días de Recepción": d.diasRecepcion || "",
-      "Horario Recepción": d.horarioRecepcion || "",
-      "Volumen por Entrega (Kg)": d.volumenPromedio || "",
-      "Ubicación Entrega": d.ubicacionEntrega || "",
-      "Requerimientos Especiales": d.requerimientosEspeciales || "",
-      "Comentarios": d.comentarios || "",
-      "Fecha Captura": d.fechaCaptura || ""
-    };
+    aoa.push(campos.map(c => {
+      const v = c[1](d);
+      return (v === undefined || v === null) ? "" : String(v);
+    }));
   });
 
-  const ws = XLSX.utils.json_to_sheet(filas);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const lastCol = XLSX.utils.encode_col(N - 1);
+
+  // 2) Estilos
+  const bordes = {
+    top:{style:"thin",color:{rgb:"C9D6DE"}}, bottom:{style:"thin",color:{rgb:"C9D6DE"}},
+    left:{style:"thin",color:{rgb:"C9D6DE"}}, right:{style:"thin",color:{rgb:"C9D6DE"}}
+  };
+  const estiloTitulo = {
+    font:{bold:true,sz:14,color:{rgb:"FFFFFF"}},
+    fill:{patternType:"solid",fgColor:{rgb:"0B3C4D"}},
+    alignment:{horizontal:"center",vertical:"center"}
+  };
+  const estiloHeader = {
+    font:{bold:true,sz:10,color:{rgb:"FFFFFF"}},
+    fill:{patternType:"solid",fgColor:{rgb:"0E7490"}},
+    alignment:{horizontal:"center",vertical:"center",wrapText:true},
+    border:bordes
+  };
+  const estiloPar   = { border:bordes, alignment:{vertical:"top",wrapText:true} };
+  const estiloImpar = { border:bordes, alignment:{vertical:"top",wrapText:true}, fill:{patternType:"solid",fgColor:{rgb:"EEF7FA"}} };
+
+  ws["!merges"] = [{ s:{r:0,c:0}, e:{r:0,c:N-1} }];
+
+  const cTitulo = ws["A1"];
+  if (cTitulo) cTitulo.s = estiloTitulo;
+
+  for (let c = 0; c < N; c++) {
+    const cell = ws[XLSX.utils.encode_cell({r:1,c})];
+    if (cell) cell.s = estiloHeader;
+  }
+  for (let r = 2; r < aoa.length; r++) {
+    const estilo = (r % 2 === 0) ? estiloPar : estiloImpar;
+    for (let c = 0; c < N; c++) {
+      const cell = ws[XLSX.utils.encode_cell({r,c})];
+      if (cell) cell.s = estilo;
+    }
+  }
+
+  // 3) Tamaños: altura de título y encabezados + ancho automático de columnas
+  ws["!rows"] = [{ hpt:32 }, { hpt:32 }];
+  ws["!cols"] = campos.map(c => {
+    let maxLen = c[0].length;
+    cuestionariosCache.forEach(q => {
+      const v = c[1](q.data || {});
+      if (v) maxLen = Math.max(maxLen, String(v).length);
+    });
+    return { wch: Math.min(38, Math.max(12, maxLen + 2)) };
+  });
+
+  // 4) Autofiltro sobre los encabezados
+  ws["!autofilter"] = { ref: "A2:" + lastCol + aoa.length };
+
+  // 5) Crear y descargar
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Cuestionarios");
-  const hoy = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, "cuestionarios_acuicultura_" + hoy + ".xlsx");
-  toast("Excel descargado: " + filas.length + " cuestionarios", "ok");
+  toast("Excel descargado: " + cuestionariosCache.length + " cuestionarios", "ok");
 }
 
 /* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
@@ -1490,7 +1557,5 @@ iniciarSesionSupabase();
 </script>
 </body>
 </html>
-
-
 
 
