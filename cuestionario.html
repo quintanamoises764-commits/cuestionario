@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura · Conocimiento Profundo del Cliente</title>
 <style>
   :root{
@@ -73,11 +73,6 @@
   .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.35);}
   .topbar .btn.ghost:hover{background:rgba(255,255,255,.22);}
   .topbar .btn .badge{background:var(--accent);color:#3b2f00;border-radius:99px;padding:1px 8px;font-size:.72rem;font-weight:800;}
-  .user-badge{
-    display:inline-flex;align-items:center;gap:6px;
-    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);
-    color:#fff;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:99px;
-  }
   .topbar::after{
     content:"";position:absolute;left:0;right:0;bottom:-1px;height:38px;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48'%3E%3Cpath fill='%23f4f7f9' d='M0,24 C180,46 360,2 540,20 C720,38 900,6 1080,20 C1260,34 1350,10 1440,22 L1440,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom center/1440px 38px;
@@ -158,6 +153,20 @@
   .flash{animation:flashBg 1.2s ease;}
   @keyframes flashBg{0%{background:#cffafe;box-shadow:0 0 0 4px rgba(14,116,144,.18);}100%{background:#fff;box-shadow:0 0 0 0 transparent;}}
 
+  /* ===== Campos obligatorios: resaltado de faltantes ===== */
+  .field input.falta-dato,
+  .field select.falta-dato,
+  .field textarea.falta-dato{
+    border-color:var(--error);
+    box-shadow:0 0 0 4px rgba(220,38,38,.12);
+    animation:shake .3s ease;
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
+  }
+
   /* Píldoras días */
   .checks{display:flex;flex-wrap:wrap;gap:10px;}
   .day-pill{
@@ -205,7 +214,7 @@
   .chip b{font-weight:800;margin-right:4px;color:#0f766e;}
   .summary .empty{color:var(--muted);font-size:.85rem;}
 
-  /* Botones nav */
+  /* Botones */
   .nav{
     position:sticky;bottom:14px;z-index:40;
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
@@ -214,7 +223,6 @@
     padding:12px 14px;margin-top:6px;
   }
   .nav .grow{flex:1;}
-  .nav-actions{display:flex;align-items:center;gap:10px;}
   .btn{
     display:inline-flex;align-items:center;gap:8px;justify-content:center;
     border:none;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;font-size:.9rem;
@@ -229,7 +237,7 @@
   .btn.link{background:none;color:var(--muted);padding:10px 8px;font-size:.85rem;}
   .btn.link:hover{color:var(--error);}
   .btn.small{padding:8px 14px;font-size:.8rem;border-radius:10px;}
-  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;}
   .btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
 
   /* Toast */
@@ -286,15 +294,13 @@
   .page-head p{margin:2px 0 0;font-size:.76rem;opacity:.85;}
   .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
 
-  /* Lista de cuestionarios y Paginación */
-  .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s; background:#fff;}
+  /* Lista de cuestionarios */
+  .q-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;}
   .q-row:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
   .q-row .q-info{min-width:0;}
   .q-row .q-info b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .q-row .q-info small{color:var(--muted);font-size:.78rem;}
   .empty-state{text-align:center;color:var(--muted);padding:32px 10px;font-size:.9rem;line-height:1.6;}
-  .paginacion{display:flex;align-items:center;justify-content:space-between;padding-top:16px;margin-top:10px;border-top:1px solid var(--border);}
-  .paginacion span{font-size:0.85rem;font-weight:600;color:var(--muted);}
 
   /* ===== Vista de solo lectura estilo formato en papel ===== */
   .paper{
@@ -332,39 +338,14 @@
   .paper-field .val.empty{color:#c3cbd4;font-weight:400;}
   .paper-comment .val{min-height:3.2em;white-space:pre-wrap;border-bottom:none;border:1px dashed #c9d3dc;border-radius:8px;padding:10px 12px;}
 
-  /* ===== AJUSTES MÓVIL (espacios, inputs grandes, nav compacto) ===== */
   @media(max-width:640px){
     .brand h1{font-size:1.02rem;}
-    .brand .sub, .brand .demo-badge{display:none !important;}
     .dot-label{display:none;}
-    .dot-num{width:24px;height:24px;font-size:0.7rem;}
-    .progress-card{padding:12px 14px 10px;}
-    .card{padding:16px 14px;}
-    
-    .field input, .field select, .field textarea{
-      font-size:16px !important; /* evita zoom en iOS */
-      padding:14px;
-      min-height:48px;
-    }
-    .field textarea{min-height:90px;}
-
-    .nav{
-      flex-direction:column; align-items:stretch; gap:10px;
-      padding:10px; border-radius:14px; margin-top:2px;
-    }
-    .nav .grow{display:none;}
-    .nav-actions{display:flex; width:100%; gap:8px;}
-    .nav-actions .btn{flex:1;}
-    .nav #clearBtn{
-      border-bottom:1px solid var(--border); border-radius:0; 
-      padding-bottom:14px; padding-top:4px; margin-bottom:2px;
-    }
-
+    .card{padding:20px 18px;}
     .paper-head{flex-direction:column;}
     .paper-titles{text-align:left;}
     .paper-fecha{text-align:left;}
   }
-
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
     html{scroll-behavior:auto!important;}
@@ -382,9 +363,7 @@
   }
 </style>
 </head>
-<body style="opacity:0;transition:opacity .35s ease;">
-
-<div id="fatalError" style="display:none;background:#fef2f2;color:#b91c1c;padding:14px;text-align:center;font-size:.85rem;border-bottom:1px solid #fecaca;"></div>
+<body>
 
 <header class="topbar">
   <div class="inner">
@@ -393,14 +372,12 @@
       <div>
         <h1>Acción Acuicultura</h1>
         <p class="sub">Conocimiento Profundo del Cliente · Cuestionario</p>
-      
+        <span class="demo-badge">● Modo demo · datos en este navegador</span>
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <span class="user-badge" id="userBadge" style="display:none;"></span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <button type="button" class="btn ghost" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
       <button type="button" class="btn" onclick="openClientModal()">+ Agregar cliente</button>
-      <button type="button" class="btn ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </div>
 </header>
@@ -430,11 +407,11 @@
           <div class="client-results" id="clientResults"></div>
         </div>
         <div class="field">
-          <label>Razón Social</label>
+          <label>Razón Social *</label>
           <input type="text" name="razonSocial" id="razonSocial">
         </div>
         <div class="field">
-          <label>Giro del Negocio</label>
+          <label>Giro del Negocio *</label>
           <select name="giroDelNegocio" id="giroDelNegocio"></select>
         </div>
         <div class="field">
@@ -446,7 +423,7 @@
           <input type="text" name="telefono" id="telefono">
         </div>
         <div class="field">
-          <label>RFC</label>
+          <label>RFC *</label>
           <input type="text" name="rfc" id="rfc">
         </div>
         <div class="field">
@@ -515,7 +492,7 @@
           <input type="number" min="0" step="1" name="consumoTotal">
         </div>
         <div class="field">
-          <label>Segmento</label>
+          <label>Segmento *</label>
           <select name="segmento" id="segmento"></select>
         </div>
         <div class="field">
@@ -555,7 +532,7 @@
       <p class="desc">Frecuencias, horarios y requerimientos de entrega.</p>
       <div class="grid">
         <div class="field">
-          <label>Frecuencia</label>
+          <label>Frecuencia *</label>
           <select name="frecuencia" id="frecuencia"></select>
         </div>
         <div class="field">
@@ -594,11 +571,9 @@
     <div class="nav">
       <button type="button" class="btn link" id="clearBtn">⟲ Limpiar todo</button>
       <span class="grow"></span>
-      <div class="nav-actions">
-        <button type="button" class="btn ghost" id="prevBtn" hidden>← Anterior</button>
-        <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
-        <button type="submit" class="btn primary" id="submitBtn" hidden>💾 Guardar</button>
-      </div>
+      <button type="button" class="btn ghost" id="prevBtn" hidden>← Anterior</button>
+      <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
+      <button type="submit" class="btn primary" id="submitBtn" hidden>💾 Guardar cuestionario</button>
     </div>
   </form>
 </main>
@@ -611,7 +586,7 @@
     <div class="modal-head">
       <div>
         <h3>Agregar cliente nuevo</h3>
-        <p class="sub">Se guarda en la base de datos.</p>
+        <p class="sub">Se guarda en la base local de prueba por ahora.</p>
       </div>
       <button class="modal-close" onclick="closeClientModal()">&times;</button>
     </div>
@@ -673,19 +648,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
 <script>
-/* =========================================================
-   VARIABLES GLOBALES DE USUARIO Y PAGINACIÓN
-   ========================================================= */
-let currentUser = null;
-let currentUserRole = null;
-let isAdmin = false;
-
-let paginaActual = 1;
-const porPagina = 5;
-
 /* =========================================================
    LISTAS DE COMBOS
    ========================================================= */
@@ -808,7 +771,7 @@ document.getElementById("cuestionarioForm").addEventListener("input", () => {
 let clientes = [];
 async function cargarClientes(){
   try{
-    const res = await fetch("/api/clients", { headers: await authHeaders() });
+    const res = await fetch("/api/clients");
     if(res.ok){
       const data = await res.json();
       clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
@@ -889,7 +852,7 @@ async function saveNewClient(){
   try{
     const res = await fetch("/api/clients", {
       method: "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify(nuevo)
     });
     if(res.ok) guardado = true;
@@ -909,39 +872,27 @@ async function saveNewClient(){
 }
 
 /* =========================================================
-   MIS CUESTIONARIOS (solo lectura + PDF + paginación + permisos)
+   MIS CUESTIONARIOS (solo lectura + PDF, formato tipo papel)
    ========================================================= */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-/* Respaldo local, filtrando por permisos si es necesario */
+/* Respaldo local (siempre disponible aunque no haya internet) */
 function getCuestionariosLocal(){
-  try{ 
-    let list = JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); 
-    // Si no es admin y tenemos usuario, filtrar solo los propios
-    if (!isAdmin && currentUser) {
-      list = list.filter(item => item.data && item.data.creado_por === currentUser.id);
-    }
-    return list;
-  }
+  try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
   catch(e){ return []; }
 }
 
+/* Lista que se muestra en pantalla ahora mismo, y de dónde vino ("db" o "local") */
 let cuestionariosCache = [];
 let origenCuestionarios = "local";
 
 async function cargarCuestionarios(){
   try{
-    const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
+    const res = await fetch("/api/cuestionarios");
     if(res.ok){
-      let rows = await res.json();
-      
-      // FILTRO POR PERMISOS DESDE DB (si el backend mandó todos)
-      if (!isAdmin && currentUser) {
-        rows = rows.filter(r => r.creado_por === currentUser.id);
-      }
-
+      const rows = await res.json();
       cuestionariosCache = rows.map(r => ({
         fecha: r.guardadoEn || new Date().toISOString(),
         cliente: r.razonSocial || "(sin cliente)",
@@ -951,7 +902,7 @@ async function cargarCuestionarios(){
       actualizarBadge();
       return cuestionariosCache;
     }
-  }catch(e){ /* sin conexión, usa local */ }
+  }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
   cuestionariosCache = getCuestionariosLocal();
   origenCuestionarios = "local";
   actualizarBadge();
@@ -968,8 +919,7 @@ function actualizarBadge(){
 
 async function openMisCuestionarios(){
   document.getElementById("listaModal").classList.add("show");
-  volverAlListado(); 
-  paginaActual = 1; // resetear paginación
+  volverAlListado(); // siempre entra mostrando la lista, nunca un detalle viejo
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
   await cargarCuestionarios();
   listarMisCuestionarios();
@@ -979,34 +929,17 @@ async function openMisCuestionarios(){
 function listarMisCuestionarios(){
   const list = cuestionariosCache;
   const cont = document.getElementById("listaCuestionarios");
-  
-  let subTexto = origenCuestionarios === "db"
-    ? "Solo lectura · todas las respuestas en la base de datos"
+  document.getElementById("listaSub").textContent = origenCuestionarios === "db"
+    ? "Solo lectura · todas las respuestas guardadas en la base de datos"
     : "Solo lectura · guardados en este navegador";
-  
-  // Agregar indicador de admin si aplica
-  if (isAdmin) subTexto += " (Vista de Administrador)";
-  document.getElementById("listaSub").textContent = subTexto;
-
   if(!list.length){
     cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
     return;
   }
-  
   const nota = origenCuestionarios === "local"
-    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando local.</div>`
+    ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
     : "";
-
-  // PAGINACIÓN
-  const totalPaginas = Math.ceil(list.length / porPagina) || 1;
-  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
-  
-  const inicio = (paginaActual - 1) * porPagina;
-  const paginados = list.slice(inicio, inicio + porPagina);
-
-  let htmlLista = paginados.map((q, i) => {
-    // Calcular índice global para verDetalle
-    const indiceGlobal = inicio + i;
+  cont.innerHTML = nota + list.map((q, i) => {
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -1016,31 +949,12 @@ function listarMisCuestionarios(){
         <b>${escapeHtml(q.cliente || "(sin cliente)")}</b>
         <small>${fechaTxt} · ${resp} respuestas</small>
       </div>
-      <button type="button" class="btn ghost small" onclick="verCuestionario(${indiceGlobal})">👁 Ver</button>
+      <button type="button" class="btn ghost small" onclick="verCuestionario(${i})">👁 Ver</button>
     </div>`;
   }).join("");
-
-  // Controles paginación
-  if (totalPaginas > 1) {
-    htmlLista += `
-      <div class="paginacion">
-        <button type="button" class="btn ghost small" onclick="cambiarPagina(-1)" ${paginaActual === 1 ? 'disabled' : ''}>← Anterior</button>
-        <span>Página ${paginaActual} de ${totalPaginas}</span>
-        <button type="button" class="btn ghost small" onclick="cambiarPagina(1)" ${paginaActual === totalPaginas ? 'disabled' : ''}>Siguiente →</button>
-      </div>
-    `;
-  }
-
-  cont.innerHTML = nota + htmlLista;
 }
 
-window.cambiarPagina = function(dir) {
-  paginaActual += dir;
-  listarMisCuestionarios();
-  document.getElementById("listaModal").scrollTop = 0;
-}
-
-/* Arma un campo estilo "papel" */
+/* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
 function campoPapel(label, val){
   const v = (val === undefined || val === null) ? "" : String(val).trim();
   return `<div class="paper-field">
@@ -1050,7 +964,8 @@ function campoPapel(label, val){
 }
 
 function verCuestionario(idx){
-  const q = cuestionariosCache[idx];
+  const list = cuestionariosCache;
+  const q = list[idx];
   if(!q){ toast("No se encontró el cuestionario", "error"); return; }
   const d = q.data || {};
   const fechaCapturaTxt = d.fechaCaptura
@@ -1153,17 +1068,19 @@ function verCuestionario(idx){
   document.getElementById("verDetalle").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "block";
   document.getElementById("listaSub").textContent = "Vista de solo lectura del cuestionario";
-  document.getElementById("listaModal").scrollTop = 0;
+  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio del documento
 }
 
 function volverAlListado(){
   document.getElementById("verDetalle").style.display = "none";
   document.getElementById("listaCuestionarios").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "none";
-  listarMisCuestionarios();
-  document.getElementById("listaModal").scrollTop = 0;
+  listarMisCuestionarios(); // repone el texto correcto del subtítulo (db o local)
+  document.getElementById("listaModal").scrollTop = 0; // ← sube al inicio de la lista
 }
 
+/* Botón "← Volver" del encabezado: si estás viendo el detalle, regresa a la lista;
+   si ya estás en la lista, ahí sí cierra todo el panel. Un solo botón, comportamiento lógico. */
 function backFromLista(){
   const enDetalle = document.getElementById("verDetalle").style.display !== "none";
   if(enDetalle){ volverAlListado(); }
@@ -1185,21 +1102,55 @@ function toast(msg, type){
 }
 
 /* =========================================================
-   ENVÍO
+   ENVÍO: validación estricta de obligatorios + guardado.
+   No se guarda si faltan campos obligatorios; se avisa qué falta.
    ========================================================= */
-function guardarDemo(data){
-  try{
-    const key = "cuestionarios_demo";
-    const list = JSON.parse(localStorage.getItem(key) || "[]");
-    list.push({ fecha: new Date().toISOString(), cliente: data.razonSocial || "(sin cliente)", data });
-    localStorage.setItem(key, JSON.stringify(list));
-    // Actualizar cuenta si somos el dueño o admin
-    if (isAdmin || data.creado_por === currentUser.id) actualizarBadge();
-  }catch(e){}
-}
-
 document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // 1. Limpiar marcas anteriores
+  document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
+
+  // 2. Campos obligatorios (agrega o quita a tu gusto)
+  const importantes = {
+    razonSocial: "Razón Social",
+    rfc: "RFC",
+    giroDelNegocio: "Giro del Negocio",
+    segmento: "Segmento",
+    frecuencia: "Frecuencia"
+  };
+
+  // 3. Revisar qué falta
+  const faltantes = [];
+  Object.entries(importantes).forEach(([name, label]) => {
+    const el = document.querySelector(`[name="${name}"]`);
+    if (el && !el.value.trim()) {
+      el.classList.add("falta-dato");
+      faltantes.push(label);
+    }
+  });
+
+  // 4. Si falta algo → NO se guarda, se avisa y se va al paso donde está lo faltante
+  if (faltantes.length) {
+    toast("Faltan: " + faltantes.join(", "), "error");
+    const pasoDeCampo = {
+      razonSocial:0, rfc:0, giroDelNegocio:0, nombreComprador:0, telefono:0,
+      nombreComercial:0, ciudadRuta:0, puesto:0, correoElectronico:0, fechaCaptura:0,
+      consumoActual:1, mesesEstacionalidad:1, presentacion1:1, presentacion2:1,
+      presentacion3:1, proteinaCamaron:1, proteinaTilapia:1, consumoTotal:1,
+      segmento:1, participacionCompetencia:1, proveedorCompetencia:1,
+      facturacionMensual:2, establecimiento:2, condicionCompra:2,
+      frecuencia:3, horarioRecepcion:3, volumenPromedio:3, ubicacionEntrega:3,
+      requerimientosEspeciales:3
+    };
+    const primerFaltante = Object.keys(importantes).find(name =>
+      document.querySelector(`[name="${name}"]`)?.classList.contains("falta-dato")
+    );
+    goStep(pasoDeCampo[primerFaltante] ?? 0);
+    return; // 🚫 NO guarda
+  }
+
+  // 5. Todo completo → guardado normal
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
@@ -1208,27 +1159,26 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
   data.diasRecepcion = dias.join(", ");
 
-  if (currentUser) data.creado_por = currentUser.id;
+  guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
 
-  guardarDemo(data);
-
-  try{
+  try {
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
-    if(!res.ok){
+    if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "red");
     }
     toast("Cuestionario guardado en la base de datos", "ok");
-  }catch(err){
-    toast("Guardado en este navegador (modo demo) · ya puedes verlo en 'Mis cuestionarios'", "ok");
-  }finally{
+  } catch (err) {
+    toast("Guardado en este navegador · ya puedes verlo en 'Mis cuestionarios'", "ok");
+  } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "💾 Guardar";
+    submitBtn.textContent = "💾 Guardar cuestionario";
     resetForm();
+    document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   }
 });
 
@@ -1244,89 +1194,8 @@ function resetForm(){
   renderSteps();
 }
 
-/* =========================================================
-   AUTENTICACIÓN · SUPABASE (sesión + rol + salir)
-   ========================================================= */
-async function authHeaders(extra = {}){
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
-}
-
-function mostrarUsuario(session){
-  const badge = document.getElementById("userBadge");
-  if (badge){
-    badge.style.display = "inline-flex";
-    badge.textContent = (isAdmin ? "🛡 Admin: " : "👤 ") + (session.user.email || "");
-  }
-}
-
-async function guardarSesion(){
-  try{
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session){ window.location.href = "login.html"; return; }
-    
-    currentUser = session.user;
-
-    const { data, error } = await supabaseClient
-      .from("usuarios")
-      .select("rol, activo")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-      
-    if (error || !data || !data.activo){
-      await supabaseClient.auth.signOut();
-      window.location.href = "login.html";
-      return;
-    }
-    
-    const rolValido = ["comercial","oficina","admin"].includes(data.rol);
-    if (!rolValido){
-      await supabaseClient.auth.signOut();
-      window.location.href = "login.html";
-      return;
-    }
-    
-    currentUserRole = data.rol;
-    isAdmin = (currentUserRole === 'admin');
-
-    mostrarUsuario(session);
-    document.body.style.opacity = "1";
-  }catch(e){
-    throw e;
-  }
-}
-
-async function logout(){
-  await supabaseClient.auth.signOut();
-  window.location.href = "login.html";
-}
-
-supabaseClient.auth.onAuthStateChange((event) => {
-  if (event === "SIGNED_OUT") window.location.href = "login.html";
-});
-
-function fatal(msg){
-  const el = document.getElementById("fatalError");
-  if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
-  document.body.style.opacity = "1"; 
-}
-
-/* =========================================================
-   INICIO
-   ========================================================= */
 renderSteps();
 cargarCuestionarios();
-
-(async () => {
-  try{
-    await guardarSesion();
-    document.body.style.opacity = "1";
-  }catch(e){
-    console.error("Error al iniciar el cuestionario:", e);
-    fatal("No se pudo cargar: " + (e && e.message ? e.message : e) +
-      " — Revisa config.js");
-  }
-})();
 </script>
 </body>
 </html>
