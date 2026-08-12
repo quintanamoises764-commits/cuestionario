@@ -910,7 +910,7 @@ async function cargarCuestionarios(){
       cuestionariosCache = rows.map(r => ({
         fecha: r.guardadoEn || new Date().toISOString(),
         cliente: r.razonSocial || "(sin cliente)",
-        creadoPor: r.creadoPor || (r.data && r.data.creadoPor) || null,
+        creadoPor: r.creado_por || (r.data && (r.data.creadoPor || r.data.creado_por)) || null,
         data: r
       }));
       origenCuestionarios = "db";
@@ -931,7 +931,7 @@ function filtrarPorRol(){
   if (usuarioActual && usuarioActual.rol !== "admin") {
     cuestionariosCache = cuestionariosCache.filter(q =>
       (q.creadoPor && q.creadoPor === usuarioActual.id) ||
-      (q.data && q.data.creadoPor === usuarioActual.id)
+      (q.data && (q.data.creadoPor === usuarioActual.id || q.data.creado_por === usuarioActual.id))
     );
   }
 }
@@ -1211,14 +1211,20 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   new FormData(e.target).forEach((value, key) => { data[key] = value; });
   const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
   data.diasRecepcion = dias.join(", ");
-  data.creadoPor = usuarioActual ? usuarioActual.id : ""; // ← quién lo capturó
+  data.creadoPor = usuarioActual ? usuarioActual.id : ""; // respaldo local
 
   guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+
+  // Obtener el token de sesión para que el servidor sepa quién guarda (seguro)
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
   try {
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": session ? "Bearer " + session.access_token : ""
+      },
       body: JSON.stringify(data)
     });
     if (!res.ok) {
@@ -1320,3 +1326,4 @@ iniciarSesionSupabase();
 </script>
 </body>
 </html>
+
