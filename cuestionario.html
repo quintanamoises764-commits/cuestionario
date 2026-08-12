@@ -296,6 +296,14 @@
   .q-row .q-info small{color:var(--muted);font-size:.78rem;}
   .empty-state{text-align:center;color:var(--muted);padding:32px 10px;font-size:.9rem;line-height:1.6;}
 
+  /* Paginador (5 por página) */
+  .paginador{
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    margin-top:16px;padding:10px;border:1px solid var(--border);
+    border-radius:12px;background:#fff;
+  }
+  .paginador span{font-size:.8rem;font-weight:700;color:var(--primary-dark);}
+
   /* ===== Vista de solo lectura estilo formato en papel ===== */
   .paper{
     border:1px solid var(--border);border-radius:14px;
@@ -639,6 +647,11 @@
   </div>
   <div class="page-body">
     <div id="listaCuestionarios"></div>
+    <div class="paginador" id="paginador" style="display:none;">
+      <button type="button" class="btn ghost small" id="pagPrev" onclick="cambiarPagina(-1)">← Anterior</button>
+      <span id="pagInfo">Página 1 de 1</span>
+      <button type="button" class="btn ghost small" id="pagNext" onclick="cambiarPagina(1)">Siguiente →</button>
+    </div>
     <div id="verDetalle" style="display:none;">
       <button type="button" class="btn ghost small no-print" style="margin-bottom:16px;" onclick="volverAlListado()">← Volver al listado</button>
       <div id="printContent"></div>
@@ -876,7 +889,7 @@ async function saveNewClient(){
 }
 
 /* =========================================================
-   MIS CUESTIONARIOS (solo lectura + PDF, formato tipo papel)
+   MIS CUESTIONARIOS (solo lectura + PDF + paginador de 5)
    ========================================================= */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -891,6 +904,8 @@ function getCuestionariosLocal(){
 /* Lista que se muestra en pantalla ahora mismo, y de dónde vino ("db" o "local") */
 let cuestionariosCache = [];
 let origenCuestionarios = "local";
+let paginaActual = 1;
+const POR_PAGINA = 5; // ← máximo 5 cuestionarios por página
 
 async function cargarCuestionarios(){
   try{
@@ -922,6 +937,7 @@ function actualizarBadge(){
 }
 
 async function openMisCuestionarios(){
+  paginaActual = 1; // siempre abre en la página 1
   document.getElementById("listaModal").classList.add("show");
   volverAlListado();
   document.getElementById("listaCuestionarios").innerHTML = `<div class="empty-state">Cargando…</div>`;
@@ -933,17 +949,28 @@ async function openMisCuestionarios(){
 function listarMisCuestionarios(){
   const list = cuestionariosCache;
   const cont = document.getElementById("listaCuestionarios");
+  const pag = document.getElementById("paginador");
   document.getElementById("listaSub").textContent = origenCuestionarios === "db"
     ? "Solo lectura · todas las respuestas guardadas en la base de datos"
     : "Solo lectura · guardados en este navegador";
+
   if(!list.length){
     cont.innerHTML = `<div class="empty-state">📋 Aún no hay cuestionarios guardados.<br><small>Completa el formulario y toca "💾 Guardar cuestionario" para verlos aquí.</small></div>`;
+    if (pag) pag.style.display = "none";
     return;
   }
+
+  // Paginación: máximo 5 por página
+  const totalPaginas = Math.max(1, Math.ceil(list.length / POR_PAGINA));
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  const inicio = (paginaActual - 1) * POR_PAGINA;
+  const visibles = list.slice(inicio, inicio + POR_PAGINA);
+
   const nota = origenCuestionarios === "local"
     ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
     : "";
-  cont.innerHTML = nota + list.map((q, i) => {
+  cont.innerHTML = nota + visibles.map((q, i) => {
+    const globalIdx = inicio + i; // índice real en la lista completa
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -953,9 +980,26 @@ function listarMisCuestionarios(){
         <b>${escapeHtml(q.cliente || "(sin cliente)")}</b>
         <small>${fechaTxt} · ${resp} respuestas</small>
       </div>
-      <button type="button" class="btn ghost small" onclick="verCuestionario(${i})">👁 Ver</button>
+      <button type="button" class="btn ghost small" onclick="verCuestionario(${globalIdx})">👁 Ver</button>
     </div>`;
   }).join("");
+
+  // Controles del paginador
+  if (pag){
+    pag.style.display = totalPaginas > 1 ? "flex" : "none";
+    document.getElementById("pagInfo").textContent = `Página ${paginaActual} de ${totalPaginas} · ${list.length} cuestionarios`;
+    document.getElementById("pagPrev").disabled = paginaActual === 1;
+    document.getElementById("pagNext").disabled = paginaActual === totalPaginas;
+  }
+}
+
+function cambiarPagina(delta){
+  const totalPaginas = Math.max(1, Math.ceil(cuestionariosCache.length / POR_PAGINA));
+  const nueva = paginaActual + delta;
+  if (nueva < 1 || nueva > totalPaginas) return;
+  paginaActual = nueva;
+  listarMisCuestionarios();
+  document.getElementById("listaModal").scrollTop = 0;
 }
 
 function campoPapel(label, val){
@@ -1068,6 +1112,7 @@ function verCuestionario(idx){
 
   document.getElementById("printContent").innerHTML = html;
   document.getElementById("listaCuestionarios").style.display = "none";
+  document.getElementById("paginador").style.display = "none";
   document.getElementById("verDetalle").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "block";
   document.getElementById("listaSub").textContent = "Vista de solo lectura del cuestionario";
@@ -1078,7 +1123,7 @@ function volverAlListado(){
   document.getElementById("verDetalle").style.display = "none";
   document.getElementById("listaCuestionarios").style.display = "block";
   document.getElementById("pdfBtnWrap").style.display = "none";
-  listarMisCuestionarios();
+  listarMisCuestionarios(); // re-muestra la lista con su paginador
   document.getElementById("listaModal").scrollTop = 0;
 }
 
@@ -1187,7 +1232,6 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   }catch(err){
     toast("Error inesperado: " + (err && err.message ? err.message : err), "error");
   }finally{
-    // SIEMPRE se resetea el botón, pase lo que pase
     submitBtn.disabled = false;
     submitBtn.textContent = "💾 Guardar cuestionario";
     resetForm();
