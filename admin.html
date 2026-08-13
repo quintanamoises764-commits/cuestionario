@@ -586,7 +586,7 @@ async function toggleActivo(id, estado){
   await cargarUsuarios();
 }
 
-/* ============ CRUD de usuarios (Supabase Auth + tabla usuarios) ============ */
+/* ============ CRUD de usuarios (por RPC de Supabase) ============ */
 function openUserModal(ref){
   usuarioEditandoId = null;
   document.getElementById("u_email").value = "";
@@ -621,21 +621,30 @@ async function guardarUsuarioModal(){
   if (!email) return toast("El correo es obligatorio", "error");
   if (!usuarioEditandoId && !password) return toast("La contraseña es obligatoria al crear", "error");
 
-  const payload = { email, rol, activo };
-  if (password) payload.password = password;
-  if (usuarioEditandoId) payload.id = usuarioEditandoId;
-
   try{
-    const res = await fetch("/api/admin-users", {
-      method: usuarioEditandoId ? "PUT" : "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.error || "red");
-    toast(usuarioEditandoId ? "Usuario actualizado" : "Usuario creado", "ok");
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    if (usuarioEditandoId){
+      const { error } = await supabaseClient.rpc("admin_editar_usuario", {
+        p_uid: usuarioEditandoId,
+        p_email: email,
+        p_password: password || null,
+        p_rol: rol,
+        p_activo: activo
+      });
+      if (error) throw error;
+      toast("Usuario actualizado", "ok");
+    }else{
+      const { error } = await supabaseClient.rpc("admin_crear_usuario", {
+        p_email: email,
+        p_password: password,
+        p_rol: rol,
+        p_activo: activo
+      });
+      if (error) throw error;
+      toast("Usuario creado", "ok");
+    }
   }catch(e){
-    toast("Error: " + (e && e.message ? e.message : "no se pudo conectar a /api/admin-users"), "error");
+    toast("Error: " + (e && e.message ? e.message : "no se pudo crear/editar"), "error");
   }
   closeUserModal();
   await cargarUsuarios();
@@ -646,13 +655,9 @@ async function eliminarUsuario(id){
   if (!u) return;
   if (!confirm("¿Eliminar al usuario '" + (u.email || "") + "'? Se borrará su acceso y su registro.")) return;
   try{
-    const res = await fetch("/api/admin-users", {
-      method: "DELETE",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ id })
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.error || "red");
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { error } = await supabaseClient.rpc("admin_eliminar_usuario", { p_uid: id });
+    if (error) throw error;
     toast("Usuario eliminado", "ok");
   }catch(e){
     toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
