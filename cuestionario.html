@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acción Acuicultura · Conocimiento Profundo del Cliente</title>
+<title>Acción Acuacultura · Conocimiento Profundo del Cliente</title>
 <style>
   :root{
     --primary:#0e7490;
@@ -46,14 +46,15 @@
     animation:fadeDown .6s ease both;
   }
   .topbar .inner{max-width:880px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:14px;}
+  .brand{display:flex;align-items:center;gap:16px;}
   .logo{
-    width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.16);
-    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
-    animation:float 3.5s ease-in-out infinite;
+    width:84px;height:84px;border-radius:20px;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    padding:9px;flex-shrink:0;
+    box-shadow:0 12px 28px -10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.7);
   }
-  .brand h1{margin:0;font-size:1.2rem;}
+  .logo img{width:100%;height:100%;object-fit:contain;display:block;}
+  .brand h1{margin:0;font-size:1.3rem;}
   .brand .sub{margin:2px 0 0;font-size:.82rem;opacity:.85;}
   .topbar .btn{
     background:#fff;color:var(--primary-dark);border:none;border-radius:12px;
@@ -171,6 +172,25 @@
     25%{transform:translateX(-4px);}
     75%{transform:translateX(4px);}
   }
+  /* Foto de evidencia: aviso si falta */
+  .field.falta-foto{
+    border:2px solid var(--error);
+    border-radius:12px;
+    padding:12px;
+    background:#fef2f2;
+    animation:shake .3s ease;
+  }
+  /* Caja de cámara */
+  .cam-box{
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    background:#0f172a;
+    position:relative;
+  }
+  .cam-box video{display:block;width:100%;max-height:420px;object-fit:cover;}
+  .cam-actions{display:flex;gap:10px;padding:10px;flex-wrap:wrap;background:#0b3c4d;}
+  .cam-actions .btn{flex:1;}
 
   /* Píldoras días */
   .checks{display:flex;flex-wrap:wrap;gap:10px;}
@@ -343,6 +363,7 @@
   }
   .paper-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
   .paper-brand .ico{width:32px;height:32px;border-radius:9px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .paper-brand .ico-img{width:46px;height:46px;object-fit:contain;flex-shrink:0;}
   .paper-brand b{display:block;font-size:.86rem;color:var(--primary-dark);white-space:nowrap;}
   .paper-titles{flex:1;text-align:center;}
   .paper-titles h3{margin:0;font-size:1rem;letter-spacing:.03em;color:var(--text);text-transform:uppercase;font-weight:800;}
@@ -369,7 +390,8 @@
   .paper-comment .val{min-height:3.2em;white-space:pre-wrap;border-bottom:none;border:1px dashed #c9d3dc;border-radius:8px;padding:10px 12px;}
 
   @media(max-width:640px){
-    .brand h1{font-size:1.02rem;}
+    .logo{width:68px;height:68px;}
+    .brand h1{font-size:1.05rem;}
     .dot-label{display:none;}
     .card{padding:20px 18px;}
     .paper-head{flex-direction:column;}
@@ -398,9 +420,11 @@
 <header class="topbar">
   <div class="inner">
     <div class="brand">
-      <div class="logo">🐟</div>
+      <div class="logo">
+        <img src="accion_acuicola.png" alt="Acción Acuacultura">
+      </div>
       <div>
-        <h1>Acción Acuicultura</h1>
+        <h1>Acción Acuacultura</h1>
         <p class="sub">Conocimiento Profundo del Cliente · Cuestionario</p>
       </div>
     </div>
@@ -409,7 +433,7 @@
         👤 <b id="userName"></b>
         <button type="button" class="btn ghost" onclick="logout()">Salir</button>
       </span>
-      <button type="button" class="btn admin" id="btnAdmin" onclick="window.open('admin.html','_blank')" style="display:none;">⚙️ Panel Admin</button>
+      <button type="button" class="btn admin" id="btnAdmin" onclick="window.location.href='admin.html'" style="display:none;">⚙️ Panel Admin</button>
       <button type="button" class="btn ghost" id="btnMisCuestionarios" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
       <button type="button" class="btn" id="btnAgregarCliente" onclick="openClientModal()">+ Agregar cliente</button>
     </div>
@@ -433,7 +457,7 @@
     <!-- ===== 1 · DATOS GENERALES ===== -->
     <section class="card step" data-step="0" data-label="Datos">
       <h2><span class="ico">🧾</span> Datos generales</h2>
-      <p class="desc">Busca un cliente para autocompletar (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
+      <p class="desc">Busca un cliente para autocompletar Razón Social, RFC y Sucursal (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
       <div class="grid">
         <div class="field full client-search">
           <label>Buscar cliente · Razón Social o RFC</label>
@@ -465,8 +489,12 @@
           <input type="text" name="nombreComercial" id="nombreComercial">
         </div>
         <div class="field">
-          <label>Ciudad / Ruta</label>
-          <input type="text" name="ciudadRuta" id="ciudadRuta">
+          <label>Sucursal</label>
+          <input type="text" name="sucursal" id="sucursal">
+        </div>
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" name="direccion" id="direccion" placeholder="Calle, número, colonia…">
         </div>
         <div class="field">
           <label>Puesto</label>
@@ -477,8 +505,20 @@
           <input type="email" name="correoElectronico" placeholder="correo@empresa.com">
         </div>
         <div class="field">
-          <label>Fecha de Captura</label>
-          <input type="date" name="fechaCaptura" id="fechaCaptura">
+          <label>Fecha de Captura <span style="color:var(--muted);text-transform:none;">· automática</span></label>
+          <input type="date" name="fechaCaptura" id="fechaCaptura" readonly style="background:#f8fafc;color:#64748b;cursor:not-allowed;">
+          <p class="desc" style="margin:2px 0 0;">🔒 Se guarda automáticamente la fecha de hoy · no editable</p>
+        </div>
+        <div class="field full">
+          <label>📍 Ubicación de la visita (dirección)</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="ubicacionGps" name="ubicacionGps" readonly placeholder="Pulsa 'Capturar' para registrar…" style="flex:1;min-width:180px;background:#f8fafc;color:#64748b;">
+            <button type="button" class="btn ghost small" onclick="capturarUbicacion()">📍 Capturar</button>
+            <button type="button" class="btn link small" id="btnLimpiarGps" style="display:none;" onclick="limpiarUbicacion()">✖ Quitar</button>
+          </div>
+          <input type="hidden" name="latitud" id="latitud">
+          <input type="hidden" name="longitud" id="longitud">
+          <p class="desc" style="margin:2px 0 0;" id="gpsStatus">Sin costo · captura la dirección con calles · si no hay, usa coordenadas</p>
         </div>
       </div>
     </section>
@@ -592,11 +632,37 @@
       </div>
     </section>
 
-    <!-- ===== 5 · COMENTARIOS ===== -->
+    <!-- ===== 5 · COMENTARIOS + FOTO EN VIVO (cámara) ===== -->
     <section class="card step" data-step="4" data-label="Comentarios">
       <h2><span class="ico">💬</span> Comentarios</h2>
-      <p class="desc">Revisa un resumen en vivo y agrega notas libres del levantamiento.</p>
+      <p class="desc">Toma la foto de evidencia en vivo (obligatoria) y agrega tus notas del levantamiento.</p>
       <div class="summary" id="resumen"></div>
+
+      <div class="field full" id="fotoField">
+        <label>📸 Foto de Evidencia <span style="color:var(--error);">*</span></label>
+        <p class="desc" style="margin:0 0 10px;">Debe tomarse con la cámara en este momento · no se aceptan fotos de la galería</p>
+
+        <!-- Visor de cámara en vivo -->
+        <div class="cam-box" id="camBox" style="display:none;">
+          <video id="camVideo" autoplay playsinline muted></video>
+          <div class="cam-actions">
+            <button type="button" class="btn primary small" onclick="tomarFoto()">📸 Tomar foto</button>
+            <button type="button" class="btn ghost small" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;" onclick="cerrarCamara()">✖ Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Botón para abrir la cámara -->
+        <button type="button" class="btn primary" id="btnAbrirCam" onclick="abrirCamara()">📷 Abrir cámara</button>
+
+        <!-- Vista previa de la foto tomada -->
+        <div id="fotoPreview" style="display:none;margin-top:12px;">
+          <img id="imgPreview" style="max-width:100%;border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);">
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+            <button type="button" class="btn ghost small" onclick="abrirCamara()">🔄 Repetir foto</button>
+          </div>
+        </div>
+      </div>
+
       <div class="field">
         <textarea name="comentarios" rows="5" placeholder="Escribe aquí cualquier observación…"></textarea>
       </div>
@@ -650,8 +716,12 @@
         <input type="text" id="nc_nombreComercial">
       </div>
       <div class="field">
-        <label>Ciudad / Ruta</label>
-        <input type="text" id="nc_ciudadRuta">
+        <label>Sucursal</label>
+        <input type="text" id="nc_sucursal">
+      </div>
+      <div class="field">
+        <label>Dirección</label>
+        <input type="text" id="nc_direccion">
       </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
@@ -710,16 +780,16 @@ const LISTAS = {
    DATOS DE PRUEBA LOCALES (clientes)
    ========================================================= */
 const MOCK_CLIENTES = [
-  { razonSocial:"Mariscos del Golfo S.A. de C.V.",  rfc:"MGO8501012T4", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Carlos Márquez",   telefono:"993 318 4521", nombreComercial:"Mariscos del Golfo",  ciudadRuta:"Ciudad del Carmen, Campeche" },
-  { razonSocial:"Restaurante La Perla del Pacífico", rfc:"RPP910503K87", giroDelNegocio:"Restaurante",          nombreComprador:"Laura Ibarra",     telefono:"664 900 1823", nombreComercial:"La Perla",            ciudadRuta:"Tijuana, B.C." },
-  { razonSocial:"Pescadería El Muelle",              rfc:"PEM950617Q31", giroDelNegocio:"Pescadería",           nombreComprador:"Jorge Sánchez",    telefono:"229 220 9876", nombreComercial:"El Muelle",           ciudadRuta:"Veracruz, Ver." },
-  { razonSocial:"Grupo Camarón Dorado S.A.P.I.",     rfc:"GCD880214N56", giroDelNegocio:"Mayoreo Rutas",       nombreComprador:"Ana Beltrán",      telefono:"668 815 0047", nombreComercial:"Camarón Dorado",      ciudadRuta:"Mazatlán, Sin." },
-  { razonSocial:"Supermercados del Mar S.A.",        rfc:"SMA0001251C9", giroDelNegocio:"Supermercado",         nombreComprador:"Ricardo Fuentes",  telefono:"55 5240 1133", nombreComercial:"Súper del Mar",       ciudadRuta:"CDMX" },
-  { razonSocial:"Hotel Costa Azul S.A. de C.V.",     rfc:"HCA0603312F8", giroDelNegocio:"Hotel",                nombreComprador:"Mónica Salazar",   telefono:"998 884 2210", nombreComercial:"Hotel Costa Azul",    ciudadRuta:"Cancún, Q. Roo" },
-  { razonSocial:"Acuícola del Sureste S.A. de C.V.", rfc:"ASE0409053J1", giroDelNegocio:"Industrial",           nombreComprador:"Fernando Pech",    telefono:"981 816 7745", nombreComercial:"Acuícola Sureste",    ciudadRuta:"Campeche, Camp." },
-  { razonSocial:"Pescados El Anzuelo",               rfc:"PEA0712184D2", giroDelNegocio:"Pescadería",           nombreComprador:"Guadalupe Torres", telefono:"222 273 5581", nombreComercial:"El Anzuelo",          ciudadRuta:"Puebla, Pue." },
-  { razonSocial:"Grupo Pacific Shrimp S.A. de C.V.", rfc:"GPS0508123M5", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Héctor Ramos",     telefono:"667 710 4432", nombreComercial:"Pacific Shrimp",      ciudadRuta:"Culiacán, Sin." },
-  { razonSocial:"Mercado del Mar",                   rfc:"MDM0302247K9", giroDelNegocio:"Autoservicio Regional", nombreComprador:"Silvia Núñez",     telefono:"81 8123 7700", nombreComercial:"Mercado del Mar",     ciudadRuta:"Monterrey, N.L." }
+  { razonSocial:"Mariscos del Golfo S.A. de C.V.",  rfc:"MGO8501012T4", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Carlos Márquez",   telefono:"993 318 4521", nombreComercial:"Mariscos del Golfo",  sucursal:"Ciudad del Carmen", direccion:"Av. Hidalgo 45, Col. Centro" },
+  { razonSocial:"Restaurante La Perla del Pacífico", rfc:"RPP910503K87", giroDelNegocio:"Restaurante",          nombreComprador:"Laura Ibarra",     telefono:"664 900 1823", nombreComercial:"La Perla",            sucursal:"Tijuana", direccion:"Blvd. Agua Caliente 1020, Zona Río" },
+  { razonSocial:"Pescadería El Muelle",              rfc:"PEM950617Q31", giroDelNegocio:"Pescadería",           nombreComprador:"Jorge Sánchez",    telefono:"229 220 9876", nombreComercial:"El Muelle",           sucursal:"Veracruz", direccion:"Malecón 250, Centro Histórico" },
+  { razonSocial:"Grupo Camarón Dorado S.A.P.I.",     rfc:"GCD880214N56", giroDelNegocio:"Mayoreo Rutas",       nombreComprador:"Ana Beltrán",      telefono:"668 815 0047", nombreComercial:"Camarón Dorado",      sucursal:"Mazatlán", direccion:"Av. del Mar 88, Zona Dorada" },
+  { razonSocial:"Supermercados del Mar S.A.",        rfc:"SMA0001251C9", giroDelNegocio:"Supermercado",         nombreComprador:"Ricardo Fuentes",  telefono:"55 5240 1133", nombreComercial:"Súper del Mar",       sucursal:"CDMX", direccion:"Av. Insurgentes Sur 400, Col. Del Valle" },
+  { razonSocial:"Hotel Costa Azul S.A. de C.V.",     rfc:"HCA0603312F8", giroDelNegocio:"Hotel",                nombreComprador:"Mónica Salazar",   telefono:"998 884 2210", nombreComercial:"Hotel Costa Azul",    sucursal:"Cancún", direccion:"Blvd. Kukulcán Km 9, Zona Hotelera" },
+  { razonSocial:"Acuícola del Sureste S.A. de C.V.", rfc:"ASE0409053J1", giroDelNegocio:"Industrial",           nombreComprador:"Fernando Pech",    telefono:"981 816 7745", nombreComercial:"Acuícola Sureste",    sucursal:"Campeche", direccion:"Calle 10 No. 120, Col. Centro" },
+  { razonSocial:"Pescados El Anzuelo",               rfc:"PEA0712184D2", giroDelNegocio:"Pescadería",           nombreComprador:"Guadalupe Torres", telefono:"222 273 5581", nombreComercial:"El Anzuelo",          sucursal:"Puebla", direccion:"Av. Juárez 1500, Col. La Paz" },
+  { razonSocial:"Grupo Pacific Shrimp S.A. de C.V.", rfc:"GPS0508123M5", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Héctor Ramos",     telefono:"667 710 4432", nombreComercial:"Pacific Shrimp",      sucursal:"Culiacán", direccion:"Blvd. Enrique Sánchez Alonso 3000, Col. Chapultepec" },
+  { razonSocial:"Mercado del Mar",                   rfc:"MDM0302247K9", giroDelNegocio:"Autoservicio Regional", nombreComprador:"Silvia Núñez",     telefono:"81 8123 7700", nombreComercial:"Mercado del Mar",     sucursal:"Monterrey", direccion:"Av. Constitución 700, Centro" }
 ];
 
 /* =========================================================
@@ -742,7 +812,7 @@ function llenarChecks(){
 ["giroDelNegocio","segmento","condicionCompra","frecuencia","establecimiento"].forEach(c => llenarSelect(c, LISTAS[c]));
 llenarSelect("nc_giroDelNegocio", LISTAS.giroDelNegocio);
 llenarChecks();
-document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
+document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10); // fecha de hoy (bloqueada)
 
 /* =========================================================
    WIZARD (asistente de 5 pasos)
@@ -769,8 +839,10 @@ function renderResumen(){
     ["Consumo (Kg/mes)", q('[name="consumoActual"]')],
     ["Segmento", v("segmento")],
     ["Frecuencia", v("frecuencia")],
-    ["Condición", v("condicionCompra")]
+    ["Condición", v("condicionCompra")],
+    ["Ubicación", v("ubicacionGps")]
   ].filter(([,val]) => val && val.trim());
+  if (fotoBlob) picks.push(["Foto evidencia", "✓ tomada en vivo"]);
   s.innerHTML = picks.length
     ? picks.map(([k,val]) => `<span class="chip"><b>${k}</b> ${val}</span>`).join("")
     : `<span class="empty">Aún no hay datos capturados — completa los pasos anteriores.</span>`;
@@ -798,8 +870,11 @@ function renderSteps(){
 }
 function goStep(i){
   if(i < 0 || i >= total || i === current) return;
+  // Si sales del paso de comentarios, apaga la cámara (sin borrar la foto ya tomada)
+  if(i !== 4) cerrarCamara();
   current = i;
   renderSteps();
+  guardarBorrador(); // guarda el paso actual en el borrador
 }
 prevBtn.addEventListener("click", () => goStep(current-1));
 nextBtn.addEventListener("click", () => goStep(current+1));
@@ -808,7 +883,172 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 });
 document.getElementById("cuestionarioForm").addEventListener("input", () => {
   if(current === total-1) renderResumen();
+  programarBorrador();
 });
+document.getElementById("diasRecepcion").addEventListener("change", () => {
+  if(current === total-1) renderResumen();
+  programarBorrador();
+});
+window.addEventListener("beforeunload", guardarBorrador);
+
+/* =========================================================
+   AUTOGUARDADO (borrador en localStorage, sin costo)
+   ========================================================= */
+const KEY_BORRADOR = "borrador_cuestionario_v1";
+
+function serializarFormulario(){
+  const data = {};
+  new FormData(document.getElementById("cuestionarioForm")).forEach((v,k) => data[k] = v);
+  data.diasRecepcion = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value).join(", ");
+  data.__paso = current;
+  data.__hora = new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
+  if (fotoDataUrl) data.__foto = fotoDataUrl;
+  return data;
+}
+
+function guardarBorrador(){
+  try{
+    localStorage.setItem(KEY_BORRADOR, JSON.stringify(serializarFormulario()));
+  }catch(e){
+    // Cuota llena: guardamos sin la foto
+    try{
+      const d = serializarFormulario(); delete d.__foto;
+      localStorage.setItem(KEY_BORRADOR, JSON.stringify(d));
+    }catch(e2){}
+  }
+}
+
+let borradorTimer;
+function programarBorrador(){
+  clearTimeout(borradorTimer);
+  borradorTimer = setTimeout(guardarBorrador, 500);
+}
+
+function borrarBorrador(){
+  try{ localStorage.removeItem(KEY_BORRADOR); }catch(e){}
+}
+
+function restaurarBorrador(){
+  let raw = null;
+  try{ raw = JSON.parse(localStorage.getItem(KEY_BORRADOR) || "null"); }catch(e){}
+  if(!raw) return;
+  // Si está vacío (sin datos reales), se descarta silenciosamente
+  const tieneDatos = Object.keys(raw).some(k => !k.startsWith("__") && raw[k] && String(raw[k]).trim() !== "");
+  if(!tieneDatos){ borrarBorrador(); return; }
+
+  const r = confirm("💾 Se encontró un borrador guardado (" + (raw.__hora || "hoy") + "). ¿Continuar donde ibas?");
+  if(!r){ borrarBorrador(); return; }
+
+  Object.entries(raw).forEach(([k,v]) => {
+    if(k.startsWith("__")) return;
+    const el = document.querySelector(`[name="${k}"]`);
+    if(el) el.value = v || "";
+  });
+  if(raw.diasRecepcion){
+    const dias = raw.diasRecepcion.split(",").map(s => s.trim()).filter(Boolean);
+    document.querySelectorAll(".dia-check").forEach(cb => {
+      const on = dias.includes(cb.value);
+      cb.checked = on;
+      cb.closest(".day-pill").classList.toggle("on", on);
+    });
+  }
+  if(raw.__foto){
+    fotoDataUrl = raw.__foto;
+    document.getElementById("imgPreview").src = raw.__foto;
+    document.getElementById("fotoPreview").style.display = "block";
+    document.getElementById("btnAbrirCam").style.display = "none";
+    document.getElementById("fotoField").classList.remove("falta-foto");
+    fetch(raw.__foto).then(r => r.blob()).then(b => {
+      fotoBlob = b;
+      if(current === total-1) renderResumen();
+    }).catch(() => {});
+  }
+  if(typeof raw.__paso === "number" && raw.__paso >= 0 && raw.__paso < total) current = raw.__paso;
+  renderSteps();
+  toast("Borrador restaurado", "ok");
+}
+
+/* =========================================================
+   GEOLOCALIZACIÓN + GEOCODIFICACIÓN INVERSA (gratis)
+   ========================================================= */
+/* Convierte coordenadas → dirección con calles.
+   Sin costo: Nominatim (OpenStreetMap) + respaldo BigDataCloud. */
+async function reverseGeocode(lat, lng){
+  // Intento 1: Nominatim (OpenStreetMap)
+  try{
+    const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&zoom=18&accept-language=es";
+    const res = await fetch(url, { headers: { "Accept-Language": "es" } });
+    if(!res.ok) throw new Error();
+    const j = await res.json();
+    if(j && j.address){
+      const a = j.address;
+      const partes = [
+        [a.road, a.house_number].filter(Boolean).join(" "),
+        a.suburb || a.neighbourhood,
+        a.city || a.town || a.municipality || a.village,
+        a.state
+      ].filter(Boolean);
+      if(partes.length) return partes.join(", ");
+    }
+  }catch(e){ /* siguiente */ }
+  // Intento 2: BigDataCloud (gratis)
+  try{
+    const res = await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lng + "&localityLanguage=es");
+    if(!res.ok) throw new Error();
+    const j = await res.json();
+    const partes = [j.locality, j.city, j.principalSubdivision].filter(Boolean);
+    const calle = [j.street, j.houseNumber].filter(Boolean).join(" ");
+    if(calle) partes.unshift(calle);
+    if(partes.length) return partes.join(", ");
+  }catch(e){}
+  return null; // sin dirección → se usan las coordenadas
+}
+
+async function capturarUbicacion(){
+  const status = document.getElementById("gpsStatus");
+  const btnLimpiar = document.getElementById("btnLimpiarGps");
+  if (!navigator.geolocation){
+    status.textContent = "Tu dispositivo no soporta geolocalización";
+    return;
+  }
+  status.textContent = "⏳ Obteniendo ubicación…";
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    document.getElementById("latitud").value = lat;
+    document.getElementById("longitud").value = lng;
+    status.textContent = "🔎 Buscando dirección…";
+    const gps = document.getElementById("ubicacionGps");
+    let txt = lat + ", " + lng;
+    const dir = await reverseGeocode(lat, lng);
+    if(dir) txt = dir;
+    gps.value = txt;
+    gps.classList.remove("flash"); void gps.offsetWidth; gps.classList.add("flash");
+    status.textContent = dir
+      ? "✅ Dirección capturada"
+      : "✅ Ubicación capturada (solo coordenadas, no se encontraron calles)";
+    if(btnLimpiar) btnLimpiar.style.display = "";
+    guardarBorrador();
+    toast("📍 Ubicación capturada", "ok");
+  }, (err) => {
+    const msgs = {
+      1: "Permiso denegado. Actívalo en el navegador para capturar la ubicación.",
+      2: "No se pudo obtener la posición.",
+      3: "Tiempo de espera agotado."
+    };
+    status.textContent = "⚠ " + (msgs[err.code] || "Error de geolocalización");
+    toast("No se pudo capturar la ubicación", "error");
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+}
+
+function limpiarUbicacion(){
+  ["latitud","longitud","ubicacionGps"].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+  const st = document.getElementById("gpsStatus");
+  if(st) st.textContent = "Sin costo · captura la dirección con calles · si no hay, usa coordenadas";
+  const btn = document.getElementById("btnLimpiarGps");
+  if(btn) btn.style.display = "none";
+  guardarBorrador();
+}
 
 /* =========================================================
    CLIENTES: carga con respaldo de datos de prueba
@@ -843,7 +1083,7 @@ searchInput.addEventListener("input", () => {
   resultsBox.innerHTML = matches.length
     ? matches.map(c => `<div class="cr" data-rfc="${c.rfc}">
         <span class="avatar">${initials(c.razonSocial)}</span>
-        <span class="info"><b>${c.razonSocial}</b><small>${c.rfc} · ${c.ciudadRuta || "—"}</small></span>
+        <span class="info"><b>${c.razonSocial}</b><small>${c.rfc} · ${c.sucursal || "—"}</small></span>
       </div>`).join("")
     : `<div class="none">Sin resultados. Usa "+ Agregar cliente".</div>`;
   resultsBox.classList.add("show");
@@ -861,16 +1101,14 @@ document.addEventListener("click", e => {
   if(!e.target.closest(".client-search")) resultsBox.classList.remove("show");
 });
 
+// Autocompleta Razón Social, RFC y Sucursal
 function aplicarCliente(c){
-  [["razonSocial","razonSocial"],["rfc","rfc"],["nombreComprador","nombreComprador"],
-   ["telefono","telefono"],["nombreComercial","nombreComercial"],["ciudadRuta","ciudadRuta"]
-  ].forEach(([id,k]) => {
+  [["razonSocial","razonSocial"],["rfc","rfc"],["sucursal","sucursal"]].forEach(([id,k]) => {
     const el = document.getElementById(id);
     el.value = c[k] || "";
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   });
-  document.getElementById("giroDelNegocio").value = c.giroDelNegocio || "";
-  toast("Cliente cargado: campos autocompletados", "ok");
+  toast("Cliente cargado: Razón Social, RFC y Sucursal", "ok");
 }
 
 /* =========================================================
@@ -887,7 +1125,8 @@ async function saveNewClient(){
     nombreComprador: document.getElementById("nc_nombreComprador").value.trim(),
     telefono: document.getElementById("nc_telefono").value.trim(),
     nombreComercial: document.getElementById("nc_nombreComercial").value.trim(),
-    ciudadRuta: document.getElementById("nc_ciudadRuta").value.trim()
+    sucursal: document.getElementById("nc_sucursal").value.trim(),
+    direccion: document.getElementById("nc_direccion").value.trim()
   };
   if(!nuevo.rfc || !nuevo.razonSocial){
     toast("Razón Social y RFC son obligatorios", "error");
@@ -911,7 +1150,7 @@ async function saveNewClient(){
   aplicarCliente(nuevo);
   searchInput.value = nuevo.razonSocial;
   closeClientModal();
-  ["nc_razonSocial","nc_rfc","nc_nombreComprador","nc_telefono","nc_nombreComercial","nc_ciudadRuta"]
+  ["nc_razonSocial","nc_rfc","nc_nombreComprador","nc_telefono","nc_nombreComercial","nc_sucursal","nc_direccion"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("nc_giroDelNegocio").value = "";
 }
@@ -976,7 +1215,7 @@ function listadoFiltrado(){
   if (!q) return cuestionariosCache;
   return cuestionariosCache.filter(item => {
     const d = item.data || {};
-    const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.ciudadRuta, item.cliente]
+    const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.sucursal, d.direccion, item.cliente]
       .filter(Boolean).join(" ").toLowerCase();
     return texto.includes(q);
   });
@@ -1029,7 +1268,7 @@ function listarMisCuestionarios(){
   const contador = `<div class="filtro-count">${list.length} cuestionario${list.length !== 1 ? "s" : ""}${busquedaFiltro.trim() ? ' para "' + escapeHtml(busquedaFiltro.trim()) + '"' : ""}</div>`;
 
   cont.innerHTML = nota + contador + paginado.map((q, i) => {
-    const idx = inicio + i; // índice real en la lista completa
+    const idx = cuestionariosCache.indexOf(list[inicio + i]); // índice real en la lista completa
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -1109,126 +1348,194 @@ document.addEventListener("click", e => {
   }
 });
 
-/* ===== Exportar a Excel con formato (solo admin) ===== */
-function exportarExcel(){
-  if (typeof XLSX === "undefined") {
-    toast("La librería de Excel no cargó. Revisa tu conexión e intenta de nuevo", "error");
-    return;
+/* =========================================================
+   EXPORTAR EXCEL (robusto): XLSX con formato → CSV de respaldo
+   ========================================================= */
+const CAMPOS_EXCEL = [
+  ["Razón Social", d => d.razonSocial],
+  ["Nombre Comercial", d => d.nombreComercial],
+  ["RFC", d => d.rfc],
+  ["Giro del Negocio", d => d.giroDelNegocio],
+  ["Nombre del Comprador", d => d.nombreComprador],
+  ["Teléfono", d => d.telefono],
+  ["Correo Electrónico", d => d.correoElectronico],
+  ["Sucursal", d => d.sucursal],
+  ["Dirección", d => d.direccion],
+  ["Ubicación GPS", d => d.ubicacionGps || (d.latitud && d.longitud ? d.latitud + ", " + d.longitud : "")],
+  ["Puesto", d => d.puesto],
+  ["Consumo (Kg/mes)", d => d.consumoActual],
+  ["Consumo Total (Kg/mes)", d => d.consumoTotal],
+  ["Meses Estacionalidad", d => d.mesesEstacionalidad],
+  ["Presentación 1", d => d.presentacion1],
+  ["Presentación 2", d => d.presentacion2],
+  ["Presentación 3", d => d.presentacion3],
+  ["Camarón (%)", d => d.proteinaCamaron],
+  ["Tilapia (%)", d => d.proteinaTilapia],
+  ["Segmento", d => d.segmento],
+  ["Competencia (%)", d => d.participacionCompetencia],
+  ["Proveedor Competencia", d => d.proveedorCompetencia],
+  ["Facturación Mensual", d => d.facturacionMensual],
+  ["Condición de Compra", d => d.condicionCompra],
+  ["Establecimiento", d => d.establecimiento],
+  ["Frecuencia", d => d.frecuencia],
+  ["Días de Recepción", d => d.diasRecepcion],
+  ["Horario Recepción", d => d.horarioRecepcion],
+  ["Volumen por Entrega (Kg)", d => d.volumenPromedio],
+  ["Ubicación Entrega", d => d.ubicacionEntrega],
+  ["Requerimientos Especiales", d => d.requerimientosEspeciales],
+  ["Comentarios", d => d.comentarios],
+  ["Fecha Captura", d => d.fechaCaptura],
+  ["Foto (Enlace)", d => d.fotoUrl || d.foto_url || ""]
+];
+
+/* Descarga con Blob: funciona en iPhone, Android y escritorio */
+function descargarBlob(blob, nombre){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 600);
+}
+
+/* Intenta cargar la librería desde varios CDNs (el primero que funcione gana) */
+async function cargarLibExcel(){
+  if (typeof XLSX !== "undefined") return true;
+  const cdns = [
+    "https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js",
+    "https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.full.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+  ];
+  for (const src of cdns) {
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      if (typeof XLSX !== "undefined") return true;
+    } catch (e) { /* probamos el siguiente CDN */ }
   }
+  return false;
+}
+
+/* Respaldo: CSV (Excel lo abre perfecto, con acentos) */
+function descargarCSV(){
+  const hoy = new Date().toISOString().slice(0,10);
+  const filas = [CAMPOS_EXCEL.map(c => c[0])];
+  cuestionariosCache.forEach(q => {
+    const d = q.data || {};
+    filas.push(CAMPOS_EXCEL.map(c => {
+      const v = c[1](d);
+      return (v === undefined || v === null) ? "" : String(v);
+    }));
+  });
+  const csv = "\uFEFF" + filas.map(r =>
+    r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+  ).join("\r\n");
+  descargarBlob(new Blob([csv], { type: "text/csv;charset=utf-8;" }), "cuestionarios_acuacultura_" + hoy + ".csv");
+}
+
+async function exportarExcel(){
   if (!cuestionariosCache.length) {
     toast("No hay cuestionarios para exportar", "error");
     return;
   }
 
-  // [Título de columna, función que extrae el valor]
-  const campos = [
-    ["Razón Social", d => d.razonSocial],
-    ["Nombre Comercial", d => d.nombreComercial],
-    ["RFC", d => d.rfc],
-    ["Giro del Negocio", d => d.giroDelNegocio],
-    ["Nombre del Comprador", d => d.nombreComprador],
-    ["Teléfono", d => d.telefono],
-    ["Correo Electrónico", d => d.correoElectronico],
-    ["Ciudad / Ruta", d => d.ciudadRuta],
-    ["Puesto", d => d.puesto],
-    ["Consumo (Kg/mes)", d => d.consumoActual],
-    ["Consumo Total (Kg/mes)", d => d.consumoTotal],
-    ["Meses Estacionalidad", d => d.mesesEstacionalidad],
-    ["Presentación 1", d => d.presentacion1],
-    ["Presentación 2", d => d.presentacion2],
-    ["Presentación 3", d => d.presentacion3],
-    ["Camarón (%)", d => d.proteinaCamaron],
-    ["Tilapia (%)", d => d.proteinaTilapia],
-    ["Segmento", d => d.segmento],
-    ["Competencia (%)", d => d.participacionCompetencia],
-    ["Proveedor Competencia", d => d.proveedorCompetencia],
-    ["Facturación Mensual", d => d.facturacionMensual],
-    ["Condición de Compra", d => d.condicionCompra],
-    ["Establecimiento", d => d.establecimiento],
-    ["Frecuencia", d => d.frecuencia],
-    ["Días de Recepción", d => d.diasRecepcion],
-    ["Horario Recepción", d => d.horarioRecepcion],
-    ["Volumen por Entrega (Kg)", d => d.volumenPromedio],
-    ["Ubicación Entrega", d => d.ubicacionEntrega],
-    ["Requerimientos Especiales", d => d.requerimientosEspeciales],
-    ["Comentarios", d => d.comentarios],
-    ["Fecha Captura", d => d.fechaCaptura]
-  ];
-  const N = campos.length;
-  const hoy = new Date().toISOString().slice(0,10);
-
-  // 1) Matriz: título + encabezados + datos
-  const aoa = [];
-  const filaTitulo = new Array(N).fill("");
-  filaTitulo[0] = "Acción Acuicultura · Conocimiento Profundo del Cliente";
-  aoa.push(filaTitulo);
-  aoa.push(campos.map(c => c[0]));
-  cuestionariosCache.forEach(q => {
-    const d = q.data || {};
-    aoa.push(campos.map(c => {
-      const v = c[1](d);
-      return (v === undefined || v === null) ? "" : String(v);
-    }));
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  const lastCol = XLSX.utils.encode_col(N - 1);
-
-  // 2) Estilos
-  const bordes = {
-    top:{style:"thin",color:{rgb:"C9D6DE"}}, bottom:{style:"thin",color:{rgb:"C9D6DE"}},
-    left:{style:"thin",color:{rgb:"C9D6DE"}}, right:{style:"thin",color:{rgb:"C9D6DE"}}
-  };
-  const estiloTitulo = {
-    font:{bold:true,sz:14,color:{rgb:"FFFFFF"}},
-    fill:{patternType:"solid",fgColor:{rgb:"0B3C4D"}},
-    alignment:{horizontal:"center",vertical:"center"}
-  };
-  const estiloHeader = {
-    font:{bold:true,sz:10,color:{rgb:"FFFFFF"}},
-    fill:{patternType:"solid",fgColor:{rgb:"0E7490"}},
-    alignment:{horizontal:"center",vertical:"center",wrapText:true},
-    border:bordes
-  };
-  const estiloPar   = { border:bordes, alignment:{vertical:"top",wrapText:true} };
-  const estiloImpar = { border:bordes, alignment:{vertical:"top",wrapText:true}, fill:{patternType:"solid",fgColor:{rgb:"EEF7FA"}} };
-
-  ws["!merges"] = [{ s:{r:0,c:0}, e:{r:0,c:N-1} }];
-
-  const cTitulo = ws["A1"];
-  if (cTitulo) cTitulo.s = estiloTitulo;
-
-  for (let c = 0; c < N; c++) {
-    const cell = ws[XLSX.utils.encode_cell({r:1,c})];
-    if (cell) cell.s = estiloHeader;
-  }
-  for (let r = 2; r < aoa.length; r++) {
-    const estilo = (r % 2 === 0) ? estiloPar : estiloImpar;
-    for (let c = 0; c < N; c++) {
-      const cell = ws[XLSX.utils.encode_cell({r,c})];
-      if (cell) cell.s = estilo;
-    }
+  const ok = await cargarLibExcel();
+  if (!ok) {
+    descargarCSV();
+    toast("Sin librería Excel · se descargó CSV (ábrelo en Excel)", "ok");
+    return;
   }
 
-  // 3) Tamaños: altura de título y encabezados + ancho automático de columnas
-  ws["!rows"] = [{ hpt:32 }, { hpt:32 }];
-  ws["!cols"] = campos.map(c => {
-    let maxLen = c[0].length;
+  try {
+    const N = CAMPOS_EXCEL.length;
+    const hoy = new Date().toISOString().slice(0,10);
+
+    // 1) Matriz: título + encabezados + datos
+    const aoa = [];
+    const filaTitulo = new Array(N).fill("");
+    filaTitulo[0] = "Acción Acuacultura · Conocimiento Profundo del Cliente";
+    aoa.push(filaTitulo);
+    aoa.push(CAMPOS_EXCEL.map(c => c[0]));
     cuestionariosCache.forEach(q => {
-      const v = c[1](q.data || {});
-      if (v) maxLen = Math.max(maxLen, String(v).length);
+      const d = q.data || {};
+      aoa.push(CAMPOS_EXCEL.map(c => {
+        const v = c[1](d);
+        return (v === undefined || v === null) ? "" : String(v);
+      }));
     });
-    return { wch: Math.min(38, Math.max(12, maxLen + 2)) };
-  });
 
-  // 4) Autofiltro sobre los encabezados
-  ws["!autofilter"] = { ref: "A2:" + lastCol + aoa.length };
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const lastCol = XLSX.utils.encode_col(N - 1);
 
-  // 5) Crear y descargar
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Cuestionarios");
-  XLSX.writeFile(wb, "cuestionarios_acuicultura_" + hoy + ".xlsx");
-  toast("Excel descargado: " + cuestionariosCache.length + " cuestionarios", "ok");
+    // 2) Estilos
+    const bordes = {
+      top:{style:"thin",color:{rgb:"C9D6DE"}}, bottom:{style:"thin",color:{rgb:"C9D6DE"}},
+      left:{style:"thin",color:{rgb:"C9D6DE"}}, right:{style:"thin",color:{rgb:"C9D6DE"}}
+    };
+    const estiloTitulo = {
+      font:{bold:true,sz:14,color:{rgb:"FFFFFF"}},
+      fill:{patternType:"solid",fgColor:{rgb:"0B3C4D"}},
+      alignment:{horizontal:"center",vertical:"center"}
+    };
+    const estiloHeader = {
+      font:{bold:true,sz:10,color:{rgb:"FFFFFF"}},
+      fill:{patternType:"solid",fgColor:{rgb:"0E7490"}},
+      alignment:{horizontal:"center",vertical:"center",wrapText:true},
+      border:bordes
+    };
+    const estiloPar   = { border:bordes, alignment:{vertical:"top",wrapText:true} };
+    const estiloImpar = { border:bordes, alignment:{vertical:"top",wrapText:true}, fill:{patternType:"solid",fgColor:{rgb:"EEF7FA"}} };
+
+    ws["!merges"] = [{ s:{r:0,c:0}, e:{r:0,c:N-1} }];
+
+    const cTitulo = ws["A1"];
+    if (cTitulo) cTitulo.s = estiloTitulo;
+
+    for (let c = 0; c < N; c++) {
+      const cell = ws[XLSX.utils.encode_cell({r:1,c})];
+      if (cell) cell.s = estiloHeader;
+    }
+    for (let r = 2; r < aoa.length; r++) {
+      const estilo = (r % 2 === 0) ? estiloPar : estiloImpar;
+      for (let c = 0; c < N; c++) {
+        const cell = ws[XLSX.utils.encode_cell({r,c})];
+        if (cell) cell.s = estilo;
+      }
+    }
+
+    // 3) Tamaños de filas y columnas
+    ws["!rows"] = [{ hpt:32 }, { hpt:32 }];
+    ws["!cols"] = CAMPOS_EXCEL.map(c => {
+      let maxLen = c[0].length;
+      cuestionariosCache.forEach(q => {
+        const v = c[1](q.data || {});
+        if (v) maxLen = Math.max(maxLen, String(v).length);
+      });
+      return { wch: Math.min(38, Math.max(12, maxLen + 2)) };
+    });
+
+    // 4) Autofiltro
+    ws["!autofilter"] = { ref: "A2:" + lastCol + aoa.length };
+
+    // 5) Crear y descargar con Blob (más confiable que writeFile)
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Cuestionarios");
+    const datos = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true });
+    descargarBlob(
+      new Blob([datos], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+      "cuestionarios_acuacultura_" + hoy + ".xlsx"
+    );
+    toast("Excel descargado: " + cuestionariosCache.length + " cuestionarios", "ok");
+  } catch (e) {
+    descargarCSV();
+    toast("No se pudo generar el .xlsx · se descargó CSV", "ok");
+  }
 }
 
 /* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
@@ -1248,11 +1555,16 @@ function verCuestionario(idx){
   const fechaCapturaTxt = d.fechaCaptura
     ? new Date(d.fechaCaptura + "T00:00:00").toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
     : "";
+  const fotoEv = d.fotoUrl || d.foto_url || d.fotoLocal || "";
+
+  const gpsCampo = (d.latitud && d.longitud)
+    ? `<div class="paper-field"><span class="lbl">Ubicación GPS</span><div class="val"><a href="https://www.google.com/maps?q=${encodeURIComponent(d.latitud + "," + d.longitud)}" target="_blank" rel="noopener">📍 Ver en Google Maps</a></div></div>`
+    : campoPapel("Ubicación GPS", d.ubicacionGps);
 
   const html = `
     <div class="paper">
       <div class="paper-head">
-        <div class="paper-brand"><span class="ico">🐟</span><b>Acción<br>Acuicultura</b></div>
+        <div class="paper-brand"><img src="accion_acuicola.png" class="ico-img" alt="Acción Acuacultura"><b>Acción<br>Acuacultura</b></div>
         <div class="paper-titles">
           <h3>Conocimiento Profundo del Cliente</h3>
           <p>Cuestionario</p>
@@ -1275,7 +1587,9 @@ function verCuestionario(idx){
           </div>
           <div>
             ${campoPapel("Nombre Comercial", d.nombreComercial)}
-            ${campoPapel("Ciudad / Ruta", d.ciudadRuta)}
+            ${campoPapel("Sucursal", d.sucursal)}
+            ${campoPapel("Dirección", d.direccion)}
+            ${gpsCampo}
             ${campoPapel("Puesto", d.puesto)}
             ${campoPapel("Correo Electrónico", d.correoElectronico)}
           </div>
@@ -1338,6 +1652,13 @@ function verCuestionario(idx){
           <div class="val">${d.comentarios && String(d.comentarios).trim() ? escapeHtml(d.comentarios) : "—"}</div>
         </div>
       </div>
+
+      <div class="paper-sec">
+        <h4>Evidencia fotográfica</h4>
+        ${fotoEv
+          ? `<img src="${escapeHtml(fotoEv)}" alt="Foto de evidencia" style="max-width:100%;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);">`
+          : `<p style="color:var(--muted);margin:0;">—</p>`}
+      </div>
     </div>`;
 
   document.getElementById("printContent").innerHTML = html;
@@ -1377,6 +1698,75 @@ function toast(msg, type){
 }
 
 /* =========================================================
+   FOTO EN VIVO (obligatoria) · cámara directa, sin galería
+   ========================================================= */
+let fotoBlob = null;
+let fotoDataUrl = null;
+let camStream = null;
+let camActiva = false;
+
+async function abrirCamara(){
+  const btnAbrir = document.getElementById("btnAbrirCam");
+  const camBox = document.getElementById("camBox");
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast("Tu dispositivo no permite cámara directa", "error");
+      return;
+    }
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
+      audio: false
+    });
+    const video = document.getElementById("camVideo");
+    video.srcObject = camStream;
+    await video.play().catch(() => {});
+    camActiva = true;
+    camBox.style.display = "block";
+    btnAbrir.style.display = "none";
+    document.getElementById("fotoPreview").style.display = "none";
+  } catch (err) {
+    toast("No se pudo abrir la cámara. Permite el acceso en tu navegador", "error");
+  }
+}
+
+function tomarFoto(){
+  const video = document.getElementById("camVideo");
+  if (!camActiva || !video || !video.videoWidth) {
+    toast("Espera a que cargue la cámara", "error");
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  const MAX = 1024;
+  const escala = Math.min(1, MAX / video.videoWidth);
+  canvas.width = Math.round(video.videoWidth * escala);
+  canvas.height = Math.round(video.videoHeight * escala);
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  fotoDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+  canvas.toBlob(blob => {
+    fotoBlob = blob;
+    cerrarCamara();
+    document.getElementById("imgPreview").src = URL.createObjectURL(blob);
+    document.getElementById("fotoPreview").style.display = "block";
+    document.getElementById("btnAbrirCam").style.display = "none";
+    document.getElementById("fotoField").classList.remove("falta-foto");
+    if(current === total-1) renderResumen();
+    guardarBorrador(); // guarda la foto en el borrador
+  }, "image/jpeg", 0.7);
+}
+
+function cerrarCamara(){
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+  camActiva = false;
+  const camBox = document.getElementById("camBox");
+  if (camBox) camBox.style.display = "none";
+  const video = document.getElementById("camVideo");
+  if (video) video.srcObject = null;
+}
+
+/* =========================================================
    ENVÍO: validación estricta de obligatorios + guardado
    ========================================================= */
 document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
@@ -1384,6 +1774,8 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
 
   // 1. Limpiar marcas anteriores
   document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
+  const fotoField = document.getElementById("fotoField");
+  if (fotoField) fotoField.classList.remove("falta-foto");
 
   // 2. Campos obligatorios (agrega o quita a tu gusto)
   const importantes = {
@@ -1409,7 +1801,8 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     toast("Faltan: " + faltantes.join(", "), "error");
     const pasoDeCampo = {
       razonSocial:0, rfc:0, giroDelNegocio:0, nombreComprador:0, telefono:0,
-      nombreComercial:0, ciudadRuta:0, puesto:0, correoElectronico:0, fechaCaptura:0,
+      nombreComercial:0, sucursal:0, direccion:0, puesto:0, correoElectronico:0, fechaCaptura:0,
+      ubicacionGps:0,
       consumoActual:1, mesesEstacionalidad:1, presentacion1:1, presentacion2:1,
       presentacion3:1, proteinaCamaron:1, proteinaTilapia:1, consumoTotal:1,
       segmento:1, participacionCompetencia:1, proveedorCompetencia:1,
@@ -1424,6 +1817,14 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     return; // 🚫 NO guarda
   }
 
+  // 4b. Foto en vivo obligatoria → sin foto NO se guarda
+  if (!fotoBlob) {
+    if (fotoField) fotoField.classList.add("falta-foto");
+    toast("La foto de evidencia es obligatoria", "error");
+    goStep(4);
+    return; // 🚫 NO guarda
+  }
+
   // 5. Todo completo → guardado normal
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
@@ -1435,7 +1836,8 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     data.diasRecepcion = dias.join(", ");
     data.creadoPor = (usuarioActual && usuarioActual.id) || "";
 
-    guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+    // Fecha automática: siempre la de hoy (el campo es de solo lectura)
+    data.fechaCaptura = new Date().toISOString().slice(0,10);
 
     // Token de sesión (opcional, nunca bloquea el guardado)
     let token = "";
@@ -1445,6 +1847,27 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
         token = s && s.data && s.data.session ? s.data.session.access_token : "";
       }
     } catch (e) { token = ""; }
+
+    // Foto: subida directa a Supabase Storage (0 créditos de Netlify)
+    if (fotoBlob && typeof supabaseClient !== "undefined") {
+      try {
+        const nombre = "q-" + Date.now() + "-" + Math.random().toString(36).slice(2,9) + ".jpg";
+        const { error: upErr } = await supabaseClient.storage
+          .from("fotos")
+          .upload(nombre, fotoBlob, { contentType: "image/jpeg" });
+        if (!upErr) {
+          data.fotoUrl = supabaseClient.storage.from("fotos").getPublicUrl(nombre).data.publicUrl;
+        } else {
+          data.fotoUrl = "";
+        }
+      } catch (e) { data.fotoUrl = ""; }
+    } else {
+      data.fotoUrl = "";
+    }
+    // Si no hay URL (modo demo o falló la subida), guardamos la foto comprimida local
+    if (!data.fotoUrl && fotoDataUrl) data.fotoLocal = fotoDataUrl;
+
+    guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
 
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
@@ -1458,7 +1881,7 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "red");
     }
-    toast("Cuestionario guardado en la base de datos", "ok");
+    toast("Cuestionario y foto guardados en la base", "ok");
   } catch (err) {
     toast("Guardado en este navegador · ya puedes verlo en 'Mis cuestionarios'", "ok");
   } finally {
@@ -1481,12 +1904,29 @@ function guardarDemo(data){
 
 function resetForm(){
   document.getElementById("cuestionarioForm").reset();
-  document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
+  document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10); // siempre hoy
   document.querySelectorAll(".dia-check").forEach(c => {
     c.checked = false;
     c.closest(".day-pill").classList.remove("on");
   });
   searchInput.value = "";
+  // Limpiar foto y cámara
+  cerrarCamara();
+  fotoBlob = null;
+  fotoDataUrl = null;
+  const btnAbrir = document.getElementById("btnAbrirCam");
+  if (btnAbrir) btnAbrir.style.display = "";
+  const prev = document.getElementById("fotoPreview");
+  if (prev) prev.style.display = "none";
+  const fld = document.getElementById("fotoField");
+  if (fld) fld.classList.remove("falta-foto");
+  // Limpiar GPS
+  const gpsSt = document.getElementById("gpsStatus");
+  if (gpsSt) gpsSt.textContent = "Sin costo · captura la dirección con calles · si no hay, usa coordenadas";
+  const btnG = document.getElementById("btnLimpiarGps");
+  if (btnG) btnG.style.display = "none";
+  // Limpiar borrador
+  borrarBorrador();
   current = 0;
   renderSteps();
 }
@@ -1554,15 +1994,14 @@ async function logout(){
 }
 
 /* =========================================================
-   ARRANQUE
+   ARRANQUE (sesión primero, luego los cuestionarios)
    ========================================================= */
-renderSteps();
-cargarCuestionarios();
-iniciarSesionSupabase();
+(async function init(){
+  await iniciarSesionSupabase();
+  await cargarCuestionarios();
+  renderSteps();
+  restaurarBorrador();
+})();
 </script>
 </body>
 </html>
-
-
-
-
