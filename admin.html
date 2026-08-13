@@ -117,7 +117,7 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <span class="badge act" id="userBadge" style="display:none;"></span>
-      <a href="algomas.html" class="btn ghost">📝 Cuestionario</a>
+      <a href="cuestionario.html" class="btn ghost">📝 Cuestionario</a>
       <button class="btn ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </div>
@@ -160,7 +160,7 @@
   </div>
 
   <div class="card">
-    <h2>🏢 Clientes</h2>
+    <h2>🏢 Clientes <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;">· desde Supabase</span></h2>
     <div class="toolbar">
       <input type="text" id="clientSearchBox" placeholder="Buscar por razón social, RFC o sucursal…" oninput="renderClientes()">
       <button class="btn primary" onclick="openClientModal()">+ Agregar cliente</button>
@@ -343,7 +343,6 @@ function destroyCharts(){
 function renderGraficas(){
   destroyCharts();
   if (typeof Chart === "undefined" || !cuestionarios.length) return;
-  // Por segmento
   const seg = {};
   cuestionarios.forEach(c => { const s = (c.data && c.data.segmento) || "Sin segmento"; seg[s] = (seg[s]||0)+1; });
   charts.segmentos = new Chart(document.getElementById("chSegmentos"), {
@@ -351,7 +350,6 @@ function renderGraficas(){
     data: { labels: Object.keys(seg), datasets: [{ label:"Cuestionarios", data: Object.values(seg), backgroundColor:"#0e7490", borderRadius:6 }] },
     options: { plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
   });
-  // Por capturista
   const cap = {};
   cuestionarios.forEach(c => { const u = capturistaDe(c); cap[u] = (cap[u]||0)+1; });
   charts.capturistas = new Chart(document.getElementById("chCapturistas"), {
@@ -359,12 +357,11 @@ function renderGraficas(){
     data: { labels: Object.keys(cap), datasets: [{ data: Object.values(cap), backgroundColor:["#0e7490","#06b6d4","#f59e0b","#10b981","#8b5cf6","#ef4444","#f97316","#14b8a6"] }] },
     options: { plugins:{ legend:{ position:"bottom" } } }
   });
-  // Por mes (fechaCaptura)
   const meses = {};
   cuestionarios.forEach(c => {
     const f = (c.data && c.data.fechaCaptura) || "";
     if(!f) return;
-    const m = f.slice(0,7); // YYYY-MM
+    const m = f.slice(0,7);
     meses[m] = (meses[m]||0)+1;
   });
   const orden = Object.keys(meses).sort();
@@ -375,20 +372,20 @@ function renderGraficas(){
   });
 }
 
-/* ============ CRUD de clientes ============ */
+/* ============ CRUD de clientes (DIRECTO a Supabase) ============ */
 let clientesAdmin = [];
 let clienteEditandoId = null;
 const GIROS = ["Restaurante","Hotel","Pescadería","Supermercado","Mayoreo Nacional","Mayoreo Rutas","Autoservicio Regional","Industrial"];
 
 async function cargarClientes(){
   try{
-    const res = await fetch("/api/clients");
-    if(res.ok){
-      const data = await res.json();
-      clientesAdmin = Array.isArray(data) ? data : [];
-    } else throw new Error("red");
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes").select("*");
+    if (error) throw error;
+    clientesAdmin = data || [];
   }catch(e){
     clientesAdmin = [];
+    toast("Error leyendo clientes: " + (e && e.message ? e.message : "sin conexión"), "error");
   }
   renderClientes();
 }
@@ -451,8 +448,9 @@ async function guardarClienteModal(){
 
   if(clienteEditandoId){
     try{
+      if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
       const { error } = await supabaseClient.from("clientes").update(datos).eq("id", clienteEditandoId);
-      if(error) throw error;
+      if (error) throw error;
       toast("Cliente actualizado", "ok");
     }catch(e){
       const idx = clientesAdmin.findIndex(c => c.id === clienteEditandoId || c.rfc === clienteEditandoId);
@@ -460,22 +458,14 @@ async function guardarClienteModal(){
       toast(e && e.message ? "Error: " + e.message : "Cliente actualizado (local)", e && e.message ? "error" : "ok");
     }
   }else{
-    let ok = false;
     try{
-      const res = await fetch("/api/clients", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(datos) });
-      if(res.ok) ok = true;
-    }catch(e){}
-    if(ok){
+      if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+      const { error } = await supabaseClient.from("clientes").insert(datos);
+      if (error) throw error;
       toast("Cliente creado", "ok");
-    }else{
-      try{
-        const { error } = await supabaseClient.from("clientes").insert(datos);
-        if(error) throw error;
-        toast("Cliente creado en Supabase", "ok");
-      }catch(e){
-        clientesAdmin.push(datos);
-        toast("Modo demo: cliente agregado localmente", "ok");
-      }
+    }catch(e){
+      clientesAdmin.push(datos);
+      toast(e && e.message ? "Error: " + e.message : "Cliente creado (local)", e && e.message ? "error" : "ok");
     }
   }
   closeClientModal();
@@ -487,8 +477,9 @@ async function eliminarCliente(ref){
   if(!c) return;
   if(!confirm("¿Eliminar al cliente '" + (c.razonSocial || "") + "'?")) return;
   try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
     const { error } = await supabaseClient.from("clientes").delete().eq("id", c.id);
-    if(error) throw error;
+    if (error) throw error;
     toast("Cliente eliminado", "ok");
   }catch(e){
     if(c.id){
@@ -619,7 +610,7 @@ function exportCSV(){
 function fatal(msg){
   const el = document.getElementById("fatalError");
   if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
-  document.body.style.opacity = "1"; // nunca dejar la página en blanco
+  document.body.style.opacity = "1";
 }
 
 (async () => {
@@ -633,7 +624,6 @@ function fatal(msg){
   }
   document.body.style.opacity = "1";
 
-  // Giro del negocio (modal clientes)
   document.getElementById("m_giroDelNegocio").innerHTML =
     `<option value="">Selecciona…</option>` + GIROS.map(g => `<option value="${g}">${g}</option>`).join("");
 
