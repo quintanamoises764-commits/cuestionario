@@ -76,7 +76,6 @@
     animation:wave 9s linear infinite;
   }
   @keyframes wave{from{background-position-x:0;}to{background-position-x:-1440px;}}
-  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
   @keyframes fadeDown{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:none;}}
 
   /* ===== Chip de usuario ===== */
@@ -172,7 +171,6 @@
     25%{transform:translateX(-4px);}
     75%{transform:translateX(4px);}
   }
-  /* Foto de evidencia: aviso si falta */
   .field.falta-foto{
     border:2px solid var(--error);
     border-radius:12px;
@@ -180,7 +178,6 @@
     background:#fef2f2;
     animation:shake .3s ease;
   }
-  /* Caja de cámara */
   .cam-box{
     border:1.5px solid var(--border);
     border-radius:12px;
@@ -457,7 +454,7 @@
     <!-- ===== 1 · DATOS GENERALES ===== -->
     <section class="card step" data-step="0" data-label="Datos">
       <h2><span class="ico">🧾</span> Datos generales</h2>
-      <p class="desc">Busca un cliente para autocompletar Razón Social, RFC y Sucursal (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
+      <p class="desc">Busca un cliente para autocompletar (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
       <div class="grid">
         <div class="field full client-search">
           <label>Buscar cliente · Razón Social o RFC</label>
@@ -494,7 +491,7 @@
         </div>
         <div class="field">
           <label>Dirección</label>
-          <input type="text" name="direccion" id="direccion" placeholder="Calle, número, colonia…">
+          <input type="text" name="direccion" id="direccion">
         </div>
         <div class="field">
           <label>Puesto</label>
@@ -504,21 +501,21 @@
           <label>Correo Electrónico</label>
           <input type="email" name="correoElectronico" placeholder="correo@empresa.com">
         </div>
+        <div class="field full">
+          <label>📍 Ubicación de la visita (dirección)</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" name="ubicacionGps" id="ubicacionGps" placeholder="Av. Hidalgo 45, Col. Centro…" style="flex:1;min-width:200px;">
+            <button type="button" class="btn ghost small" onclick="capturarUbicacion()" style="white-space:nowrap;">📍 Capturar</button>
+            <button type="button" class="btn link small" id="btnLimpiarGps" onclick="limpiarGps()" style="display:none;">✖ Limpiar</button>
+          </div>
+          <p class="desc" id="gpsStatus" style="margin:6px 0 0;">Toca "Capturar" para tomar tu ubicación actual (convierte el GPS en dirección con calles).</p>
+          <input type="hidden" name="latitud" id="latitud">
+          <input type="hidden" name="longitud" id="longitud">
+        </div>
         <div class="field">
           <label>Fecha de Captura <span style="color:var(--muted);text-transform:none;">· automática</span></label>
           <input type="date" name="fechaCaptura" id="fechaCaptura" readonly style="background:#f8fafc;color:#64748b;cursor:not-allowed;">
           <p class="desc" style="margin:2px 0 0;">🔒 Se guarda automáticamente la fecha de hoy · no editable</p>
-        </div>
-        <div class="field full">
-          <label>📍 Ubicación de la visita (dirección)</label>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <input type="text" id="ubicacionGps" name="ubicacionGps" readonly placeholder="Pulsa 'Capturar' para registrar…" style="flex:1;min-width:180px;background:#f8fafc;color:#64748b;">
-            <button type="button" class="btn ghost small" onclick="capturarUbicacion()">📍 Capturar</button>
-            <button type="button" class="btn link small" id="btnLimpiarGps" style="display:none;" onclick="limpiarUbicacion()">✖ Quitar</button>
-          </div>
-          <input type="hidden" name="latitud" id="latitud">
-          <input type="hidden" name="longitud" id="longitud">
-          <p class="desc" style="margin:2px 0 0;" id="gpsStatus">Sin costo · captura la dirección con calles · si no hay, usa coordenadas</p>
         </div>
       </div>
     </section>
@@ -642,7 +639,6 @@
         <label>📸 Foto de Evidencia <span style="color:var(--error);">*</span></label>
         <p class="desc" style="margin:0 0 10px;">Debe tomarse con la cámara en este momento · no se aceptan fotos de la galería</p>
 
-        <!-- Visor de cámara en vivo -->
         <div class="cam-box" id="camBox" style="display:none;">
           <video id="camVideo" autoplay playsinline muted></video>
           <div class="cam-actions">
@@ -651,10 +647,8 @@
           </div>
         </div>
 
-        <!-- Botón para abrir la cámara -->
         <button type="button" class="btn primary" id="btnAbrirCam" onclick="abrirCamara()">📷 Abrir cámara</button>
 
-        <!-- Vista previa de la foto tomada -->
         <div id="fotoPreview" style="display:none;margin-top:12px;">
           <img id="imgPreview" style="max-width:100%;border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);">
           <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
@@ -686,7 +680,7 @@
     <div class="modal-head">
       <div>
         <h3>Agregar cliente nuevo</h3>
-        <p class="sub">Se guarda en la base local de prueba por ahora.</p>
+        <p class="sub">Se guarda en la base de Supabase.</p>
       </div>
       <button class="modal-close" onclick="closeClientModal()">&times;</button>
     </div>
@@ -777,19 +771,19 @@ const LISTAS = {
 };
 
 /* =========================================================
-   DATOS DE PRUEBA LOCALES (clientes)
+   DATOS DE PRUEBA LOCALES (clientes, solo si no hay BD)
    ========================================================= */
 const MOCK_CLIENTES = [
-  { razonSocial:"Mariscos del Golfo S.A. de C.V.",  rfc:"MGO8501012T4", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Carlos Márquez",   telefono:"993 318 4521", nombreComercial:"Mariscos del Golfo",  sucursal:"Ciudad del Carmen", direccion:"Av. Hidalgo 45, Col. Centro" },
-  { razonSocial:"Restaurante La Perla del Pacífico", rfc:"RPP910503K87", giroDelNegocio:"Restaurante",          nombreComprador:"Laura Ibarra",     telefono:"664 900 1823", nombreComercial:"La Perla",            sucursal:"Tijuana", direccion:"Blvd. Agua Caliente 1020, Zona Río" },
-  { razonSocial:"Pescadería El Muelle",              rfc:"PEM950617Q31", giroDelNegocio:"Pescadería",           nombreComprador:"Jorge Sánchez",    telefono:"229 220 9876", nombreComercial:"El Muelle",           sucursal:"Veracruz", direccion:"Malecón 250, Centro Histórico" },
-  { razonSocial:"Grupo Camarón Dorado S.A.P.I.",     rfc:"GCD880214N56", giroDelNegocio:"Mayoreo Rutas",       nombreComprador:"Ana Beltrán",      telefono:"668 815 0047", nombreComercial:"Camarón Dorado",      sucursal:"Mazatlán", direccion:"Av. del Mar 88, Zona Dorada" },
-  { razonSocial:"Supermercados del Mar S.A.",        rfc:"SMA0001251C9", giroDelNegocio:"Supermercado",         nombreComprador:"Ricardo Fuentes",  telefono:"55 5240 1133", nombreComercial:"Súper del Mar",       sucursal:"CDMX", direccion:"Av. Insurgentes Sur 400, Col. Del Valle" },
-  { razonSocial:"Hotel Costa Azul S.A. de C.V.",     rfc:"HCA0603312F8", giroDelNegocio:"Hotel",                nombreComprador:"Mónica Salazar",   telefono:"998 884 2210", nombreComercial:"Hotel Costa Azul",    sucursal:"Cancún", direccion:"Blvd. Kukulcán Km 9, Zona Hotelera" },
-  { razonSocial:"Acuícola del Sureste S.A. de C.V.", rfc:"ASE0409053J1", giroDelNegocio:"Industrial",           nombreComprador:"Fernando Pech",    telefono:"981 816 7745", nombreComercial:"Acuícola Sureste",    sucursal:"Campeche", direccion:"Calle 10 No. 120, Col. Centro" },
-  { razonSocial:"Pescados El Anzuelo",               rfc:"PEA0712184D2", giroDelNegocio:"Pescadería",           nombreComprador:"Guadalupe Torres", telefono:"222 273 5581", nombreComercial:"El Anzuelo",          sucursal:"Puebla", direccion:"Av. Juárez 1500, Col. La Paz" },
-  { razonSocial:"Grupo Pacific Shrimp S.A. de C.V.", rfc:"GPS0508123M5", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Héctor Ramos",     telefono:"667 710 4432", nombreComercial:"Pacific Shrimp",      sucursal:"Culiacán", direccion:"Blvd. Enrique Sánchez Alonso 3000, Col. Chapultepec" },
-  { razonSocial:"Mercado del Mar",                   rfc:"MDM0302247K9", giroDelNegocio:"Autoservicio Regional", nombreComprador:"Silvia Núñez",     telefono:"81 8123 7700", nombreComercial:"Mercado del Mar",     sucursal:"Monterrey", direccion:"Av. Constitución 700, Centro" }
+  { razonSocial:"Mariscos del Golfo S.A. de C.V.",  rfc:"MGO8501012T4", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Carlos Márquez",   telefono:"993 318 4521", nombreComercial:"Mariscos del Golfo",  sucursal:"Ciudad del Carmen", direccion:"Av. Hidalgo 45" },
+  { razonSocial:"Restaurante La Perla del Pacífico", rfc:"RPP910503K87", giroDelNegocio:"Restaurante",          nombreComprador:"Laura Ibarra",     telefono:"664 900 1823", nombreComercial:"La Perla",            sucursal:"Tijuana", direccion:"Blvd. Agua Caliente 1200" },
+  { razonSocial:"Pescadería El Muelle",              rfc:"PEM950617Q31", giroDelNegocio:"Pescadería",           nombreComprador:"Jorge Sánchez",    telefono:"229 220 9876", nombreComercial:"El Muelle",           sucursal:"Veracruz", direccion:"Malecón 88" },
+  { razonSocial:"Grupo Camarón Dorado S.A.P.I.",     rfc:"GCD880214N56", giroDelNegocio:"Mayoreo Rutas",       nombreComprador:"Ana Beltrán",      telefono:"668 815 0047", nombreComercial:"Camarón Dorado",      sucursal:"Mazatlán", direccion:"Av. del Mar 310" },
+  { razonSocial:"Supermercados del Mar S.A.",        rfc:"SMA0001251C9", giroDelNegocio:"Supermercado",         nombreComprador:"Ricardo Fuentes",  telefono:"55 5240 1133", nombreComercial:"Súper del Mar",       sucursal:"CDMX", direccion:"Calz. de Tlalpan 2500" },
+  { razonSocial:"Hotel Costa Azul S.A. de C.V.",     rfc:"HCA0603312F8", giroDelNegocio:"Hotel",                nombreComprador:"Mónica Salazar",   telefono:"998 884 2210", nombreComercial:"Hotel Costa Azul",    sucursal:"Cancún", direccion:"Blvd. Kukulcán km 9" },
+  { razonSocial:"Acuícola del Sureste S.A. de C.V.", rfc:"ASE0409053J1", giroDelNegocio:"Industrial",           nombreComprador:"Fernando Pech",    telefono:"981 816 7745", nombreComercial:"Acuícola Sureste",    sucursal:"Campeche", direccion:"Carretera Campeche-Escárcega km 12" },
+  { razonSocial:"Pescados El Anzuelo",               rfc:"PEA0712184D2", giroDelNegocio:"Pescadería",           nombreComprador:"Guadalupe Torres", telefono:"222 273 5581", nombreComercial:"El Anzuelo",          sucursal:"Puebla", direccion:"Av. Juárez 45" },
+  { razonSocial:"Grupo Pacific Shrimp S.A. de C.V.", rfc:"GPS0508123M5", giroDelNegocio:"Mayoreo Nacional",     nombreComprador:"Héctor Ramos",     telefono:"667 710 4432", nombreComercial:"Pacific Shrimp",      sucursal:"Culiacán", direccion:"Blvd. Enrique Sánchez Alonso 2100" },
+  { razonSocial:"Mercado del Mar",                   rfc:"MDM0302247K9", giroDelNegocio:"Autoservicio Regional", nombreComprador:"Silvia Núñez",     telefono:"81 8123 7700", nombreComercial:"Mercado del Mar",     sucursal:"Monterrey", direccion:"Av. Constitución 900" }
 ];
 
 /* =========================================================
@@ -812,7 +806,7 @@ function llenarChecks(){
 ["giroDelNegocio","segmento","condicionCompra","frecuencia","establecimiento"].forEach(c => llenarSelect(c, LISTAS[c]));
 llenarSelect("nc_giroDelNegocio", LISTAS.giroDelNegocio);
 llenarChecks();
-document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10); // fecha de hoy (bloqueada)
+document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
 
 /* =========================================================
    WIZARD (asistente de 5 pasos)
@@ -826,6 +820,7 @@ const stepPct = document.getElementById("stepPct");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const submitBtn = document.getElementById("submitBtn");
+const cuestionarioForm = document.getElementById("cuestionarioForm");
 let current = 0;
 
 function renderResumen(){
@@ -870,200 +865,33 @@ function renderSteps(){
 }
 function goStep(i){
   if(i < 0 || i >= total || i === current) return;
-  // Si sales del paso de comentarios, apaga la cámara (sin borrar la foto ya tomada)
   if(i !== 4) cerrarCamara();
   current = i;
   renderSteps();
-  guardarBorrador(); // guarda el paso actual en el borrador
 }
 prevBtn.addEventListener("click", () => goStep(current-1));
 nextBtn.addEventListener("click", () => goStep(current+1));
 document.getElementById("clearBtn").addEventListener("click", () => {
   if(confirm("¿Seguro que quieres limpiar todo el cuestionario?")) resetForm();
 });
-document.getElementById("cuestionarioForm").addEventListener("input", () => {
+cuestionarioForm.addEventListener("input", () => {
   if(current === total-1) renderResumen();
-  programarBorrador();
-});
-document.getElementById("diasRecepcion").addEventListener("change", () => {
-  if(current === total-1) renderResumen();
-  programarBorrador();
-});
-window.addEventListener("beforeunload", guardarBorrador);
-
-/* =========================================================
-   AUTOGUARDADO (borrador en localStorage, sin costo)
-   ========================================================= */
-const KEY_BORRADOR = "borrador_cuestionario_v1";
-
-function serializarFormulario(){
-  const data = {};
-  new FormData(document.getElementById("cuestionarioForm")).forEach((v,k) => data[k] = v);
-  data.diasRecepcion = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value).join(", ");
-  data.__paso = current;
-  data.__hora = new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
-  if (fotoDataUrl) data.__foto = fotoDataUrl;
-  return data;
-}
-
-function guardarBorrador(){
-  try{
-    localStorage.setItem(KEY_BORRADOR, JSON.stringify(serializarFormulario()));
-  }catch(e){
-    // Cuota llena: guardamos sin la foto
-    try{
-      const d = serializarFormulario(); delete d.__foto;
-      localStorage.setItem(KEY_BORRADOR, JSON.stringify(d));
-    }catch(e2){}
-  }
-}
-
-let borradorTimer;
-function programarBorrador(){
-  clearTimeout(borradorTimer);
-  borradorTimer = setTimeout(guardarBorrador, 500);
-}
-
-function borrarBorrador(){
-  try{ localStorage.removeItem(KEY_BORRADOR); }catch(e){}
-}
-
-function restaurarBorrador(){
-  let raw = null;
-  try{ raw = JSON.parse(localStorage.getItem(KEY_BORRADOR) || "null"); }catch(e){}
-  if(!raw) return;
-  // Si está vacío (sin datos reales), se descarta silenciosamente
-  const tieneDatos = Object.keys(raw).some(k => !k.startsWith("__") && raw[k] && String(raw[k]).trim() !== "");
-  if(!tieneDatos){ borrarBorrador(); return; }
-
-  const r = confirm("💾 Se encontró un borrador guardado (" + (raw.__hora || "hoy") + "). ¿Continuar donde ibas?");
-  if(!r){ borrarBorrador(); return; }
-
-  Object.entries(raw).forEach(([k,v]) => {
-    if(k.startsWith("__")) return;
-    const el = document.querySelector(`[name="${k}"]`);
-    if(el) el.value = v || "";
-  });
-  if(raw.diasRecepcion){
-    const dias = raw.diasRecepcion.split(",").map(s => s.trim()).filter(Boolean);
-    document.querySelectorAll(".dia-check").forEach(cb => {
-      const on = dias.includes(cb.value);
-      cb.checked = on;
-      cb.closest(".day-pill").classList.toggle("on", on);
-    });
-  }
-  if(raw.__foto){
-    fotoDataUrl = raw.__foto;
-    document.getElementById("imgPreview").src = raw.__foto;
-    document.getElementById("fotoPreview").style.display = "block";
-    document.getElementById("btnAbrirCam").style.display = "none";
-    document.getElementById("fotoField").classList.remove("falta-foto");
-    fetch(raw.__foto).then(r => r.blob()).then(b => {
-      fotoBlob = b;
-      if(current === total-1) renderResumen();
-    }).catch(() => {});
-  }
-  if(typeof raw.__paso === "number" && raw.__paso >= 0 && raw.__paso < total) current = raw.__paso;
-  renderSteps();
-  toast("Borrador restaurado", "ok");
-}
-
-/* =========================================================
-   GEOLOCALIZACIÓN + GEOCODIFICACIÓN INVERSA (gratis)
-   ========================================================= */
-/* Convierte coordenadas → dirección con calles.
-   Sin costo: Nominatim (OpenStreetMap) + respaldo BigDataCloud. */
-async function reverseGeocode(lat, lng){
-  // Intento 1: Nominatim (OpenStreetMap)
-  try{
-    const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&zoom=18&accept-language=es";
-    const res = await fetch(url, { headers: { "Accept-Language": "es" } });
-    if(!res.ok) throw new Error();
-    const j = await res.json();
-    if(j && j.address){
-      const a = j.address;
-      const partes = [
-        [a.road, a.house_number].filter(Boolean).join(" "),
-        a.suburb || a.neighbourhood,
-        a.city || a.town || a.municipality || a.village,
-        a.state
-      ].filter(Boolean);
-      if(partes.length) return partes.join(", ");
-    }
-  }catch(e){ /* siguiente */ }
-  // Intento 2: BigDataCloud (gratis)
-  try{
-    const res = await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lng + "&localityLanguage=es");
-    if(!res.ok) throw new Error();
-    const j = await res.json();
-    const partes = [j.locality, j.city, j.principalSubdivision].filter(Boolean);
-    const calle = [j.street, j.houseNumber].filter(Boolean).join(" ");
-    if(calle) partes.unshift(calle);
-    if(partes.length) return partes.join(", ");
-  }catch(e){}
-  return null; // sin dirección → se usan las coordenadas
-}
-
-async function capturarUbicacion(){
-  const status = document.getElementById("gpsStatus");
-  const btnLimpiar = document.getElementById("btnLimpiarGps");
-  if (!navigator.geolocation){
-    status.textContent = "Tu dispositivo no soporta geolocalización";
-    return;
-  }
-  status.textContent = "⏳ Obteniendo ubicación…";
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const lat = pos.coords.latitude.toFixed(6);
-    const lng = pos.coords.longitude.toFixed(6);
-    document.getElementById("latitud").value = lat;
-    document.getElementById("longitud").value = lng;
-    status.textContent = "🔎 Buscando dirección…";
-    const gps = document.getElementById("ubicacionGps");
-    let txt = lat + ", " + lng;
-    const dir = await reverseGeocode(lat, lng);
-    if(dir) txt = dir;
-    gps.value = txt;
-    gps.classList.remove("flash"); void gps.offsetWidth; gps.classList.add("flash");
-    status.textContent = dir
-      ? "✅ Dirección capturada"
-      : "✅ Ubicación capturada (solo coordenadas, no se encontraron calles)";
-    if(btnLimpiar) btnLimpiar.style.display = "";
-    guardarBorrador();
-    toast("📍 Ubicación capturada", "ok");
-  }, (err) => {
-    const msgs = {
-      1: "Permiso denegado. Actívalo en el navegador para capturar la ubicación.",
-      2: "No se pudo obtener la posición.",
-      3: "Tiempo de espera agotado."
-    };
-    status.textContent = "⚠ " + (msgs[err.code] || "Error de geolocalización");
-    toast("No se pudo capturar la ubicación", "error");
-  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
-}
-
-function limpiarUbicacion(){
-  ["latitud","longitud","ubicacionGps"].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
-  const st = document.getElementById("gpsStatus");
-  if(st) st.textContent = "Sin costo · captura la dirección con calles · si no hay, usa coordenadas";
-  const btn = document.getElementById("btnLimpiarGps");
-  if(btn) btn.style.display = "none";
   guardarBorrador();
-}
+});
 
 /* =========================================================
-   CLIENTES: carga con respaldo de datos de prueba
+   CLIENTES: carga directo de Supabase (con respaldo demo)
    ========================================================= */
 let clientes = [];
 async function cargarClientes(){
   try{
-    const res = await fetch("/api/clients");
-    if(res.ok){
-      const data = await res.json();
-      clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
-      return;
-    }
-  }catch(e){ /* sin backend todavía */ }
-  clientes = MOCK_CLIENTES; // modo demo
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes").select("*");
+    if (error) throw error;
+    clientes = (Array.isArray(data) && data.length) ? data : MOCK_CLIENTES;
+  }catch(e){
+    clientes = MOCK_CLIENTES; // modo demo
+  }
 }
 cargarClientes();
 
@@ -1101,18 +929,23 @@ document.addEventListener("click", e => {
   if(!e.target.closest(".client-search")) resultsBox.classList.remove("show");
 });
 
-// Autocompleta Razón Social, RFC y Sucursal
+/* Autocompleta TODOS los campos: razón social, rfc, comprador, teléfono,
+   nombre comercial, SUCURSAL y DIRECCIÓN */
 function aplicarCliente(c){
-  [["razonSocial","razonSocial"],["rfc","rfc"],["sucursal","sucursal"]].forEach(([id,k]) => {
+  [["razonSocial","razonSocial"],["rfc","rfc"],["nombreComprador","nombreComprador"],
+   ["telefono","telefono"],["nombreComercial","nombreComercial"],
+   ["sucursal","sucursal"],["direccion","direccion"]
+  ].forEach(([id,k]) => {
     const el = document.getElementById(id);
     el.value = c[k] || "";
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   });
-  toast("Cliente cargado: Razón Social, RFC y Sucursal", "ok");
+  document.getElementById("giroDelNegocio").value = c.giroDelNegocio || "";
+  toast("Cliente cargado: campos autocompletados", "ok");
 }
 
 /* =========================================================
-   MODAL: agregar cliente nuevo
+   MODAL: agregar cliente nuevo (inserta en Supabase)
    ========================================================= */
 function openClientModal(){ document.getElementById("clientModal").classList.add("show"); }
 function closeClientModal(){ document.getElementById("clientModal").classList.remove("show"); }
@@ -1134,13 +967,11 @@ async function saveNewClient(){
   }
   let guardado = false;
   try{
-    const res = await fetch("/api/clients", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(nuevo)
-    });
-    if(res.ok) guardado = true;
-  }catch(e){ /* sin backend */ }
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { error } = await supabaseClient.from("clientes").insert(nuevo);
+    if (error) throw error;
+    guardado = true;
+  }catch(e){ /* sin conexión */ }
   if(guardado){
     toast("Cliente guardado en la base", "ok");
   }else{
@@ -1156,24 +987,156 @@ async function saveNewClient(){
 }
 
 /* =========================================================
+   AUTO-GUARDADO (borrador en localStorage — gratis)
+   ========================================================= */
+const BORRADOR_KEY = "cuestionario_borrador_aa";
+
+function guardarBorrador(){
+  try{
+    const data = {};
+    new FormData(cuestionarioForm).forEach((value, key) => { data[key] = value; });
+    const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
+    data.diasRecepcion = dias.join(", ");
+    if (fotoDataUrl) data.__foto = fotoDataUrl;
+    data.__paso = current;
+    localStorage.setItem(BORRADOR_KEY, JSON.stringify(data));
+  }catch(e){ /* si la foto pesa mucho y se llena la cuota, guarda el resto sin foto */ }
+}
+
+function dataURLtoBlob(dataurl){
+  const partes = dataurl.split(",");
+  const mime = partes[0].match(/:(.*?);/)[1];
+  const b64 = atob(partes[1]);
+  const u8 = new Uint8Array(b64.length);
+  for(let i=0;i<b64.length;i++) u8[i] = b64.charCodeAt(i);
+  return new Blob([u8], { type: mime });
+}
+
+function restaurarBorrador(){
+  let raw = null;
+  try{ raw = localStorage.getItem(BORRADOR_KEY); }catch(e){}
+  if (!raw) return;
+  let d = null;
+  try{ d = JSON.parse(raw); }catch(e){}
+  if (!d) return;
+  if (!confirm("Se encontró un borrador sin terminar. ¿Quieres continuar donde ibas?")) {
+    try{ localStorage.removeItem(BORRADOR_KEY); }catch(e){}
+    return;
+  }
+  Object.keys(d).forEach(k => {
+    if (k === "diasRecepcion" || k === "__foto" || k === "__paso") return;
+    const el = cuestionarioForm.querySelector(`[name="${k}"]`);
+    if (el && el.value === "") el.value = d[k] || "";
+  });
+  const dias = String(d.diasRecepcion || "").split(",").map(s => s.trim()).filter(Boolean);
+  document.querySelectorAll(".dia-check").forEach(c => {
+    const on = dias.includes(c.value);
+    c.checked = on;
+    c.closest(".day-pill").classList.toggle("on", on);
+  });
+  if (d.__foto){
+    fotoDataUrl = d.__foto;
+    try{
+      fotoBlob = dataURLtoBlob(d.__foto);
+      document.getElementById("imgPreview").src = d.__foto;
+      document.getElementById("fotoPreview").style.display = "block";
+      document.getElementById("btnAbrirCam").style.display = "none";
+      document.getElementById("fotoField").classList.remove("falta-foto");
+    }catch(e){}
+  }
+  if (d.__paso && d.__paso < total) current = Number(d.__paso);
+  renderSteps();
+  toast("Borrador restaurado", "ok");
+}
+
+/* =========================================================
+   GEOLOCALIZACIÓN: GPS → dirección con calles (gratis)
+   ========================================================= */
+async function reverseGeocode(lat, lng){
+  // Intento 1: Nominatim (OpenStreetMap) — gratis
+  try{
+    const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&zoom=18&accept-language=es";
+    const res = await fetch(url, { headers: { "Accept-Language": "es" } });
+    if(!res.ok) throw new Error();
+    const j = await res.json();
+    if(j && j.address){
+      const a = j.address;
+      const partes = [
+        [a.road, a.house_number].filter(Boolean).join(" "),
+        a.suburb || a.neighbourhood,
+        a.city || a.town || a.municipality || a.village,
+        a.state
+      ].filter(Boolean);
+      if(partes.length) return partes.join(", ");
+    }
+  }catch(e){ /* siguiente */ }
+  // Intento 2: BigDataCloud — gratis
+  try{
+    const res = await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lng + "&localityLanguage=es");
+    if(!res.ok) throw new Error();
+    const j = await res.json();
+    const partes = [j.locality, j.city, j.principalSubdivision].filter(Boolean);
+    const calle = [j.street, j.houseNumber].filter(Boolean).join(" ");
+    if(calle) partes.unshift(calle);
+    if(partes.length) return partes.join(", ");
+  }catch(e){}
+  return null; // sin dirección → se usan las coordenadas
+}
+
+function capturarUbicacion(){
+  const status = document.getElementById("gpsStatus");
+  const btnLimpiar = document.getElementById("btnLimpiarGps");
+  if (!navigator.geolocation){
+    status.textContent = "Tu dispositivo no soporta geolocalización";
+    return;
+  }
+  status.textContent = "⏳ Obteniendo ubicación…";
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    document.getElementById("latitud").value = lat;
+    document.getElementById("longitud").value = lng;
+    status.textContent = "🔎 Buscando dirección…";
+    const gps = document.getElementById("ubicacionGps");
+    let txt = lat + ", " + lng;
+    const dir = await reverseGeocode(lat, lng);
+    if(dir) txt = dir;
+    gps.value = txt;
+    gps.classList.remove("flash"); void gps.offsetWidth; gps.classList.add("flash");
+    status.textContent = dir
+      ? "✅ Dirección capturada"
+      : "✅ Ubicación capturada (coordenadas)";
+    btnLimpiar.style.display = "";
+    guardarBorrador();
+  }, (err) => {
+    status.textContent = "⚠ No se pudo obtener la ubicación: " + (err && err.message ? err.message : "permiso denegado");
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+}
+
+function limpiarGps(){
+  document.getElementById("ubicacionGps").value = "";
+  document.getElementById("latitud").value = "";
+  document.getElementById("longitud").value = "";
+  document.getElementById("gpsStatus").textContent = "Ubicación limpiada";
+  document.getElementById("btnLimpiarGps").style.display = "none";
+  guardarBorrador();
+}
+
+/* =========================================================
    MIS CUESTIONARIOS (solo lectura + PDF + buscador + Excel)
    ========================================================= */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-
-/* Respaldo local (siempre disponible aunque no haya internet) */
 function getCuestionariosLocal(){
   try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
   catch(e){ return []; }
 }
-
-/* Lista que se muestra en pantalla ahora mismo, y de dónde vino ("db" o "local") */
 let cuestionariosCache = [];
 let origenCuestionarios = "local";
 let paginaActual = 1;
-const POR_PAGINA = 5; // cuestionarios por página
-let busquedaFiltro = ""; // texto del buscador
+const POR_PAGINA = 5;
+let busquedaFiltro = "";
 
 async function cargarCuestionarios(){
   try{
@@ -1191,7 +1154,7 @@ async function cargarCuestionarios(){
       actualizarBadge();
       return cuestionariosCache;
     }
-  }catch(e){ /* sin conexión a la base, usamos respaldo local */ }
+  }catch(e){ /* sin conexión, usamos respaldo local */ }
   cuestionariosCache = getCuestionariosLocal();
   origenCuestionarios = "local";
   filtrarPorRol();
@@ -1199,7 +1162,6 @@ async function cargarCuestionarios(){
   return cuestionariosCache;
 }
 
-/* Solo el admin ve todos; oficina y comercial solo ven los suyos */
 function filtrarPorRol(){
   if (usuarioActual && usuarioActual.rol !== "admin") {
     cuestionariosCache = cuestionariosCache.filter(q =>
@@ -1209,13 +1171,12 @@ function filtrarPorRol(){
   }
 }
 
-/* Aplica el texto del buscador sobre la lista ya filtrada por rol */
 function listadoFiltrado(){
   const q = busquedaFiltro.trim().toLowerCase();
   if (!q) return cuestionariosCache;
   return cuestionariosCache.filter(item => {
     const d = item.data || {};
-    const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.sucursal, d.direccion, item.cliente]
+    const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.sucursal, item.cliente]
       .filter(Boolean).join(" ").toLowerCase();
     return texto.includes(q);
   });
@@ -1268,7 +1229,7 @@ function listarMisCuestionarios(){
   const contador = `<div class="filtro-count">${list.length} cuestionario${list.length !== 1 ? "s" : ""}${busquedaFiltro.trim() ? ' para "' + escapeHtml(busquedaFiltro.trim()) + '"' : ""}</div>`;
 
   cont.innerHTML = nota + contador + paginado.map((q, i) => {
-    const idx = cuestionariosCache.indexOf(list[inicio + i]); // índice real en la lista completa
+    const idx = inicio + i;
     const fecha = new Date(q.fecha);
     const fechaTxt = fecha.toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
       + " · " + fecha.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
@@ -1300,7 +1261,6 @@ function cambiarPagina(p){
   document.getElementById("listaModal").scrollTop = 0;
 }
 
-/* ===== Buscador con autocompletado de la lista ===== */
 const filtroInput = document.getElementById("filtroBusqueda");
 const filtroResults = document.getElementById("filtroResults");
 
@@ -1311,7 +1271,6 @@ if (filtroInput) {
     listarMisCuestionarios();
     renderSugerencias();
   });
-
   filtroInput.addEventListener("focus", renderSugerencias);
 }
 
@@ -1361,8 +1320,10 @@ const CAMPOS_EXCEL = [
   ["Correo Electrónico", d => d.correoElectronico],
   ["Sucursal", d => d.sucursal],
   ["Dirección", d => d.direccion],
-  ["Ubicación GPS", d => d.ubicacionGps || (d.latitud && d.longitud ? d.latitud + ", " + d.longitud : "")],
   ["Puesto", d => d.puesto],
+  ["Ubicación visita (GPS)", d => d.ubicacionGps],
+  ["Latitud", d => d.latitud],
+  ["Longitud", d => d.longitud],
   ["Consumo (Kg/mes)", d => d.consumoActual],
   ["Consumo Total (Kg/mes)", d => d.consumoTotal],
   ["Meses Estacionalidad", d => d.mesesEstacionalidad],
@@ -1388,7 +1349,6 @@ const CAMPOS_EXCEL = [
   ["Foto (Enlace)", d => d.fotoUrl || d.foto_url || ""]
 ];
 
-/* Descarga con Blob: funciona en iPhone, Android y escritorio */
 function descargarBlob(blob, nombre){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1399,7 +1359,6 @@ function descargarBlob(blob, nombre){
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 600);
 }
 
-/* Intenta cargar la librería desde varios CDNs (el primero que funcione gana) */
 async function cargarLibExcel(){
   if (typeof XLSX !== "undefined") return true;
   const cdns = [
@@ -1422,7 +1381,6 @@ async function cargarLibExcel(){
   return false;
 }
 
-/* Respaldo: CSV (Excel lo abre perfecto, con acentos) */
 function descargarCSV(){
   const hoy = new Date().toISOString().slice(0,10);
   const filas = [CAMPOS_EXCEL.map(c => c[0])];
@@ -1444,19 +1402,15 @@ async function exportarExcel(){
     toast("No hay cuestionarios para exportar", "error");
     return;
   }
-
   const ok = await cargarLibExcel();
   if (!ok) {
     descargarCSV();
     toast("Sin librería Excel · se descargó CSV (ábrelo en Excel)", "ok");
     return;
   }
-
   try {
     const N = CAMPOS_EXCEL.length;
     const hoy = new Date().toISOString().slice(0,10);
-
-    // 1) Matriz: título + encabezados + datos
     const aoa = [];
     const filaTitulo = new Array(N).fill("");
     filaTitulo[0] = "Acción Acuacultura · Conocimiento Profundo del Cliente";
@@ -1469,11 +1423,8 @@ async function exportarExcel(){
         return (v === undefined || v === null) ? "" : String(v);
       }));
     });
-
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     const lastCol = XLSX.utils.encode_col(N - 1);
-
-    // 2) Estilos
     const bordes = {
       top:{style:"thin",color:{rgb:"C9D6DE"}}, bottom:{style:"thin",color:{rgb:"C9D6DE"}},
       left:{style:"thin",color:{rgb:"C9D6DE"}}, right:{style:"thin",color:{rgb:"C9D6DE"}}
@@ -1491,12 +1442,9 @@ async function exportarExcel(){
     };
     const estiloPar   = { border:bordes, alignment:{vertical:"top",wrapText:true} };
     const estiloImpar = { border:bordes, alignment:{vertical:"top",wrapText:true}, fill:{patternType:"solid",fgColor:{rgb:"EEF7FA"}} };
-
     ws["!merges"] = [{ s:{r:0,c:0}, e:{r:0,c:N-1} }];
-
     const cTitulo = ws["A1"];
     if (cTitulo) cTitulo.s = estiloTitulo;
-
     for (let c = 0; c < N; c++) {
       const cell = ws[XLSX.utils.encode_cell({r:1,c})];
       if (cell) cell.s = estiloHeader;
@@ -1508,8 +1456,6 @@ async function exportarExcel(){
         if (cell) cell.s = estilo;
       }
     }
-
-    // 3) Tamaños de filas y columnas
     ws["!rows"] = [{ hpt:32 }, { hpt:32 }];
     ws["!cols"] = CAMPOS_EXCEL.map(c => {
       let maxLen = c[0].length;
@@ -1519,11 +1465,7 @@ async function exportarExcel(){
       });
       return { wch: Math.min(38, Math.max(12, maxLen + 2)) };
     });
-
-    // 4) Autofiltro
     ws["!autofilter"] = { ref: "A2:" + lastCol + aoa.length };
-
-    // 5) Crear y descargar con Blob (más confiable que writeFile)
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Cuestionarios");
     const datos = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true });
@@ -1538,7 +1480,6 @@ async function exportarExcel(){
   }
 }
 
-/* Arma un campo estilo "papel": etiqueta arriba, línea punteada con el valor */
 function campoPapel(label, val){
   const v = (val === undefined || val === null) ? "" : String(val).trim();
   return `<div class="paper-field">
@@ -1556,10 +1497,10 @@ function verCuestionario(idx){
     ? new Date(d.fechaCaptura + "T00:00:00").toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" })
     : "";
   const fotoEv = d.fotoUrl || d.foto_url || d.fotoLocal || "";
-
-  const gpsCampo = (d.latitud && d.longitud)
-    ? `<div class="paper-field"><span class="lbl">Ubicación GPS</span><div class="val"><a href="https://www.google.com/maps?q=${encodeURIComponent(d.latitud + "," + d.longitud)}" target="_blank" rel="noopener">📍 Ver en Google Maps</a></div></div>`
-    : campoPapel("Ubicación GPS", d.ubicacionGps);
+  const tieneGps = (d.latitud && d.longitud);
+  const linkGps = tieneGps
+    ? ` <a href="https://www.google.com/maps?q=${escapeHtml(d.latitud)},${escapeHtml(d.longitud)}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;">📍 Ver en Google Maps</a>`
+    : "";
 
   const html = `
     <div class="paper">
@@ -1589,10 +1530,13 @@ function verCuestionario(idx){
             ${campoPapel("Nombre Comercial", d.nombreComercial)}
             ${campoPapel("Sucursal", d.sucursal)}
             ${campoPapel("Dirección", d.direccion)}
-            ${gpsCampo}
             ${campoPapel("Puesto", d.puesto)}
             ${campoPapel("Correo Electrónico", d.correoElectronico)}
           </div>
+        </div>
+        <div class="paper-field" style="margin-top:14px;">
+          <span class="lbl">Ubicación de la visita</span>
+          <div class="val ${(d.ubicacionGps || "").trim() ? "" : "empty"}">${d.ubicacionGps ? escapeHtml(d.ubicacionGps) : "—"}${linkGps}</div>
         </div>
       </div>
 
@@ -1656,7 +1600,7 @@ function verCuestionario(idx){
       <div class="paper-sec">
         <h4>Evidencia fotográfica</h4>
         ${fotoEv
-          ? `<img src="${escapeHtml(fotoEv)}" alt="Foto de evidencia" style="max-width:100%;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);">`
+          ? `<img src="${fotoEv}" alt="Foto de evidencia" style="max-width:100%;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);">`
           : `<p style="color:var(--muted);margin:0;">—</p>`}
       </div>
     </div>`;
@@ -1750,7 +1694,7 @@ function tomarFoto(){
     document.getElementById("btnAbrirCam").style.display = "none";
     document.getElementById("fotoField").classList.remove("falta-foto");
     if(current === total-1) renderResumen();
-    guardarBorrador(); // guarda la foto en el borrador
+    guardarBorrador();
   }, "image/jpeg", 0.7);
 }
 
@@ -1769,15 +1713,13 @@ function cerrarCamara(){
 /* =========================================================
    ENVÍO: validación estricta de obligatorios + guardado
    ========================================================= */
-document.getElementById("cuestionarioForm").addEventListener("submit", async (e) => {
+cuestionarioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // 1. Limpiar marcas anteriores
   document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   const fotoField = document.getElementById("fotoField");
   if (fotoField) fotoField.classList.remove("falta-foto");
 
-  // 2. Campos obligatorios (agrega o quita a tu gusto)
   const importantes = {
     razonSocial: "Razón Social",
     rfc: "RFC",
@@ -1786,7 +1728,6 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     frecuencia: "Frecuencia"
   };
 
-  // 3. Revisar qué falta
   const faltantes = [];
   Object.entries(importantes).forEach(([name, label]) => {
     const el = document.querySelector(`[name="${name}"]`);
@@ -1796,13 +1737,11 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     }
   });
 
-  // 4. Si falta algo → NO se guarda, se avisa y se va al paso donde está lo faltante
   if (faltantes.length) {
     toast("Faltan: " + faltantes.join(", "), "error");
     const pasoDeCampo = {
       razonSocial:0, rfc:0, giroDelNegocio:0, nombreComprador:0, telefono:0,
       nombreComercial:0, sucursal:0, direccion:0, puesto:0, correoElectronico:0, fechaCaptura:0,
-      ubicacionGps:0,
       consumoActual:1, mesesEstacionalidad:1, presentacion1:1, presentacion2:1,
       presentacion3:1, proteinaCamaron:1, proteinaTilapia:1, consumoTotal:1,
       segmento:1, participacionCompetencia:1, proveedorCompetencia:1,
@@ -1814,32 +1753,27 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
       document.querySelector(`[name="${name}"]`)?.classList.contains("falta-dato")
     );
     goStep(pasoDeCampo[primerFaltante] ?? 0);
-    return; // 🚫 NO guarda
+    return;
   }
 
-  // 4b. Foto en vivo obligatoria → sin foto NO se guarda
   if (!fotoBlob) {
     if (fotoField) fotoField.classList.add("falta-foto");
     toast("La foto de evidencia es obligatoria", "error");
     goStep(4);
-    return; // 🚫 NO guarda
+    return;
   }
 
-  // 5. Todo completo → guardado normal
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
   try {
     const data = {};
-    new FormData(e.target).forEach((value, key) => { data[key] = value; });
+    new FormData(cuestionarioForm).forEach((value, key) => { data[key] = value; });
     const dias = Array.from(document.querySelectorAll(".dia-check:checked")).map(c => c.value);
     data.diasRecepcion = dias.join(", ");
     data.creadoPor = (usuarioActual && usuarioActual.id) || "";
-
-    // Fecha automática: siempre la de hoy (el campo es de solo lectura)
     data.fechaCaptura = new Date().toISOString().slice(0,10);
 
-    // Token de sesión (opcional, nunca bloquea el guardado)
     let token = "";
     try {
       if (typeof supabaseClient !== "undefined") {
@@ -1848,7 +1782,6 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
       }
     } catch (e) { token = ""; }
 
-    // Foto: subida directa a Supabase Storage (0 créditos de Netlify)
     if (fotoBlob && typeof supabaseClient !== "undefined") {
       try {
         const nombre = "q-" + Date.now() + "-" + Math.random().toString(36).slice(2,9) + ".jpg";
@@ -1864,10 +1797,9 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
     } else {
       data.fotoUrl = "";
     }
-    // Si no hay URL (modo demo o falló la subida), guardamos la foto comprimida local
     if (!data.fotoUrl && fotoDataUrl) data.fotoLocal = fotoDataUrl;
 
-    guardarDemo(data); // respaldo local, siempre disponible en "Mis cuestionarios"
+    guardarDemo(data);
 
     const res = await fetch("/api/cuestionarios", {
       method: "POST",
@@ -1887,6 +1819,7 @@ document.getElementById("cuestionarioForm").addEventListener("submit", async (e)
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "💾 Guardar cuestionario";
+    try{ localStorage.removeItem(BORRADOR_KEY); }catch(e){}
     resetForm();
     document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   }
@@ -1903,14 +1836,14 @@ function guardarDemo(data){
 }
 
 function resetForm(){
-  document.getElementById("cuestionarioForm").reset();
-  document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10); // siempre hoy
+  cuestionarioForm.reset();
+  document.getElementById("fechaCaptura").value = new Date().toISOString().slice(0,10);
   document.querySelectorAll(".dia-check").forEach(c => {
     c.checked = false;
     c.closest(".day-pill").classList.remove("on");
   });
   searchInput.value = "";
-  // Limpiar foto y cámara
+  limpiarGps();
   cerrarCamara();
   fotoBlob = null;
   fotoDataUrl = null;
@@ -1920,13 +1853,6 @@ function resetForm(){
   if (prev) prev.style.display = "none";
   const fld = document.getElementById("fotoField");
   if (fld) fld.classList.remove("falta-foto");
-  // Limpiar GPS
-  const gpsSt = document.getElementById("gpsStatus");
-  if (gpsSt) gpsSt.textContent = "Sin costo · captura la dirección con calles · si no hay, usa coordenadas";
-  const btnG = document.getElementById("btnLimpiarGps");
-  if (btnG) btnG.style.display = "none";
-  // Limpiar borrador
-  borrarBorrador();
   current = 0;
   renderSteps();
 }
@@ -1934,9 +1860,8 @@ function resetForm(){
 /* =========================================================
    SESIÓN Y ROLES (Supabase) — filtra la app por rol
    ========================================================= */
-let usuarioActual = null; // { id, email, rol }
+let usuarioActual = null;
 
-// Qué puede ver cada rol (ajústalo a tu gusto)
 const PERMISOS = {
   admin:     { agregarCliente: true,  misCuestionarios: true,  formulario: true },
   oficina:   { agregarCliente: false, misCuestionarios: true,  formulario: true },
@@ -1945,7 +1870,7 @@ const PERMISOS = {
 
 async function iniciarSesionSupabase(){
   try {
-    if (typeof supabaseClient === "undefined") return; // sin Supabase: modo demo
+    if (typeof supabaseClient === "undefined") return;
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = "login.html"; return; }
 
@@ -1964,7 +1889,7 @@ async function iniciarSesionSupabase(){
     usuarioActual = { id: session.user.id, email: session.user.email, rol: data.rol };
     aplicarPermisos();
     mostrarUsuario();
-  } catch (e) { /* sin Supabase: modo demo, la app sigue funcionando */ }
+  } catch (e) { /* sin Supabase: modo demo */ }
 }
 
 function aplicarPermisos(){
@@ -1972,9 +1897,7 @@ function aplicarPermisos(){
   const el = id => document.getElementById(id);
   if (el("btnAgregarCliente"))   el("btnAgregarCliente").style.display   = p.agregarCliente   ? "" : "none";
   if (el("btnMisCuestionarios")) el("btnMisCuestionarios").style.display = p.misCuestionarios ? "" : "none";
-  // Excel masivo: solo admin
   if (el("btnExportarExcel"))    el("btnExportarExcel").style.display    = usuarioActual.rol === "admin" ? "" : "none";
-  // Botón Panel Admin: solo admin
   if (el("btnAdmin"))            el("btnAdmin").style.display            = usuarioActual.rol === "admin" ? "" : "none";
 }
 
@@ -1994,7 +1917,7 @@ async function logout(){
 }
 
 /* =========================================================
-   ARRANQUE (sesión primero, luego los cuestionarios)
+   ARRANQUE
    ========================================================= */
 (async function init(){
   await iniciarSesionSupabase();
