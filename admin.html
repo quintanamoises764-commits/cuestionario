@@ -160,7 +160,7 @@
   </div>
 
   <div class="card">
-    <h2>🏢 Clientes <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;">· desde Supabase</span></h2>
+    <h2>🏢 Clientes</h2>
     <div class="toolbar">
       <input type="text" id="clientSearchBox" placeholder="Buscar por razón social, RFC o sucursal…" oninput="buscarClientes()">
       <button class="btn primary" onclick="openClientModal()">+ Agregar cliente</button>
@@ -229,7 +229,14 @@
 /* ============ Utilidades ============ */
 let cuestionarios = [], usuarios = [], userMap = {}, __filt = [];
 let paginaAdmin = 1;
-const POR_PAGINA_ADMIN = 5; // 5 respuestas por página
+const POR_PAGINA_ADMIN = 5;   // ✅ Respuestas: 5 por página
+
+let clientesAdmin = [];
+let clienteEditandoId = null;
+let pagClientes = 1;
+const POR_PAGINA_CLIENTES = 5; // ✅ Clientes: 5 por página
+let __filtClientes = [];
+const GIROS = ["Restaurante","Hotel","Pescadería","Supermercado","Mayoreo Nacional","Mayoreo Rutas","Autoservicio Regional","Industrial"];
 
 async function authHeaders(extra = {}){
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -300,7 +307,7 @@ async function cargarUsuarios(){
   renderUsuarios();
 }
 
-/* ============ Render respuestas (con paginación de 5) ============ */
+/* ============ Render respuestas (paginación 5) ============ */
 function capturistaDe(c){ return userMap[c.creadoPor] || "—"; }
 
 function buscarAdmin(){ paginaAdmin = 1; renderTabla(); }
@@ -319,7 +326,7 @@ function renderTabla(){
 
   document.getElementById("tablaEmpty").style.display = __filt.length ? "none" : "block";
   document.getElementById("tablaBody").innerHTML = paginado.map((c, i) => {
-    const idx = inicio + i; // índice real en __filt
+    const idx = inicio + i;
     return `
     <tr>
       <td>${fmtFecha(c.fecha)}</td>
@@ -362,4 +369,304 @@ function renderGraficas(){
     data: { labels: Object.keys(cap), datasets: [{ data: Object.values(cap), backgroundColor:["#0e7490","#06b6d4","#f59e0b","#10b981","#8b5cf6","#ef4444","#f97316","#14b8a6"] }] },
     options: { plugins:{ legend:{ position:"bottom" } } }
   });
-  const meses
+  const meses = {};
+  cuestionarios.forEach(c => {
+    const f = (c.data && c.data.fechaCaptura) || "";
+    if(!f) return;
+    const m = f.slice(0,7);
+    meses[m] = (meses[m]||0)+1;
+  });
+  const orden = Object.keys(meses).sort();
+  charts.meses = new Chart(document.getElementById("chMeses"), {
+    type: "line",
+    data: { labels: orden.map(m => m.split("-").reverse().join("/")), datasets: [{ label:"Respuestas", data: orden.map(m=>meses[m]), borderColor:"#0e7490", backgroundColor:"rgba(14,116,144,.15)", fill:true, tension:.3 }] },
+    options: { plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+}
+
+/* ============ CRUD de clientes (directo de Supabase + paginación 5) ============ */
+async function cargarClientes(){
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes").select("*");
+    if (error) throw error;
+    clientesAdmin = data || [];
+  }catch(e){
+    clientesAdmin = [];
+    toast("Error leyendo clientes: " + (e && e.message ? e.message : "sin conexión"), "error");
+  }
+  pagClientes = 1;
+  renderClientes();
+}
+
+function buscarClientes(){ pagClientes = 1; renderClientes(); }
+
+function renderClientes(){
+  const q = (document.getElementById("clientSearchBox").value || "").trim().toLowerCase();
+  __filtClientes = clientesAdmin.filter(c => !q || ((c.razonSocial||"") + " " + (c.rfc||"") + " " + (c.sucursal||"")).toLowerCase().includes(q));
+  const totalPag = Math.max(1, Math.ceil(__filtClientes.length / POR_PAGINA_CLIENTES));
+  if (pagClientes > totalPag) pagClientes = totalPag;
+  const inicio = (pagClientes - 1) * POR_PAGINA_CLIENTES;
+  const paginado = __filtClientes.slice(inicio, inicio + POR_PAGINA_CLIENTES);
+
+  document.getElementById("clientesEmpty").style.display = __filtClientes.length ? "none" : "block";
+  document.getElementById("clientesBody").innerHTML = paginado.map(c => `
+    <tr>
+      <td><b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td>${escapeHtml(c.rfc || "—")}</td>
+      <td>${escapeHtml(c.sucursal || "—")}</td>
+      <td>${escapeHtml(c.direccion || "—")}</td>
+      <td>${escapeHtml(c.giroDelNegocio || "—")}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn ghost small" onclick="openClientModal('${c.id || c.rfc}')">✏️</button>
+        <button class="btn danger small" onclick="eliminarCliente('${c.id || c.rfc}')">🗑</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagClientesInfo").textContent = __filtClientes.length
+    ? `Página ${pagClientes} de ${totalPag} · ${__filtClientes.length} clientes` : "";
+}
+
+function cambiarPaginaClientes(p){
+  const totalPag = Math.max(1, Math.ceil(__filtClientes.length / POR_PAGINA_CLIENTES));
+  if (p < 1 || p > totalPag) return;
+  pagClientes = p;
+  renderClientes();
+}
+
+function openClientModal(ref){
+  clienteEditandoId = null;
+  ["m_razonSocial","m_rfc","m_nombreComprador","m_telefono","m_nombreComercial","m_sucursal","m_direccion"]
+    .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("m_giroDelNegocio").value = "";
+  document.getElementById("clientModalTitle").textContent = "Agregar cliente";
+  if(ref){
+    const c = clientesAdmin.find(x => (x.id && String(x.id) === String(ref)) || x.rfc === ref);
+    if(c){
+      clienteEditandoId = c.id || c.rfc;
+      document.getElementById("clientModalTitle").textContent = "Editar cliente";
+      document.getElementById("m_razonSocial").value = c.razonSocial || "";
+      document.getElementById("m_rfc").value = c.rfc || "";
+      document.getElementById("m_giroDelNegocio").value = c.giroDelNegocio || "";
+      document.getElementById("m_nombreComprador").value = c.nombreComprador || "";
+      document.getElementById("m_telefono").value = c.telefono || "";
+      document.getElementById("m_nombreComercial").value = c.nombreComercial || "";
+      document.getElementById("m_sucursal").value = c.sucursal || "";
+      document.getElementById("m_direccion").value = c.direccion || "";
+    }
+  }
+  document.getElementById("clientModal").classList.add("show");
+}
+function closeClientModal(){ document.getElementById("clientModal").classList.remove("show"); }
+
+async function guardarClienteModal(){
+  const datos = {
+    razonSocial: document.getElementById("m_razonSocial").value.trim(),
+    rfc: document.getElementById("m_rfc").value.trim(),
+    giroDelNegocio: document.getElementById("m_giroDelNegocio").value,
+    nombreComprador: document.getElementById("m_nombreComprador").value.trim(),
+    telefono: document.getElementById("m_telefono").value.trim(),
+    nombreComercial: document.getElementById("m_nombreComercial").value.trim(),
+    sucursal: document.getElementById("m_sucursal").value.trim(),
+    direccion: document.getElementById("m_direccion").value.trim()
+  };
+  if(!datos.razonSocial || !datos.rfc) return toast("Razón Social y RFC son obligatorios", "error");
+
+  if(clienteEditandoId){
+    try{
+      if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+      const { error } = await supabaseClient.from("clientes").update(datos).eq("id", clienteEditandoId);
+      if(error) throw error;
+      toast("Cliente actualizado", "ok");
+    }catch(e){
+      const idx = clientesAdmin.findIndex(c => c.id === clienteEditandoId || c.rfc === clienteEditandoId);
+      if(idx >= 0) clientesAdmin[idx] = { ...clientesAdmin[idx], ...datos };
+      toast(e && e.message ? "Error: " + e.message : "Cliente actualizado (local)", e && e.message ? "error" : "ok");
+    }
+  }else{
+    try{
+      if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+      const { error } = await supabaseClient.from("clientes").insert(datos);
+      if (error) throw error;
+      toast("Cliente creado", "ok");
+    }catch(e){
+      clientesAdmin.push(datos);
+      toast(e && e.message ? "Error: " + e.message : "Cliente creado (local)", e && e.message ? "error" : "ok");
+    }
+  }
+  closeClientModal();
+  await cargarClientes();
+}
+
+async function eliminarCliente(ref){
+  const c = clientesAdmin.find(x => (x.id && String(x.id) === String(ref)) || x.rfc === ref);
+  if(!c) return;
+  if(!confirm("¿Eliminar al cliente '" + (c.razonSocial || "") + "'?")) return;
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { error } = await supabaseClient.from("clientes").delete().eq("id", c.id);
+    if(error) throw error;
+    toast("Cliente eliminado", "ok");
+  }catch(e){
+    if(c.id){
+      toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
+    }else{
+      clientesAdmin = clientesAdmin.filter(x => x !== c);
+      toast("Modo demo: cliente eliminado localmente", "ok");
+    }
+  }
+  await cargarClientes();
+}
+
+/* ============ Render usuarios ============ */
+function renderUsuarios(){
+  document.getElementById("usersEmpty").style.display = usuarios.length ? "none" : "block";
+  document.getElementById("usersBody").innerHTML = usuarios.map(u => `
+    <tr>
+      <td>${escapeHtml(u.email || "—")}</td>
+      <td><span class="badge rol-${u.rol}">${escapeHtml(u.rol)}</span></td>
+      <td><span class="badge ${u.activo ? "act" : "inact"}">${u.activo ? "Activo" : "Inactivo"}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select onchange="cambiarRol('${u.id}','${u.rol}',this.value)" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font:inherit;font-size:.78rem;">
+          ${["comercial","oficina","admin"].map(r => `<option value="${r}" ${r===u.rol?"selected":""}>${r}</option>`).join("")}
+        </select>
+        <button class="btn ${u.activo ? "danger" : "ok"} small" onclick="toggleActivo('${u.id}',${u.activo})">${u.activo ? "Desactivar" : "Activar"}</button>
+      </td>
+    </tr>`).join("");
+}
+async function cambiarRol(id, antes, nuevo){
+  if (antes === nuevo) return;
+  const { error } = await supabaseClient.from("usuarios").update({ rol: nuevo }).eq("id", id);
+  if (error) return toast("Error: " + error.message, "error");
+  toast("Rol actualizado a " + nuevo, "ok");
+  await cargarUsuarios();
+}
+async function toggleActivo(id, estado){
+  const { error } = await supabaseClient.from("usuarios").update({ activo: !estado }).eq("id", id);
+  if (error) return toast("Error: " + error.message, "error");
+  toast(estado ? "Usuario desactivado" : "Usuario activado", "ok");
+  await cargarUsuarios();
+}
+
+/* ============ Detalle estilo papel (con foto) ============ */
+function campoPapel(label, val){
+  const v = (val === undefined || val === null) ? "" : String(val).trim();
+  return `<div class="paper-field"><span class="lbl">${escapeHtml(label)}</span><div class="val ${v ? "" : "empty"}">${v ? escapeHtml(v) : "—"}</div></div>`;
+}
+function verDetalle(idx){
+  const c = __filt[idx];
+  if (!c) return;
+  const d = c.data || {};
+  const fotoEv = d.fotoUrl || d.foto_url || d.fotoLocal || "";
+  const fecha = d.fechaCaptura
+    ? new Date(d.fechaCaptura + "T00:00:00").toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"})
+    : fmtFecha(c.fecha);
+  document.getElementById("printContent").innerHTML = `
+  <div class="paper">
+    <div class="paper-head">
+      <div class="paper-titles">
+        <h3>Conocimiento Profundo del Cliente</h3>
+        <p>Capturó: ${escapeHtml(capturistaDe(c))}</p>
+      </div>
+      <div style="text-align:right;font-size:.8rem;"><span style="color:var(--muted);font-weight:700;">Fecha</span><br><b>${escapeHtml(fecha)}</b></div>
+    </div>
+    <div class="paper-sec"><h4>Datos generales</h4><div class="paper-cols"><div>
+      ${campoPapel("Razón Social", d.razonSocial)}${campoPapel("Giro del Negocio", d.giroDelNegocio)}
+      ${campoPapel("Nombre del Comprador", d.nombreComprador)}${campoPapel("Teléfono", d.telefono)}
+      ${campoPapel("RFC", d.rfc)}
+    </div><div>
+      ${campoPapel("Nombre Comercial", d.nombreComercial)}${campoPapel("Sucursal", d.sucursal)}
+      ${campoPapel("Dirección", d.direccion)}${campoPapel("Puesto", d.puesto)}
+      ${campoPapel("Correo Electrónico", d.correoElectronico)}
+    </div></div></div>
+    <div class="paper-sec"><h4>Volumen y presentación</h4><div class="paper-cols"><div>
+      ${campoPapel("Consumo actual (Kg/mes)", d.consumoActual)}${campoPapel("Presentación 1", d.presentacion1)}
+      ${campoPapel("Presentación 2", d.presentacion2)}${campoPapel("Presentación 3", d.presentacion3)}
+      ${campoPapel("Consumo total (Kg/mes)", d.consumoTotal)}${campoPapel("Competencia (%)", d.participacionCompetencia)}
+    </div><div>
+      ${campoPapel("Estacionalidad", d.mesesEstacionalidad)}${campoPapel("Camarón (%)", d.proteinaCamaron)}
+      ${campoPapel("Tilapia (%)", d.proteinaTilapia)}${campoPapel("Segmento", d.segmento)}
+      ${campoPapel("Proveedor competencia", d.proveedorCompetencia)}
+    </div></div></div>
+    <div class="paper-sec"><h4>Capacidad financiera</h4><div class="paper-cols"><div>
+      ${campoPapel("Facturación mensual", d.facturacionMensual)}${campoPapel("Condición de compra", d.condicionCompra)}
+    </div><div>${campoPapel("Establecimiento", d.establecimiento)}</div></div></div>
+    <div class="paper-sec"><h4>Necesidades logísticas</h4><div class="paper-cols"><div>
+      ${campoPapel("Frecuencia", d.frecuencia)}${campoPapel("Días de recepción", d.diasRecepcion)}
+      ${campoPapel("Horario", d.horarioRecepcion)}
+    </div><div>
+      ${campoPapel("Volumen por entrega (Kg)", d.volumenPromedio)}${campoPapel("Ubicación entrega", d.ubicacionEntrega)}
+      ${campoPapel("Requerimientos especiales", d.requerimientosEspeciales)}
+    </div></div></div>
+    <div class="paper-sec paper-comment"><h4>Comentarios</h4>
+      <div class="paper-field"><div class="val">${d.comentarios && String(d.comentarios).trim() ? escapeHtml(d.comentarios) : "—"}</div></div>
+    </div>
+    <div class="paper-sec"><h4>Evidencia fotográfica</h4>
+      ${fotoEv
+        ? `<img src="${escapeHtml(fotoEv)}" alt="Foto de evidencia" style="max-width:100%;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);">`
+        : `<p style="color:var(--muted);margin:0;">—</p>`}
+    </div>
+  </div>`;
+  document.getElementById("detailOverlay").classList.add("show");
+  document.getElementById("detailOverlay").scrollTop = 0;
+}
+function closeDetail(){ document.getElementById("detailOverlay").classList.remove("show"); }
+
+/* ============ Exportar CSV ============ */
+function exportCSV(){
+  if (!__filt.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Fecha","Cliente","Capturista","Razón Social","RFC","Giro","Consumo (Kg/mes)","Segmento","Frecuencia","Condición","Comentarios"];
+  const row = c => {
+    const d = c.data || {};
+    return [fmtFecha(c.fecha), c.cliente, capturistaDe(c), d.razonSocial || "", d.rfc || "",
+      d.giroDelNegocio || "", d.consumoActual || "", d.segmento || "", d.frecuencia || "",
+      d.condicionCompra || "", (d.comentarios || "").replace(/\n/g, " ")];
+  };
+  const csv = [headers, ...__filt.map(row)]
+    .map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+  a.download = "respuestas_acuicultura_" + new Date().toISOString().slice(0,10) + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("CSV exportado", "ok");
+}
+
+/* ============ Inicio (con fix de pantalla en blanco) ============ */
+function fatal(msg){
+  const el = document.getElementById("fatalError");
+  if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
+  document.body.style.opacity = "1";
+}
+
+(async () => {
+  try{
+    await guardarSesion();
+  }catch(e){
+    console.error("Error al iniciar el panel:", e);
+    fatal("No se pudo cargar: " + (e && e.message ? e.message : e) +
+      " — Revisa que config.js exista en la misma carpeta con tu URL y anon key reales (sin 'TU_').");
+    return;
+  }
+  document.body.style.opacity = "1";
+
+  document.getElementById("m_giroDelNegocio").innerHTML =
+    `<option value="">Selecciona…</option>` + GIROS.map(g => `<option value="${g}">${g}</option>`).join("");
+
+  await Promise.all([cargarCuestionarios(), cargarUsuarios(), cargarClientes()]);
+
+  const set = new Set(cuestionarios.map(c => capturistaDe(c)).filter(Boolean));
+  document.getElementById("filterUser").innerHTML =
+    `<option value="">Todos los capturistas</option>` +
+    [...set].map(u => `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
+
+  document.getElementById("stTotal").textContent = cuestionarios.length;
+  document.getElementById("stClientes").textContent = new Set(cuestionarios.map(c => c.cliente)).size;
+  document.getElementById("stUsuarios").textContent = usuarios.filter(u => u.activo).length;
+  document.getElementById("stComent").textContent = cuestionarios.filter(c => c.data.comentarios && String(c.data.comentarios).trim()).length;
+
+  renderTabla();
+  renderGraficas();
+})();
+</script>
+</body>
+</html>
