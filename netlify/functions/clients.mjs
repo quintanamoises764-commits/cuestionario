@@ -50,6 +50,13 @@ export default async (req) => {
 
   // ---------- GET ----------
   if (req.method === "GET") {
+    // Este endpoint usa la service role key, que se salta RLS por
+    // completo -- sin exigir sesión aquí, cualquiera sin loguearse
+    // podía traerse todo el catálogo de clientes (RFC, teléfono,
+    // comprador) con un simple GET.
+    if (!(await usuarioDesdeToken(req))) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
+    }
     const todos = url.searchParams.get("todos") === "1";
     if (todos && !(await esAdmin(req))) {
       return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
@@ -63,6 +70,11 @@ export default async (req) => {
 
   // ---------- POST (crear) ----------
   if (req.method === "POST") {
+    // Mismo motivo que en GET: service role key salta RLS, así que
+    // sin este check cualquiera sin loguearse podía insertar clientes.
+    if (!(await usuarioDesdeToken(req))) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
+    }
     let body;
     try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
     if (!textoOnull(body.razonSocial) || !textoOnull(body.rfc)) {
