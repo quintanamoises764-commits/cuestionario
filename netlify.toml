@@ -7,3 +7,19 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# "publish = '.'" sirve TODA la carpeta como archivos públicos -- sin
+# esto, cualquiera podía descargar los setup-*.sql (esquema completo
+# de la base de datos, políticas RLS, comentarios internos) desde
+# tusitio.netlify.app/setup-algo.sql. Se bloquean por extensión.
+[[redirects]]
+  from = "/*.sql"
+  to = "/login.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package*.json"
+  to = "/login.html"
+  status = 404
+  force = true
+

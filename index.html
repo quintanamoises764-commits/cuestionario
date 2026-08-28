@@ -2,19 +2,224 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura</title>
+<link rel="stylesheet" href="shared.css?v=19">
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 55%,#0891b2 130%);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;color:var(--text);position:relative;overflow:hidden;
+  }
+  /* Burbujas subiendo -- mismo fondo que login.html */
+  .burbuja{
+    position:fixed;bottom:-10vh;border-radius:50%;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+    pointer-events:none;z-index:0;animation:subirBurbuja linear infinite;
+  }
+  @keyframes subirBurbuja{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.85;}
+    90%{opacity:.5;}
+    100%{transform:translateY(-115vh) translateX(var(--deriva,24px));opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){ .burbuja{animation:none;display:none;} }
+  .wrap{max-width:720px;width:100%;opacity:0;transition:opacity .35s ease;position:relative;z-index:2;}
+  .head{text-align:center;color:#fff;margin-bottom:26px;}
+  .head .logo{
+    width:74px;height:74px;border-radius:18px;background:#fff;margin:0 auto 14px;
+    display:flex;align-items:center;justify-content:center;padding:9px;
+    box-shadow:0 12px 28px -10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.7);
+  }
+  .head .logo img{width:100%;height:100%;object-fit:contain;display:block;}
+  .head h1{margin:0;font-size:1.4rem;}
+  .head p{margin:6px 0 0;font-size:.9rem;opacity:.85;}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+  .tile{
+    background:var(--card);border-radius:18px;box-shadow:var(--shadow-md);
+    padding:28px 22px;text-align:center;text-decoration:none;color:var(--text);
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    transition:transform .2s ease,box-shadow .2s ease;border:1px solid var(--border);
+  }
+  .tile:hover{transform:translateY(-4px);box-shadow:0 26px 50px -16px rgba(15,23,42,.32);}
+  .tile .ic{font-size:2.2rem;}
+  .tile h2{margin:0;font-size:1.02rem;color:var(--primary-dark);}
+  .tile p{margin:0;font-size:.8rem;color:var(--muted);}
+  .tile.admin{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;}
+  .tile.admin h2,.tile.admin p{color:#fff;}
+  .footer-bar{display:flex;justify-content:center;margin-top:22px;}
+  .footer-bar button{
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
+    border-radius:11px;padding:9px 16px;font-weight:700;font-size:.8rem;cursor:pointer;
+  }
+  #fatalError{display:none;background:#fef2f2;color:#b91c1c;padding:14px;border-radius:12px;text-align:center;font-size:.85rem;margin-bottom:16px;}
+  .top-actions{display:flex;justify-content:center;gap:10px;margin-bottom:10px;}
+  .logout-modal{max-width:380px;text-align:center;}
+  .logout-modal .ic{font-size:2.4rem;margin-bottom:6px;}
+  .logout-modal h3{margin:0 0 6px;font-size:1.05rem;color:var(--text);}
+  .logout-modal p{margin:0 0 20px;color:var(--muted);font-size:.86rem;}
+  .btn-stay{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+  .btn-leave{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;}
+  .notif-modal{max-width:420px;text-align:center;}
+  .notif-modal .ic{font-size:2.4rem;margin-bottom:6px;}
+  .notif-modal h3{margin:0 0 14px;font-size:1.05rem;color:var(--text);}
+  .notif-item{display:flex;align-items:flex-start;gap:10px;text-align:left;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--border);margin-bottom:10px;}
+  .notif-item .notif-ic{font-size:1.3rem;line-height:1;flex-shrink:0;}
+  .notif-item .notif-txt{font-size:.88rem;color:var(--text);}
+  .notif-item .notif-txt b{display:block;margin-bottom:2px;}
+</style>
 </head>
 <body>
+
+<span class="burbuja" style="left:8%;width:18px;height:18px;animation-duration:14s;animation-delay:0s;--deriva:14px;"></span>
+<span class="burbuja" style="left:20%;width:12px;height:12px;animation-duration:10s;animation-delay:2s;--deriva:-18px;"></span>
+<span class="burbuja" style="left:32%;width:26px;height:26px;animation-duration:17s;animation-delay:5s;--deriva:20px;"></span>
+<span class="burbuja" style="left:48%;width:9px;height:9px;animation-duration:9s;animation-delay:1s;--deriva:-10px;"></span>
+<span class="burbuja" style="left:63%;width:20px;height:20px;animation-duration:15s;animation-delay:4s;--deriva:16px;"></span>
+<span class="burbuja" style="left:76%;width:14px;height:14px;animation-duration:11s;animation-delay:7s;--deriva:-22px;"></span>
+<span class="burbuja" style="left:88%;width:22px;height:22px;animation-duration:16s;animation-delay:3s;--deriva:12px;"></span>
+<span class="burbuja" style="left:57%;width:11px;height:11px;animation-duration:12s;animation-delay:8.5s;--deriva:-14px;"></span>
+
+<div class="wrap" id="wrap">
+  <div class="top-actions">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+  </div>
+  <div id="fatalError"></div>
+  <div class="head">
+    <div class="logo"><img src="accion_acuicola.png" alt="Acción Acuacultura"></div>
+    <h1>Acción Acuicultura</h1>
+    <p id="saludo">¿Qué quieres hacer hoy?</p>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="footer-bar">
+    <button onclick="logout()">🚪 Salir</button>
+  </div>
+</div>
+
+<!-- Modal: novedades de mis prospectos (aceptados / rechazados) -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal notif-modal">
+    <div class="ic">🔔</div>
+    <h3>Novedades de tus prospectos</h3>
+    <div id="notifList"></div>
+    <div class="logout-actions">
+      <button class="btn-stay" style="flex:1;" onclick="cerrarNotifModal()">✅ Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar salida -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal logout-modal">
+    <div class="ic">🚪</div>
+    <h3>¿Salir de tu sesión?</h3>
+    <p>Vas a cerrar sesión en Acción Acuicultura.</p>
+    <div class="logout-actions">
+      <button class="btn-stay" onclick="cancelarSalida()">✅ Seguir aquí</button>
+      <button class="btn-leave" onclick="confirmarSalida()">🚪 Sí, salir</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="shared.js?v=19"></script>
 <script>
+function logout(){
+  document.getElementById("logoutModal").classList.add("show");
+}
+function cancelarSalida(){
+  document.getElementById("logoutModal").classList.remove("show");
+}
+async function confirmarSalida(){
+  await registrarLogout();
+  try { await supabaseClient.auth.signOut(); } catch(e){}
+  window.location.href = "login.html";
+}
+
+/* ============ Novedades de prospectos (aceptado / rechazado) ============
+   No hay sistema de notificaciones push -- esto se revisa aquí, en la
+   pantalla de inicio, cada vez que alguien entra. "Visto" se guarda en
+   este navegador (localStorage), así que si abre la app desde otro
+   dispositivo podría volver a ver el mismo aviso una vez; no es grave. */
+const NOTIF_VISTOS_KEY = "notif_prospectos_vistos";
+let __notifPendientes = [];
+function notifVistos(){
+  try { return new Set(JSON.parse(localStorage.getItem(NOTIF_VISTOS_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function marcarNotifVistos(ids){
+  try {
+    const actuales = notifVistos();
+    ids.forEach(id => actuales.add(id));
+    localStorage.setItem(NOTIF_VISTOS_KEY, JSON.stringify([...actuales]));
+  } catch(e){}
+}
+async function revisarNotificacionesProspectos(userId, rol){
+  try{
+    if (typeof supabaseClient === "undefined") return;
+    const vistos = notifVistos();
+    const consultas = [
+      supabaseClient.from("clientes_nuevos").select("id, razonSocial").eq("creado_por", userId).eq("origen", "prospecto"),
+      supabaseClient.from("prospectos").select("id, razonSocial").eq("creado_por", userId).eq("estatus", "rechazado")
+    ];
+    // Gerente confirma el cliente final -- le avisamos si el
+    // coordinador ya dejó algo "revisado" esperando su confirmación.
+    // Admin conserva el mismo aviso como respaldo.
+    if (rol === "admin" || rol === "gerente") {
+      consultas.push(supabaseClient.from("prospectos").select("id, razonSocial").eq("estatus", "revisado"));
+    }
+    const resultados = await Promise.all(consultas);
+    const aceptados = resultados[0].data || [];
+    const rechazados = resultados[1].data || [];
+    const revisados = (rol === "admin" || rol === "gerente") ? (resultados[2].data || []) : [];
+
+    const items = [
+      ...aceptados.filter(r => !vistos.has("a" + r.id)).map(r => ({
+        clave: "a" + r.id, ic: "🎉",
+        html: `<b>¡Buenas noticias!</b>"${escapeHtml(r.razonSocial || "Tu prospecto")}" fue aceptado y ya es cliente.`
+      })),
+      ...rechazados.filter(r => !vistos.has("r" + r.id)).map(r => ({
+        clave: "r" + r.id, ic: "❌",
+        html: `<b>Prospecto rechazado</b>"${escapeHtml(r.razonSocial || "Tu prospecto")}" no fue aceptado.`
+      }))
+    ];
+    // Sin "clave" (o sea, sin marcar como visto): este aviso debe
+    // seguir saliendo cada vez que entres mientras sigan pendientes,
+    // no solo la primera vez que lo veas.
+    if (revisados.length) {
+      const nombres = revisados.map(r => `"${escapeHtml(r.razonSocial || "Sin nombre")}"`).join(", ");
+      items.push({
+        ic: "🔍",
+        html: `<b>Esperando tu confirmación</b>${revisados.length} prospecto${revisados.length === 1 ? "" : "s"} con visto bueno del coordinador: ${nombres}. <a href="prospectos.html" style="color:var(--primary);font-weight:700;">Ir a revisarlos →</a>`
+      });
+    }
+    if (!items.length) return;
+    __notifPendientes = items.map(it => it.clave).filter(Boolean);
+    document.getElementById("notifList").innerHTML = items.map(it =>
+      `<div class="notif-item"><span class="notif-ic">${it.ic}</span><span class="notif-txt">${it.html}</span></div>`
+    ).join("");
+    document.getElementById("notifModal").classList.add("show");
+  }catch(e){ /* si esto falla, no bloquea el resto de la página */ }
+}
+function cerrarNotifModal(){
+  document.getElementById("notifModal").classList.remove("show");
+  if (__notifPendientes.length) marcarNotifVistos(__notifPendientes);
+  __notifPendientes = [];
+}
+
 (async () => {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = "login.html"; return; }
 
   const { data, error } = await supabaseClient
     .from("usuarios")
-    .select("rol, activo")
+    .select("rol, activo, nombre")
     .eq("id", session.user.id)
     .maybeSingle();
 
@@ -24,13 +229,37 @@
     return;
   }
 
-  if (data.rol === "admin") {
-    window.location.href = "admin.html";
-  } else if (["comercial", "oficina"].includes(data.rol)) {
-    window.location.href = "cuestionario.html";
-  } else {
+  if (!["admin", "coordinador", "gerente", "comercial", "oficina"].includes(data.rol)) {
     window.location.href = "login.html";
+    return;
   }
+
+  const etiqueta = { admin: "Admin", coordinador: "Coordinador", gerente: "Gerente", oficina: "Oficina", comercial: "Comercial" }[data.rol] || data.rol;
+  document.getElementById("saludo").textContent = etiqueta + " · " + nombreOCorreo(data.nombre, session.user.email);
+
+  // Oficina ya no captura cuestionarios ni prospectos -- solo entra
+  // al Panel Admin (ahí ve nada más Respuestas y Clientes nuevos).
+  // Coordinador solo revisa prospectos -- no captura cuestionarios.
+  const tiles = [];
+  if (data.rol !== "oficina" && data.rol !== "coordinador") {
+    tiles.push({ href: "cuestionario.html", ic: "📝", title: "Cuestionario", desc: "Captura el conocimiento profundo de un cliente" });
+  }
+  if (data.rol !== "oficina") {
+    tiles.push({ href: "prospectos.html", ic: "🌱", title: "Prospectos", desc: "Da de alta y califica futuros clientes" });
+  }
+  if (data.rol === "admin" || data.rol === "oficina") {
+    tiles.push({ href: "admin.html", ic: "⚙️", title: "Panel Admin", desc: "Estadísticas, clientes y usuarios", cls: "admin" });
+  }
+
+  document.getElementById("tiles").innerHTML = tiles.map(t => `
+    <a class="tile ${t.cls || ""}" href="${t.href}">
+      <span class="ic">${t.ic}</span>
+      <h2>${t.title}</h2>
+      <p>${t.desc}</p>
+    </a>`).join("");
+
+  document.getElementById("wrap").style.opacity = "1";
+  revisarNotificacionesProspectos(session.user.id, data.rol);
 })();
 </script>
 </body>

@@ -4,24 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuacultura · Conocimiento Profundo del Cliente</title>
+<link rel="stylesheet" href="shared.css?v=19">
 <style>
-  :root{
-    --primary:#0e7490;
-    --primary-dark:#155e75;
-    --primary-light:#e0f2fe;
-    --accent:#f59e0b;
-    --bg:#f4f7f9;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --border:#e2e8f0;
-    --ok:#059669;
-    --error:#dc2626;
-    --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 2px 6px rgba(15,23,42,.06);
-    --shadow-md:0 8px 24px -8px rgba(15,23,42,.14);
-    --shadow-lg:0 20px 45px -15px rgba(15,23,42,.22);
-    --radius:16px;
-  }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
@@ -70,12 +54,8 @@
   .topbar .btn.admin{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;box-shadow:0 8px 20px -8px rgba(245,158,11,.55);}
   .topbar .btn.admin:hover{box-shadow:0 12px 26px -8px rgba(245,158,11,.65);}
   .topbar .btn .badge{background:var(--accent);color:#3b2f00;border-radius:99px;padding:1px 8px;font-size:.72rem;font-weight:800;}
-  .topbar::after{
-    content:"";position:absolute;left:0;right:0;bottom:-1px;height:38px;
-    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48'%3E%3Cpath fill='%23f4f7f9' d='M0,24 C180,46 360,2 540,20 C720,38 900,6 1080,20 C1260,34 1350,10 1440,22 L1440,48 L0,48 Z'/%3E%3C/svg%3E") repeat-x bottom center/1440px 38px;
-    animation:wave 9s linear infinite;
-  }
-  @keyframes wave{from{background-position-x:0;}to{background-position-x:-1440px;}}
+  /* La ola de la barra superior ahora vive en shared.css (.topbar::after),
+     así se ve igual en cuestionario, prospectos y admin. */
   @keyframes fadeDown{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:none;}}
 
   /* ===== Chip de usuario ===== */
@@ -90,7 +70,7 @@
   /* ===== Progreso ===== */
   .progress-wrap{max-width:880px;margin:-24px auto 22px;padding:0 16px;position:relative;z-index:5;}
   .progress-card{
-    background:#fff;border-radius:16px;box-shadow:var(--shadow-md);
+    background:var(--card);border-radius:16px;box-shadow:var(--shadow-md);
     padding:16px 20px 14px;border:1px solid var(--border);
     animation:fadeUp .55s .1s ease both;
   }
@@ -141,7 +121,7 @@
   .field label{font-size:.72rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;}
   .field input,.field select,.field textarea{
     width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;
-    font:inherit;font-size:.92rem;color:var(--text);background:#fff;
+    font:inherit;font-size:.92rem;color:var(--text);background:var(--card);
     transition:border-color .25s,box-shadow .25s,background .25s;
   }
   .field textarea{resize:vertical;min-height:72px;}
@@ -194,7 +174,7 @@
   .day-pill{
     display:inline-flex;align-items:center;gap:8px;padding:9px 15px;
     border:1.5px solid var(--border);border-radius:99px;cursor:pointer;
-    font-size:.84rem;font-weight:600;color:#475569;background:#fff;user-select:none;
+    font-size:.84rem;font-weight:600;color:var(--text);background:var(--card);user-select:none;
     transition:all .22s ease;
   }
   .day-pill input{display:none;}
@@ -211,7 +191,7 @@
   /* Buscador de clientes (formulario) */
   .client-search{position:relative;}
   .client-results{
-    position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;
+    position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);
     border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow-lg);
     max-height:250px;overflow-y:auto;z-index:30;display:none;
   }
@@ -253,7 +233,7 @@
   .btn.primary{background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;box-shadow:0 10px 22px -8px rgba(14,116,144,.55);}
   .btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px -8px rgba(14,116,144,.6);}
   .btn.primary:active{transform:translateY(0) scale(.97);}
-  .btn.ghost{background:#fff;border:1.5px solid var(--border);color:var(--primary-dark);}
+  .btn.ghost{background:var(--card);border:1.5px solid var(--border);color:var(--primary-dark);}
   .btn.ghost:hover{border-color:var(--primary);background:var(--primary-light);}
   .btn.ghost:active{transform:scale(.97);}
   .btn.link{background:none;color:var(--muted);padding:10px 8px;font-size:.85rem;}
@@ -280,7 +260,7 @@
   }
   .modal-overlay.show{display:flex;}
   .modal{
-    background:#fff;border-radius:20px;padding:24px;max-width:540px;width:100%;
+    background:var(--card);color:var(--text);border-radius:20px;padding:24px;max-width:540px;width:100%;
     max-height:86vh;overflow-y:auto;box-shadow:var(--shadow-lg);
     animation:modalIn .3s cubic-bezier(.22,.68,0,1);
   }
@@ -292,6 +272,17 @@
   .modal .sub{margin:4px 0 0;font-size:.8rem;color:var(--muted);}
   .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;line-height:1;transition:color .2s,transform .2s;}
   .modal-close:hover{color:var(--text);transform:rotate(90deg);}
+  /* ===== Modal salir ===== */
+  .logout-modal{max-width:380px;text-align:center;}
+  .logout-modal .ic{font-size:2.4rem;margin-bottom:6px;}
+  .logout-modal h3{margin:0 0 6px;font-size:1.05rem;color:var(--text);}
+  .logout-modal p{margin:0 0 20px;color:var(--muted);font-size:.86rem;}
+  .logout-actions{display:flex;gap:10px;}
+  .logout-actions button{flex:1;border:none;border-radius:11px;padding:12px;font:inherit;font-weight:800;font-size:.86rem;cursor:pointer;transition:transform .15s;}
+  .logout-actions button:hover{transform:translateY(-1px);}
+  .btn-stay{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+  .btn-leave{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;}
+  .btn-neutral{background:var(--card);color:var(--text);border:1.5px solid var(--border) !important;}
 
   /* ===== Vista de página completa (Mis cuestionarios) ===== */
   .page-overlay{
@@ -322,12 +313,12 @@
   .filtro-search .fs-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.95rem;opacity:.65;}
   .filtro-search input{
     width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:12px;
-    font:inherit;font-size:.9rem;background:#fff;color:var(--text);
+    font:inherit;font-size:.9rem;background:var(--card);color:var(--text);
     transition:border-color .25s,box-shadow .25s;
   }
   .filtro-search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
   .filtro-results{
-    position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);
+    position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--border);
     border-radius:13px;box-shadow:var(--shadow-lg);max-height:230px;overflow-y:auto;z-index:30;display:none;
   }
   .filtro-results.show{display:block;animation:dropIn .25s ease;}
@@ -352,7 +343,7 @@
   /* ===== Vista de solo lectura estilo formato en papel ===== */
   .paper{
     border:1px solid var(--border);border-radius:14px;
-    padding:22px 24px;background:#fff;
+    padding:22px 24px;background:var(--card);
   }
   .paper-head{
     display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
@@ -430,8 +421,11 @@
         👤 <b id="userName"></b>
         <button type="button" class="btn ghost" onclick="logout()">Salir</button>
       </span>
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+      <button type="button" class="btn ghost" onclick="window.location.href='index.html'">🏠 Inicio</button>
       <button type="button" class="btn admin" id="btnAdmin" onclick="window.location.href='admin.html'" style="display:none;">⚙️ Panel Admin</button>
       <button type="button" class="btn ghost" id="btnMisCuestionarios" onclick="openMisCuestionarios()">📋 Mis cuestionarios <span class="badge" id="qBadge">0</span></button>
+      <button type="button" class="btn ghost" id="btnProspectos" onclick="window.location.href='prospectos.html'">🌱 Prospectos</button>
       <button type="button" class="btn" id="btnAgregarCliente" onclick="openClientModal()">+ Agregar cliente</button>
     </div>
   </div>
@@ -457,7 +451,7 @@
       <p class="desc">Busca un cliente para autocompletar (todo sigue siendo editable) o agrégalo con el botón "Agregar cliente".</p>
       <div class="grid">
         <div class="field full client-search">
-          <label>Buscar cliente · Razón Social o RFC</label>
+          <label><span>Buscar cliente · Razón Social o RFC</span></label>
           <input type="text" id="clientSearch" placeholder="Escribe para buscar…" autocomplete="off">
           <div class="client-results" id="clientResults"></div>
         </div>
@@ -674,6 +668,32 @@
 
 <div class="toast" id="toast" role="status"></div>
 
+<!-- Modal: confirmación genérica -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal logout-modal">
+    <div class="ic" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">¿Estás seguro?</h3>
+    <p id="confirmMsg">Esta acción no se puede deshacer.</p>
+    <div class="logout-actions">
+      <button class="btn-neutral" id="confirmCancelBtn" onclick="cerrarConfirmModal()">Cancelar</button>
+      <button class="btn-leave" id="confirmOkBtn" onclick="ejecutarConfirmacion()">Sí, continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar salida -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal logout-modal">
+    <div class="ic">🚪</div>
+    <h3>¿Salir de tu sesión?</h3>
+    <p>Vas a cerrar sesión en Acción Acuicultura.</p>
+    <div class="logout-actions">
+      <button class="btn-stay" onclick="cancelarSalida()">✅ Seguir aquí</button>
+      <button class="btn-leave" onclick="confirmarSalida()">🚪 Sí, salir</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: agregar cliente -->
 <div class="modal-overlay" id="clientModal">
   <div class="modal">
@@ -720,7 +740,7 @@
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
       <button type="button" class="btn ghost" onclick="closeClientModal()">Cancelar</button>
-      <button type="button" class="btn primary" onclick="saveNewClient()">Guardar cliente</button>
+      <button type="button" class="btn primary" id="btnGuardarClienteNuevo" onclick="saveNewClient()">Guardar cliente</button>
     </div>
   </div>
 </div>
@@ -756,6 +776,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="shared.js?v=19"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
@@ -871,8 +892,15 @@ function goStep(i){
 }
 prevBtn.addEventListener("click", () => goStep(current-1));
 nextBtn.addEventListener("click", () => goStep(current+1));
-document.getElementById("clearBtn").addEventListener("click", () => {
-  if(confirm("¿Seguro que quieres limpiar todo el cuestionario?")) resetForm();
+document.getElementById("clearBtn").addEventListener("click", async () => {
+  const ok = await pedirConfirmacion({
+    icon: "🧹",
+    title: "¿Limpiar cuestionario?",
+    msg: "Se borrarán todas las respuestas capturadas en este formulario. Esta acción no se puede deshacer.",
+    okLabel: "🧹 Sí, limpiar",
+    okClass: "btn-leave"
+  });
+  if (ok) resetForm();
 });
 cuestionarioForm.addEventListener("input", () => {
   if(current === total-1) renderResumen();
@@ -902,25 +930,32 @@ function initials(n){
   return (n || "?").split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
 }
 
-searchInput.addEventListener("input", () => {
+let ultimosResultadosBusqueda = [];
+
+function buscarEnLista(){
   const q = searchInput.value.trim().toLowerCase();
   if(!q){ resultsBox.classList.remove("show"); resultsBox.innerHTML = ""; return; }
-  const matches = clientes
+
+  ultimosResultadosBusqueda = clientes
+    .filter(c => c.activo !== false)
     .filter(c => (c.razonSocial||"").toLowerCase().includes(q) || (c.rfc||"").toLowerCase().includes(q))
     .slice(0,8);
-  resultsBox.innerHTML = matches.length
-    ? matches.map(c => `<div class="cr" data-rfc="${c.rfc}">
+
+  resultsBox.innerHTML = ultimosResultadosBusqueda.length
+    ? ultimosResultadosBusqueda.map((c, i) => `<div class="cr" data-idx="${i}">
         <span class="avatar">${initials(c.razonSocial)}</span>
-        <span class="info"><b>${c.razonSocial}</b><small>${c.rfc} · ${c.sucursal || "—"}</small></span>
+        <span class="info"><b>${escapeHtml(c.razonSocial)}</b><small>${escapeHtml(c.rfc || "")} · ${escapeHtml(c.sucursal || "—")}</small></span>
       </div>`).join("")
     : `<div class="none">Sin resultados. Usa "+ Agregar cliente".</div>`;
   resultsBox.classList.add("show");
-});
+}
+
+searchInput.addEventListener("input", buscarEnLista);
 
 resultsBox.addEventListener("click", (e) => {
-  const el = e.target.closest(".cr[data-rfc]");
+  const el = e.target.closest(".cr[data-idx]");
   if(!el) return;
-  const c = clientes.find(x => x.rfc === el.dataset.rfc);
+  const c = ultimosResultadosBusqueda[Number(el.dataset.idx)];
   if(c){ aplicarCliente(c); searchInput.value = c.razonSocial; }
   resultsBox.classList.remove("show");
 });
@@ -950,7 +985,9 @@ function aplicarCliente(c){
 function openClientModal(){ document.getElementById("clientModal").classList.add("show"); }
 function closeClientModal(){ document.getElementById("clientModal").classList.remove("show"); }
 
+let guardandoClienteNuevo = false;
 async function saveNewClient(){
+  if (guardandoClienteNuevo) return;
   const nuevo = {
     razonSocial: document.getElementById("nc_razonSocial").value.trim(),
     rfc: document.getElementById("nc_rfc").value.trim(),
@@ -961,10 +998,13 @@ async function saveNewClient(){
     sucursal: document.getElementById("nc_sucursal").value.trim(),
     direccion: document.getElementById("nc_direccion").value.trim()
   };
-  if(!nuevo.rfc || !nuevo.razonSocial){
-    toast("Razón Social y RFC son obligatorios", "error");
+  if(!nuevo.razonSocial || !nuevo.rfc || !nuevo.telefono || !nuevo.giroDelNegocio){
+    toast("Razón Social, RFC, Teléfono y Giro del Negocio son obligatorios", "error");
     return;
   }
+  guardandoClienteNuevo = true;
+  const btn = document.getElementById("btnGuardarClienteNuevo");
+  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
   let guardado = false;
   try{
     if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
@@ -972,8 +1012,11 @@ async function saveNewClient(){
     if (error) throw error;
     guardado = true;
   }catch(e){ /* sin conexión */ }
+  guardandoClienteNuevo = false;
+  if (btn) { btn.disabled = false; btn.textContent = "Guardar cliente"; }
   if(guardado){
     toast("Cliente guardado en la base", "ok");
+    await registrarAccion("crear_cliente", "cliente", null, nuevo.razonSocial || "");
   }else{
     clientes.push(nuevo);
     toast("Modo demo: cliente guardado solo en este navegador", "ok");
@@ -1012,14 +1055,22 @@ function dataURLtoBlob(dataurl){
   return new Blob([u8], { type: mime });
 }
 
-function restaurarBorrador(){
+async function restaurarBorrador(){
   let raw = null;
   try{ raw = localStorage.getItem(BORRADOR_KEY); }catch(e){}
   if (!raw) return;
   let d = null;
   try{ d = JSON.parse(raw); }catch(e){}
   if (!d) return;
-  if (!confirm("Se encontró un borrador sin terminar. ¿Quieres continuar donde ibas?")) {
+  const continuar = await pedirConfirmacion({
+    icon: "📝",
+    title: "¿Continuar borrador?",
+    msg: "Se encontró un borrador sin terminar. ¿Quieres continuar donde ibas?",
+    okLabel: "📝 Sí, continuar",
+    okClass: "btn-stay",
+    cancelLabel: "Empezar de nuevo"
+  });
+  if (!continuar) {
     try{ localStorage.removeItem(BORRADOR_KEY); }catch(e){}
     return;
   }
@@ -1125,9 +1176,6 @@ function limpiarGps(){
 /* =========================================================
    MIS CUESTIONARIOS (solo lectura + PDF + buscador + Excel)
    ========================================================= */
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
 function getCuestionariosLocal(){
   try{ return JSON.parse(localStorage.getItem("cuestionarios_demo") || "[]"); }
   catch(e){ return []; }
@@ -1138,9 +1186,17 @@ let paginaActual = 1;
 const POR_PAGINA = 5;
 let busquedaFiltro = "";
 
+async function authHeaders(){
+  try{
+    if (typeof supabaseClient === "undefined") return {};
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    return session ? { "Authorization": "Bearer " + session.access_token } : {};
+  }catch(e){ return {}; }
+}
+
 async function cargarCuestionarios(){
   try{
-    const res = await fetch("/api/cuestionarios");
+    const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
     if(res.ok){
       const rows = await res.json();
       cuestionariosCache = rows.map(r => ({
@@ -1154,6 +1210,13 @@ async function cargarCuestionarios(){
       actualizarBadge();
       return cuestionariosCache;
     }
+    if (res.status === 401){
+      cuestionariosCache = getCuestionariosLocal();
+      origenCuestionarios = "sin-sesion";
+      filtrarPorRol();
+      actualizarBadge();
+      return cuestionariosCache;
+    }
   }catch(e){ /* sin conexión, usamos respaldo local */ }
   cuestionariosCache = getCuestionariosLocal();
   origenCuestionarios = "local";
@@ -1163,7 +1226,7 @@ async function cargarCuestionarios(){
 }
 
 function filtrarPorRol(){
-  if (usuarioActual && usuarioActual.rol !== "admin") {
+  if (usuarioActual && usuarioActual.rol !== "admin" && usuarioActual.rol !== "gerente") {
     cuestionariosCache = cuestionariosCache.filter(q =>
       (q.creadoPor && q.creadoPor === usuarioActual.id) ||
       (q.data && (q.data.creadoPor === usuarioActual.id || q.data.creado_por === usuarioActual.id))
@@ -1171,10 +1234,27 @@ function filtrarPorRol(){
   }
 }
 
+/* Oculta cuestionarios de clientes que ya se marcaron como inactivos
+   en el panel admin (se cruza por RFC contra la lista de clientes). */
+function listaVisible(){
+  const rfcsInactivos = new Set(
+    (clientes || [])
+      .filter(c => c.activo === false)
+      .map(c => (c.rfc || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
+  if (!rfcsInactivos.size) return cuestionariosCache;
+  return cuestionariosCache.filter(item => {
+    const rfc = ((item.data && item.data.rfc) || "").trim().toLowerCase();
+    return !rfc || !rfcsInactivos.has(rfc);
+  });
+}
+
 function listadoFiltrado(){
   const q = busquedaFiltro.trim().toLowerCase();
-  if (!q) return cuestionariosCache;
-  return cuestionariosCache.filter(item => {
+  const base = listaVisible();
+  if (!q) return base;
+  return base.filter(item => {
     const d = item.data || {};
     const texto = [d.razonSocial, d.nombreComercial, d.rfc, d.sucursal, item.cliente]
       .filter(Boolean).join(" ").toLowerCase();
@@ -1187,7 +1267,7 @@ function contarRespuestas(data){
 }
 function actualizarBadge(){
   const b = document.getElementById("qBadge");
-  if(b) b.textContent = cuestionariosCache.length;
+  if(b) b.textContent = listaVisible().length;
 }
 
 async function openMisCuestionarios(){
@@ -1205,7 +1285,7 @@ async function openMisCuestionarios(){
 function listarMisCuestionarios(){
   const list = listadoFiltrado();
   const cont = document.getElementById("listaCuestionarios");
-  const soloMios = usuarioActual && usuarioActual.rol !== "admin";
+  const soloMios = usuarioActual && usuarioActual.rol !== "admin" && usuarioActual.rol !== "gerente";
 
   document.getElementById("listaSub").textContent = origenCuestionarios === "db"
     ? (soloMios ? "Solo lectura · tus cuestionarios guardados" : "Solo lectura · todas las respuestas guardadas en la base de datos")
@@ -1225,7 +1305,9 @@ function listarMisCuestionarios(){
 
   const nota = origenCuestionarios === "local"
     ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ No se pudo conectar a la base de datos, mostrando solo lo guardado en este navegador.</div>`
-    : "";
+    : origenCuestionarios === "sin-sesion"
+      ? `<div class="empty-state" style="padding:10px 4px;color:var(--error);">⚠ Tu sesión no es válida para leer la base de datos. Cierra sesión y vuelve a entrar. Mostrando solo lo guardado en este navegador.</div>`
+      : "";
   const contador = `<div class="filtro-count">${list.length} cuestionario${list.length !== 1 ? "s" : ""}${busquedaFiltro.trim() ? ' para "' + escapeHtml(busquedaFiltro.trim()) + '"' : ""}</div>`;
 
   cont.innerHTML = nota + contador + paginado.map((q, i) => {
@@ -1382,6 +1464,7 @@ async function cargarLibExcel(){
 }
 
 function descargarCSV(){
+  registrarAccion("descargar_csv", "reporte", null, "cuestionarios");
   const hoy = new Date().toISOString().slice(0,10);
   const filas = [CAMPOS_EXCEL.map(c => c[0])];
   cuestionariosCache.forEach(q => {
@@ -1474,6 +1557,7 @@ async function exportarExcel(){
       "cuestionarios_acuacultura_" + hoy + ".xlsx"
     );
     toast("Excel descargado: " + cuestionariosCache.length + " cuestionarios", "ok");
+    registrarAccion("descargar_excel", "reporte", null, "cuestionarios");
   } catch (e) {
     descargarCSV();
     toast("No se pudo generar el .xlsx · se descargó CSV", "ok");
@@ -1630,18 +1714,6 @@ function backFromLista(){
 function closeModal(id){ document.getElementById(id).classList.remove("show"); }
 
 /* =========================================================
-   TOAST
-   ========================================================= */
-let toastTimer;
-function toast(msg, type){
-  const t = document.getElementById("toast");
-  t.textContent = (type === "ok" ? "✓ " : "✘ ") + msg;
-  t.className = "toast show " + (type || "");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 3800);
-}
-
-/* =========================================================
    FOTO EN VIVO (obligatoria) · cámara directa, sin galería
    ========================================================= */
 let fotoBlob = null;
@@ -1673,29 +1745,49 @@ async function abrirCamara(){
   }
 }
 
-function tomarFoto(){
+function canvasToBlobAsync(canvas, calidad){
+  return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", calidad));
+}
+
+/* Comprime bajando la calidad JPEG en pasos hasta caber en maxBytes (o hasta
+   el piso de calidad, para no dejar la foto ilegible). */
+async function comprimirCanvas(canvas, maxBytes = 140 * 1024, calidadPiso = 0.35){
+  let calidad = 0.7;
+  let blob = await canvasToBlobAsync(canvas, calidad);
+  while (blob && blob.size > maxBytes && calidad > calidadPiso){
+    calidad = Math.round((calidad - 0.1) * 100) / 100;
+    blob = await canvasToBlobAsync(canvas, calidad);
+  }
+  return blob;
+}
+
+async function tomarFoto(){
   const video = document.getElementById("camVideo");
   if (!camActiva || !video || !video.videoWidth) {
     toast("Espera a que cargue la cámara", "error");
     return;
   }
   const canvas = document.createElement("canvas");
-  const MAX = 1024;
+  const MAX = 700;
   const escala = Math.min(1, MAX / video.videoWidth);
   canvas.width = Math.round(video.videoWidth * escala);
   canvas.height = Math.round(video.videoHeight * escala);
   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-  fotoDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-  canvas.toBlob(blob => {
-    fotoBlob = blob;
-    cerrarCamara();
-    document.getElementById("imgPreview").src = URL.createObjectURL(blob);
-    document.getElementById("fotoPreview").style.display = "block";
-    document.getElementById("btnAbrirCam").style.display = "none";
-    document.getElementById("fotoField").classList.remove("falta-foto");
-    if(current === total-1) renderResumen();
-    guardarBorrador();
-  }, "image/jpeg", 0.7);
+
+  const blob = await comprimirCanvas(canvas);
+  if (!blob) {
+    toast("No se pudo procesar la foto, intenta de nuevo", "error");
+    return;
+  }
+  fotoBlob = blob;
+  fotoDataUrl = canvas.toDataURL("image/jpeg", 0.5);
+  cerrarCamara();
+  document.getElementById("imgPreview").src = URL.createObjectURL(blob);
+  document.getElementById("fotoPreview").style.display = "block";
+  document.getElementById("btnAbrirCam").style.display = "none";
+  document.getElementById("fotoField").classList.remove("falta-foto");
+  if(current === total-1) renderResumen();
+  guardarBorrador();
 }
 
 function cerrarCamara(){
@@ -1713,8 +1805,10 @@ function cerrarCamara(){
 /* =========================================================
    ENVÍO: validación estricta de obligatorios + guardado
    ========================================================= */
+let enviandoCuestionario = false;
 cuestionarioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (enviandoCuestionario) return;
 
   document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   const fotoField = document.getElementById("fotoField");
@@ -1763,6 +1857,7 @@ cuestionarioForm.addEventListener("submit", async (e) => {
     return;
   }
 
+  enviandoCuestionario = true;
   submitBtn.disabled = true;
   submitBtn.textContent = "Guardando…";
 
@@ -1801,22 +1896,36 @@ cuestionarioForm.addEventListener("submit", async (e) => {
 
     guardarDemo(data);
 
-    const res = await fetch("/api/cuestionarios", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { "Authorization": "Bearer " + token } : {})
-      },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "red");
-    }
-    toast("Cuestionario y foto guardados en la base", "ok");
+    // El guardado en "cuestionarios" (vía la función de Netlify) y en
+    // "clientes_nuevos" (directo con supabaseClient) son independientes:
+    // si uno falla, el otro se intenta igual. Antes estaban amarrados y
+    // si /api/cuestionarios fallaba, "clientes_nuevos" nunca se tocaba.
+    let cuestionarioGuardado = false;
+    try {
+      const res = await fetch("/api/cuestionarios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": "Bearer " + token } : {})
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "red");
+      }
+      cuestionarioGuardado = true;
+    } catch (errCuestionario) { /* sigue guardado local; abajo probamos clientes_nuevos igual */ }
+
+    await guardarClienteNuevoDesdeCuestionario(data);
+    await registrarAccion("crear_cuestionario", "cuestionario", null, data.razonSocial || "");
+
+    if (cuestionarioGuardado) toastGuardado();
+    else toast("Guardado en este navegador · ya puedes verlo en 'Mis cuestionarios'", "ok");
   } catch (err) {
     toast("Guardado en este navegador · ya puedes verlo en 'Mis cuestionarios'", "ok");
   } finally {
+    enviandoCuestionario = false;
     submitBtn.disabled = false;
     submitBtn.textContent = "💾 Guardar cuestionario";
     try{ localStorage.removeItem(BORRADOR_KEY); }catch(e){}
@@ -1824,6 +1933,161 @@ cuestionarioForm.addEventListener("submit", async (e) => {
     document.querySelectorAll(".falta-dato").forEach(el => el.classList.remove("falta-dato"));
   }
 });
+
+/* Al terminar el cuestionario con éxito, ese cliente pasa a la tabla
+   "clientes_nuevos" con todas las respuestas (consumo, logística,
+   comentarios...). "clientes" se queda solo como catálogo de consulta
+   para el autocompletar — este flujo ya no le escribe nada.
+   Cada envío crea su propia fila nueva, aunque el RFC se repita (el
+   mismo RFC puede tener varias sucursales/negocios distintos). */
+async function guardarClienteNuevoDesdeCuestionario(data){
+  try{
+    if (typeof supabaseClient === "undefined") return;
+    const rfcOriginal = data.rfc || "";
+    const rfc = rfcOriginal.trim();
+    if (!rfc) return;
+
+    // Primero intentamos usar la función RPC (si existe) - SOLUCIÓN DEFINITIVA
+    // La función recibe un solo parámetro JSON: { datos: {...} }
+    const fila = {
+      origen: "cuestionario",
+      creado_por: (usuarioActual && usuarioActual.id) || null,
+      razonSocial: (data.razonSocial || "").trim(),
+      rfc: rfc,
+      giroDelNegocio: data.giroDelNegocio || null,
+      nombreComprador: data.nombreComprador || null,
+      telefono: data.telefono || null,
+      nombreComercial: data.nombreComercial || null,
+      sucursal: data.sucursal || null,
+      direccion: data.direccion || null,
+      puesto: data.puesto || null,
+      correoElectronico: data.correoElectronico || null,
+      fechaCaptura: data.fechaCaptura || null,
+      consumoActual: data.consumoActual || null,
+      mesesEstacionalidad: data.mesesEstacionalidad || null,
+      presentacion1: data.presentacion1 || null,
+      presentacion2: data.presentacion2 || null,
+      presentacion3: data.presentacion3 || null,
+      proteinaCamaron: data.proteinaCamaron || null,
+      proteinaTilapia: data.proteinaTilapia || null,
+      consumoTotal: data.consumoTotal || null,
+      segmento: data.segmento || null,
+      participacionCompetencia: data.participacionCompetencia || null,
+      proveedorCompetencia: data.proveedorCompetencia || null,
+      facturacionMensual: data.facturacionMensual || null,
+      establecimiento: data.establecimiento || null,
+      condicionCompra: data.condicionCompra || null,
+      frecuencia: data.frecuencia || null,
+      horarioRecepcion: data.horarioRecepcion || null,
+      diasRecepcion: data.diasRecepcion || null,
+      volumenPromedio: data.volumenPromedio || null,
+      ubicacionEntrega: data.ubicacionEntrega || null,
+      requerimientosEspeciales: data.requerimientosEspeciales || null,
+      comentarios: data.comentarios || null,
+      fotoUrl: data.fotoUrl || null
+    };
+
+    // Intentar usar la función RPC con parámetro JSON
+    try {
+      const { error: rpcError } = await supabaseClient.rpc("mover_cliente_a_nuevos", { params: fila });
+      if (!rpcError) {
+        toast(`"${fila.razonSocial}" quedó guardado como cliente nuevo`, "ok");
+        console.log(`✅ Cliente movido usando RPC: ${rfc}`);
+        return; // ¡Éxito! La función RPC hizo todo el trabajo
+      } else {
+        console.warn("⚠️ Función RPC falló, intentando método alternativo...", rpcError);
+      }
+    } catch (rpcErr) {
+      console.warn("⚠️ Error al llamar RPC:", rpcErr);
+    }
+    
+    // Insertar en clientes_nuevos (método alternativo)
+    const { error: insertError } = await supabaseClient.from("clientes_nuevos").insert(fila);
+    if (insertError) {
+      console.error("Error al insertar en clientes_nuevos:", insertError);
+      return;
+    }
+    
+    toast(`"${fila.razonSocial}" quedó guardado como cliente nuevo`, "ok");
+    
+    // Esperar para que el insert sea visible
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Intentar eliminar de "clientes" usando múltiples variantes del RFC
+    const rfcVariantes = [rfc, rfcOriginal, rfc.toUpperCase(), rfcOriginal.toUpperCase(), rfc.toLowerCase(), rfcOriginal.toLowerCase()];
+    let eliminado = false;
+    let ultimoError = null;
+    
+    for (const rfcVar of rfcVariantes) {
+      if (rfcVar === "") continue;
+      try {
+        const { error: delError, count } = await supabaseClient
+          .from("clientes")
+          .delete()
+          .eq("rfc", rfcVar)
+          .select();
+        
+        if (!delError && count && count > 0) {
+          eliminado = true;
+          console.log(`✓ Cliente eliminado de 'clientes' con RFC: "${rfcVar}"`);
+          break;
+        } else if (delError) {
+          ultimoError = delError;
+          console.warn(`   No se eliminó con RFC "${rfcVar}":`, delError);
+        }
+      } catch (e) {
+        ultimoError = e;
+        console.warn(`   Error con RFC "${rfcVar}":`, e);
+      }
+    }
+    
+    if (!eliminado) {
+      // Intentar buscar por similitud
+      try {
+        const { data: clientesEncontrados, error: searchError } = await supabaseClient
+          .from("clientes")
+          .select("rfc")
+          .ilike("rfc", `%${rfc}%`);
+        
+        if (!searchError && clientesEncontrados && clientesEncontrados.length > 0) {
+          for (const cliente of clientesEncontrados) {
+            try {
+              const { error: delError } = await supabaseClient
+                .from("clientes")
+                .delete()
+                .eq("rfc", cliente.rfc);
+              if (!delError) {
+                eliminado = true;
+                console.log(`✓ Cliente eliminado de 'clientes' con RFC exacto: "${cliente.rfc}"`);
+                break;
+              }
+            } catch (e) {
+              console.warn(`   Error eliminando RFC "${cliente.rfc}":`, e);
+            }
+          }
+        } else {
+          console.log("   No se encontraron clientes similares en 'clientes'");
+        }
+      } catch (e) {
+        console.warn("Error al buscar cliente por RFC similar:", e);
+      }
+      
+      if (!eliminado) {
+        console.error("❌ NO SE PUDO ELIMINAR de 'clientes'. RFC original:", rfcOriginal, "RFC trim:", rfc);
+        if (ultimoError) {
+          console.error("   Último error:", ultimoError);
+        }
+        // Mostrar toast de error
+        toast("⚠️ Cliente guardado, pero NO se borró del catálogo. Ejecuta en Supabase: setup-funcion-mover-cliente.sql", "error");
+      }
+    } else {
+      console.log(`✅ Cliente "${fila.razonSocial}" movido correctamente`);
+    }
+  } catch(e) {
+    console.error("Error en guardarClienteNuevoDesdeCuestionario:", e);
+    /* si esto falla, el cuestionario ya se guardó igual */
+  }
+}
 
 function guardarDemo(data){
   try{
@@ -1862,9 +2126,13 @@ function resetForm(){
    ========================================================= */
 let usuarioActual = null;
 
+/* "oficina" ya no aparece aquí -- no captura cuestionarios, solo
+   entra al Panel Admin (Respuestas + Clientes nuevos). Si de alguna
+   forma llega a esta página, se le manda de regreso a index.html,
+   sin cerrarle la sesión (es un rol válido, solo no le toca aquí). */
 const PERMISOS = {
   admin:     { agregarCliente: true,  misCuestionarios: true,  formulario: true },
-  oficina:   { agregarCliente: false, misCuestionarios: true,  formulario: true },
+  gerente:   { agregarCliente: true,  misCuestionarios: true,  formulario: true },
   comercial: { agregarCliente: false, misCuestionarios: true,  formulario: true }
 };
 
@@ -1876,17 +2144,21 @@ async function iniciarSesionSupabase(){
 
     const { data } = await supabaseClient
       .from("usuarios")
-      .select("rol, activo")
+      .select("rol, activo, nombre")
       .eq("id", session.user.id)
       .maybeSingle();
 
-    if (!data || !data.activo || !PERMISOS[data.rol]) {
+    if (!data || !data.activo) {
       await supabaseClient.auth.signOut();
       window.location.href = "login.html";
       return;
     }
+    if (!PERMISOS[data.rol]) {
+      window.location.href = "index.html";
+      return;
+    }
 
-    usuarioActual = { id: session.user.id, email: session.user.email, rol: data.rol };
+    usuarioActual = { id: session.user.id, email: session.user.email, nombre: data.nombre, rol: data.rol };
     aplicarPermisos();
     mostrarUsuario();
   } catch (e) { /* sin Supabase: modo demo */ }
@@ -1897,19 +2169,28 @@ function aplicarPermisos(){
   const el = id => document.getElementById(id);
   if (el("btnAgregarCliente"))   el("btnAgregarCliente").style.display   = p.agregarCliente   ? "" : "none";
   if (el("btnMisCuestionarios")) el("btnMisCuestionarios").style.display = p.misCuestionarios ? "" : "none";
-  if (el("btnExportarExcel"))    el("btnExportarExcel").style.display    = usuarioActual.rol === "admin" ? "" : "none";
+  const esAdminOGerente = usuarioActual.rol === "admin" || usuarioActual.rol === "gerente";
+  if (el("btnExportarExcel"))    el("btnExportarExcel").style.display    = esAdminOGerente ? "" : "none";
+  // El Panel Admin ya solo lo maneja admin (gerente ya no entra ahí).
   if (el("btnAdmin"))            el("btnAdmin").style.display            = usuarioActual.rol === "admin" ? "" : "none";
 }
 
 function mostrarUsuario(){
   const chip = document.getElementById("userChip");
   if (!chip) return;
-  const etiqueta = { admin: "Admin", oficina: "Oficina", comercial: "Comercial" }[usuarioActual.rol] || usuarioActual.rol;
-  document.getElementById("userName").textContent = etiqueta + ": " + usuarioActual.email;
+  const etiqueta = { admin: "Admin", gerente: "Gerente", comercial: "Comercial" }[usuarioActual.rol] || usuarioActual.rol;
+  document.getElementById("userName").textContent = etiqueta + ": " + nombreOCorreo(usuarioActual.nombre, usuarioActual.email);
   chip.style.display = "inline-flex";
 }
 
-async function logout(){
+function logout(){
+  document.getElementById("logoutModal").classList.add("show");
+}
+function cancelarSalida(){
+  document.getElementById("logoutModal").classList.remove("show");
+}
+async function confirmarSalida(){
+  await registrarLogout();
   try {
     await supabaseClient.auth.signOut();
   } catch (e) {}
@@ -1923,7 +2204,7 @@ async function logout(){
   await iniciarSesionSupabase();
   await cargarCuestionarios();
   renderSteps();
-  restaurarBorrador();
+  await restaurarBorrador();
 })();
 </script>
 </body>

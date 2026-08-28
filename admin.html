@@ -4,17 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura · Panel Admin</title>
+<link rel="stylesheet" href="shared.css?v=19">
 <style>
-  :root{
-    --primary:#0e7490; --primary-dark:#155e75; --primary-light:#e0f2fe;
-    --accent:#f59e0b; --bg:#f4f7f9; --card:#fff; --text:#0f172a;
-    --muted:#64748b; --border:#e2e8f0; --ok:#059669; --error:#dc2626;
-    --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 2px 6px rgba(15,23,42,.06);
-    --radius:16px;
-  }
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  .topbar{background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;padding:20px 22px;}
+  .topbar{background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;padding:20px 22px 40px;}
   .topbar .inner{max-width:980px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:12px;}
   .logo{
@@ -32,41 +26,30 @@
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px 24px;margin-bottom:18px;}
   .card h2{margin:0 0 14px;font-size:.95rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-dark);display:flex;align-items:center;gap:9px;}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0;}
+  .tab-btn{border:1.5px solid var(--border);background:#fff;color:var(--primary-dark);border-radius:11px;padding:10px 16px;font:inherit;font-weight:700;font-size:.84rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:transform .15s,box-shadow .15s;}
+  .tab-btn:hover{transform:translateY(-1px);}
+  .tab-btn.active{background:linear-gradient(135deg,var(--primary),#0891b2);border-color:transparent;color:#fff;box-shadow:0 8px 18px -8px rgba(14,116,144,.5);}
+  .seccion-panel{display:none;}
+  .seccion-panel.show{display:block;}
+  .papelera-panel{display:none;}
+  .papelera-panel.show{display:block;}
+  .pap-count{display:inline-block;min-width:18px;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.28);font-size:.7rem;}
+  .tab-btn:not(.active) .pap-count{background:var(--primary-light);color:var(--primary-dark);}
   .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow-sm);}
   .stat b{display:block;font-size:1.5rem;color:var(--primary-dark);}
   .stat span{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
   .toolbar input{flex:1;min-width:180px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;}
   .toolbar input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
-  .toolbar select{padding:10px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.84rem;background:#fff;}
-  .btn{border:none;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;font-size:.84rem;cursor:pointer;transition:transform .15s;}
-  .btn.primary{background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;}
-  .btn.ghost{background:#fff;border:1.5px solid var(--border);color:var(--primary-dark);}
-  .btn.small{padding:6px 10px;font-size:.76rem;border-radius:8px;}
-  .btn.ok{background:#ecfdf5;color:var(--ok);border:1px solid #a7f3d0;}
-  .btn.danger{background:#fef2f2;color:var(--error);border:1px solid #fecaca;}
-  table{width:100%;border-collapse:collapse;font-size:.85rem;}
-  th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);}
-  td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
-  tr:hover td{background:#f8fafc;}
-  .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:800;text-transform:uppercase;}
-  .badge.rol-admin{background:#fef3c7;color:#92400e;}
-  .badge.rol-comercial{background:#e0f2fe;color:#075985;}
-  .badge.rol-oficina{background:#f0fdfa;color:#0f766e;}
-  .badge.act{background:#ecfdf5;color:#047857;}
-  .badge.inact{background:#fef2f2;color:#b91c1c;}
-  .empty{text-align:center;color:var(--muted);padding:26px 10px;font-size:.88rem;}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:13px 18px;border-radius:13px;font-size:.86rem;font-weight:600;z-index:300;opacity:0;transition:all .4s;max-width:92vw;text-align:center;}
-  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-  .toast.ok{background:linear-gradient(135deg,#059669,#10b981);}
-  .toast.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
+  .toolbar select{padding:10px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.84rem;background:var(--card);color:var(--text);}
   .page-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:250;overflow-y:auto;}
   .page-overlay.show{display:block;}
   .page-head{position:sticky;top:0;z-index:5;background:linear-gradient(120deg,#0b3c4d,#0e7490,#0891b2);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;}
   .page-head .back{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer;}
   .page-head h3{margin:0;font-size:1rem;flex:1;}
   .page-body{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
-  .paper{border:1px solid var(--border);border-radius:14px;padding:22px 24px;background:#fff;}
+  .paper{border:1px solid var(--border);border-radius:14px;padding:22px 24px;background:var(--card);color:var(--text);}
   .paper-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid var(--primary-dark);padding-bottom:14px;margin-bottom:20px;flex-wrap:wrap;}
   .paper-titles{flex:1;text-align:center;}
   .paper-titles h3{margin:0;font-size:1rem;text-transform:uppercase;font-weight:800;}
@@ -82,26 +65,14 @@
   .paper-comment .val{border:1px dashed #c9d3dc;border-radius:8px;padding:9px 11px;min-height:3em;white-space:pre-wrap;}
   /* ===== Gráficas ===== */
   .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
-  .chart-box{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px;}
+  .chart-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;}
   .chart-box h3{margin:0 0 10px;font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
-  /* ===== Paginador ===== */
-  .paginador{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
-  .paginador .info{font-size:.8rem;color:var(--muted);font-weight:700;}
-  /* ===== Modal ===== */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,20,28,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:200;padding:16px;}
-  .modal-overlay.show{display:flex;}
-  .modal{background:#fff;border-radius:18px;padding:22px;max-width:540px;width:100%;max-height:86vh;overflow-y:auto;box-shadow:0 20px 45px -15px rgba(15,23,42,.3);}
-  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
-  .modal h3{margin:0;color:var(--primary-dark);font-size:1rem;}
-  .modal .sub{margin:4px 0 0;font-size:.78rem;color:var(--muted);}
-  .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;line-height:1;}
-  .modal-close:hover{color:var(--text);}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
   @media(max-width:640px){.grid{grid-template-columns:1fr;}}
   .field{display:flex;flex-direction:column;gap:5px;}
   .field.full{grid-column:1/-1;}
   .field label{font-size:.7rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;}
-  .field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;background:#fff;}
+  .field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;background:var(--card);color:var(--text);}
   .field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
   @media print{body *{visibility:hidden;}#printContent,#printContent *{visibility:visible;}#printContent{position:absolute;left:0;top:0;width:100%;}}
 </style>
@@ -118,20 +89,36 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <span class="badge act" id="userBadge" style="display:none;"></span>
-      <a href="cuestionario.html" class="btn ghost">📝 Cuestionario</a>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+      <a href="index.html" class="btn ghost">🏠 Inicio</a>
+      <a href="cuestionario.html" id="navCuestionario" class="btn ghost">📝 Cuestionario</a>
+      <a href="prospectos.html" id="navProspectos" class="btn ghost">🌱 Prospectos</a>
       <button class="btn ghost" onclick="logout()">🚪 Salir</button>
     </div>
   </div>
 </header>
 
 <main>
-  <div class="stats">
+  <div class="stats" id="statsBar">
     <div class="stat"><b id="stTotal">0</b><span>Respuestas</span></div>
     <div class="stat"><b id="stClientes">0</b><span>Clientes únicos</span></div>
     <div class="stat"><b id="stUsuarios">0</b><span>Usuarios activos</span></div>
     <div class="stat"><b id="stComent">0</b><span>Con comentarios</span></div>
+    <div class="stat" id="statPapelera" style="display:none;"><b id="stPapelera">0</b><span>En papelera</span></div>
   </div>
 
+  <div class="tabs">
+    <button type="button" class="tab-btn" data-sec="dashboard" onclick="mostrarSeccion('dashboard')">📊 Dashboard</button>
+    <button type="button" class="tab-btn" data-sec="respuestas" onclick="mostrarSeccion('respuestas')">📥 Respuestas</button>
+    <button type="button" class="tab-btn" id="tabPapelera" data-sec="papelera" onclick="mostrarSeccion('papelera')" style="display:none;">🗑️ Papelera</button>
+    <button type="button" class="tab-btn" id="tabLog" data-sec="log" onclick="mostrarSeccion('log')" style="display:none;">🕓 Movimientos</button>
+    <button type="button" class="tab-btn" data-sec="clientes" onclick="mostrarSeccion('clientes')">🏢 Clientes</button>
+    <button type="button" class="tab-btn" data-sec="reales" onclick="mostrarSeccion('reales')" style="display:none;">✅ Reales</button>
+    <button type="button" class="tab-btn" data-sec="nuevos" onclick="mostrarSeccion('nuevos')">🆕 Clientes nuevos</button>
+    <button type="button" class="tab-btn" data-sec="usuarios" onclick="mostrarSeccion('usuarios')">👥 Usuarios</button>
+  </div>
+
+  <div class="seccion-panel" id="secDashboard">
   <div class="card">
     <h2>📊 Dashboard</h2>
     <div class="charts">
@@ -140,7 +127,9 @@
       <div class="chart-box"><h3>Respuestas por mes</h3><canvas id="chMeses"></canvas></div>
     </div>
   </div>
+  </div>
 
+  <div class="seccion-panel" id="secRespuestas">
   <div class="card">
     <h2>📥 Respuestas recibidas</h2>
     <div class="toolbar">
@@ -148,10 +137,12 @@
       <select id="filterUser" onchange="buscarAdmin()"><option value="">Todos los capturistas</option></select>
       <button class="btn ghost" onclick="exportCSV()">⬇ Exportar CSV</button>
     </div>
+    <div class="table-scroll">
     <table>
       <thead><tr><th>Fecha</th><th>Cliente</th><th>Capturista</th><th>Respuestas</th><th></th></tr></thead>
       <tbody id="tablaBody"></tbody>
     </table>
+    </div>
     <div class="empty" id="tablaEmpty" style="display:none;">Aún no hay respuestas en la base de datos.</div>
     <div class="paginador" id="pagAdminWrap">
       <button class="btn ghost small" onclick="cambiarPaginaAdmin(paginaAdmin-1)">← Anterior</button>
@@ -159,17 +150,112 @@
       <button class="btn ghost small" onclick="cambiarPaginaAdmin(paginaAdmin+1)">Siguiente →</button>
     </div>
   </div>
+  </div>
 
+  <div class="seccion-panel" id="secPapelera">
+  <div id="papeleraWrap" style="display:none;">
+    <p style="margin:0 0 16px;font-size:.82rem;color:var(--muted);">🔒 Solo tú (admin) puedes ver esto. Restaura lo que necesites o elimínalo para siempre — no hay marcha atrás con eso último.</p>
+
+    <div class="tabs" id="papeleraSubtabs">
+      <button type="button" class="tab-btn active" data-pap="cuestionarios" onclick="mostrarPapelera('cuestionarios')">🗑️ Cuestionarios <span class="pap-count" id="papCountCuest"></span></button>
+      <button type="button" class="tab-btn" data-pap="clientes" onclick="mostrarPapelera('clientes')">🏢 Clientes <span class="pap-count" id="papCountClientes"></span></button>
+      <button type="button" class="tab-btn" data-pap="usuarios" onclick="mostrarPapelera('usuarios')">👥 Usuarios <span class="pap-count" id="papCountUsuarios"></span></button>
+      <button type="button" class="tab-btn" data-pap="prospectos" onclick="mostrarPapelera('prospectos')">🌱 Prospectos <span class="pap-count" id="papCountProspectos"></span></button>
+    </div>
+
+    <div class="papelera-panel show" data-pap-panel="cuestionarios">
+    <div class="card">
+      <h2>🗑️ Cuestionarios eliminados</h2>
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>Cliente</th><th>Capturista</th><th>Eliminado</th><th></th></tr></thead>
+        <tbody id="papeleraCuestBody"></tbody>
+      </table>
+      </div>
+      <div class="empty" id="papeleraCuestEmpty" style="display:none;">Ningún cuestionario en la papelera.</div>
+      <div class="paginador" id="pagPapCuestWrap">
+        <button class="btn ghost small" onclick="cambiarPaginaPapCuest(pagPapCuest-1)">← Anterior</button>
+        <span class="info" id="pagPapCuestInfo"></span>
+        <button class="btn ghost small" onclick="cambiarPaginaPapCuest(pagPapCuest+1)">Siguiente →</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="papelera-panel" data-pap-panel="clientes">
+    <div class="card">
+      <h2>🏢 Clientes desactivados</h2>
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>Razón Social</th><th>RFC</th><th></th></tr></thead>
+        <tbody id="papeleraClientesBody"></tbody>
+      </table>
+      </div>
+      <div class="empty" id="papeleraClientesEmpty" style="display:none;">Ningún cliente desactivado.</div>
+      <div class="paginador" id="pagPapClientesWrap">
+        <button class="btn ghost small" onclick="cambiarPaginaPapClientes(pagPapClientes-1)">← Anterior</button>
+        <span class="info" id="pagPapClientesInfo"></span>
+        <button class="btn ghost small" onclick="cambiarPaginaPapClientes(pagPapClientes+1)">Siguiente →</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="papelera-panel" data-pap-panel="usuarios">
+    <div class="card">
+      <h2>👥 Usuarios desactivados</h2>
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>Usuario</th><th>Rol</th><th></th></tr></thead>
+        <tbody id="papeleraUsuariosBody"></tbody>
+      </table>
+      </div>
+      <div class="empty" id="papeleraUsuariosEmpty" style="display:none;">Ningún usuario desactivado.</div>
+      <div class="paginador" id="pagPapUsuariosWrap">
+        <button class="btn ghost small" onclick="cambiarPaginaPapUsuarios(pagPapUsuarios-1)">← Anterior</button>
+        <span class="info" id="pagPapUsuariosInfo"></span>
+        <button class="btn ghost small" onclick="cambiarPaginaPapUsuarios(pagPapUsuarios+1)">Siguiente →</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="papelera-panel" data-pap-panel="prospectos">
+    <div class="card">
+      <h2>🌱 Prospectos eliminados</h2>
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>Razón Social</th><th>RFC</th><th>Prospectado por</th><th>Eliminado</th><th></th></tr></thead>
+        <tbody id="papeleraProspectosBody"></tbody>
+      </table>
+      </div>
+      <div class="empty" id="papeleraProspectosEmpty" style="display:none;">Ningún prospecto en la papelera.</div>
+      <div class="paginador" id="pagPapProspectosWrap">
+        <button class="btn ghost small" onclick="cambiarPaginaPapProspectos(pagPapProspectos-1)">← Anterior</button>
+        <span class="info" id="pagPapProspectosInfo"></span>
+        <button class="btn ghost small" onclick="cambiarPaginaPapProspectos(pagPapProspectos+1)">Siguiente →</button>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="seccion-panel" id="secClientes">
   <div class="card">
     <h2>🏢 Clientes</h2>
     <div class="toolbar">
       <input type="text" id="clientSearchBox" placeholder="Buscar por razón social, RFC o sucursal…" oninput="buscarClientes()">
+      <select id="clientFilterEstado" onchange="buscarClientes()">
+        <option value="">Todos</option>
+        <option value="activos" selected>Solo activos</option>
+        <option value="inactivos">Solo inactivos</option>
+      </select>
+      <button class="btn ghost" onclick="exportarClientesCSV()">⬇ Exportar CSV</button>
       <button class="btn primary" onclick="openClientModal()">+ Agregar cliente</button>
     </div>
+    <div class="table-scroll">
     <table>
-      <thead><tr><th>Razón Social</th><th>RFC</th><th>Sucursal</th><th>Dirección</th><th>Giro</th><th></th></tr></thead>
+      <thead><tr><th>Razón Social</th><th>RFC</th><th>Sucursal</th><th>Dirección</th><th>Giro</th><th>Estado</th><th></th></tr></thead>
       <tbody id="clientesBody"></tbody>
     </table>
+    </div>
     <div class="empty" id="clientesEmpty" style="display:none;">Sin clientes registrados.</div>
     <div class="paginador" id="pagClientesWrap">
       <button class="btn ghost small" onclick="cambiarPaginaClientes(pagClientes-1)">← Anterior</button>
@@ -177,17 +263,121 @@
       <button class="btn ghost small" onclick="cambiarPaginaClientes(pagClientes+1)">Siguiente →</button>
     </div>
   </div>
+  </div>
 
+  <div class="seccion-panel" id="secReales">
+  <div class="card">
+    <h2>✅ Clientes reales</h2>
+    <p style="margin:-8px 0 16px;font-size:.82rem;color:var(--muted);">Clientes activos (no desactivados) — incluye tanto los que vienen del catálogo como los que se aceptaron directo desde Prospectos.</p>
+    <div class="toolbar">
+      <input type="text" id="realesSearchBox" placeholder="Buscar por razón social o RFC…" oninput="buscarClientesReales()">
+      <button class="btn ghost" onclick="exportarRealesCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Razón Social</th><th>RFC</th><th>Sucursal</th><th>Giro</th><th></th></tr></thead>
+      <tbody id="realesBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="realesEmpty" style="display:none;">Ningún cliente cumple todavía con ambos requisitos.</div>
+    <div class="paginador" id="pagRealesWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaReales(pagReales-1)">← Anterior</button>
+      <span class="info" id="pagRealesInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaReales(pagReales+1)">Siguiente →</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="seccion-panel" id="secNuevos">
+  <div class="card">
+    <h2>🆕 Clientes nuevos</h2>
+    <p style="margin:-8px 0 16px;font-size:.82rem;color:var(--muted);">Clientes confirmados: llegan aquí solo por dos caminos de confianza — completaron el cuestionario, o fueron prospectos aprobados por un admin. "clientes" sigue siendo solo el catálogo para autocompletar.</p>
+    <div class="toolbar">
+      <input type="text" id="nuevosSearchBox" placeholder="Buscar por razón social o RFC…" oninput="buscarClientesNuevos()">
+      <select id="nuevosFilterOrigen" onchange="buscarClientesNuevos()">
+        <option value="">Todos los orígenes</option>
+        <option value="cuestionario">Solo cuestionario</option>
+        <option value="prospecto">Solo prospecto aceptado</option>
+      </select>
+      <select id="nuevosFilterEstado" onchange="buscarClientesNuevos()">
+        <option value="">Todos</option>
+        <option value="activos" selected>Solo activos</option>
+        <option value="inactivos">Solo inactivos</option>
+      </select>
+      <button class="btn ghost" onclick="exportarNuevosCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Razón Social</th><th>RFC</th><th>Ciudad</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="nuevosBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="nuevosEmpty" style="display:none;">Todavía no hay clientes nuevos confirmados.</div>
+    <div class="paginador" id="pagNuevosWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaNuevos(pagNuevos-1)">← Anterior</button>
+      <span class="info" id="pagNuevosInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaNuevos(pagNuevos+1)">Siguiente →</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="seccion-panel" id="secLog">
+  <div class="card">
+    <h2>🕓 Historial de movimientos</h2>
+    <p style="margin:-8px 0 16px;font-size:.82rem;color:var(--muted);">Todo lo que hace cada usuario: entradas, salidas, altas, ediciones, bajas y descargas. Solo tú (admin) puedes ver esto.</p>
+    <div class="toolbar">
+      <input type="text" id="logSearchBox" placeholder="Buscar por correo…" oninput="buscarLogSesiones()">
+      <select id="logFilterTipo" onchange="buscarLogSesiones()">
+        <option value="">Todos los movimientos</option>
+        <option value="login">Entradas</option>
+        <option value="logout">Salidas</option>
+        <option value="entidad:cuestionario">Cuestionarios</option>
+        <option value="entidad:prospecto">Prospectos</option>
+        <option value="entidad:cliente">Clientes</option>
+        <option value="entidad:cliente_nuevo">Clientes nuevos</option>
+        <option value="entidad:usuario">Usuarios</option>
+        <option value="entidad:reporte">Descargas</option>
+      </select>
+      <button class="btn ghost" onclick="exportarLogCSV()">⬇ Descargar historial (CSV)</button>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Movimiento</th><th>Tipo</th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="logEmpty" style="display:none;">Todavía no hay movimientos registrados.</div>
+    <div class="paginador" id="pagLogWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaLog(pagLog-1)">← Anterior</button>
+      <span class="info" id="pagLogInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaLog(pagLog+1)">Siguiente →</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="seccion-panel" id="secUsuarios">
   <div class="card">
     <h2>👥 Usuarios del sistema</h2>
-    <div class="toolbar" style="justify-content:flex-end;">
-      <button class="btn primary" onclick="openUserModal()">+ Agregar usuario</button>
+    <div class="toolbar">
+      <input type="text" id="userSearchBox" placeholder="Buscar por correo o rol…" oninput="buscarUsuarios()">
+      <select id="userFilterCiudad" onchange="buscarUsuarios()">
+        <option value="">Todas las ciudades</option>
+      </select>
+      <button class="btn primary" onclick="openUserModal()" style="margin-left:auto;">+ Agregar usuario</button>
     </div>
+    <div class="table-scroll">
     <table>
-      <thead><tr><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>Usuario</th><th>Rol</th><th>Ruta</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody id="usersBody"></tbody>
     </table>
+    </div>
     <div class="empty" id="usersEmpty" style="display:none;">Sin usuarios.</div>
+    <div class="paginador" id="pagUsuariosWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaUsuarios(pagUsuarios-1)">← Anterior</button>
+      <span class="info" id="pagUsuariosInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaUsuarios(pagUsuarios+1)">Siguiente →</button>
+    </div>
+  </div>
   </div>
 </main>
 
@@ -219,7 +409,35 @@
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
       <button class="btn ghost" onclick="closeClientModal()">Cancelar</button>
-      <button class="btn primary" onclick="guardarClienteModal()">💾 Guardar</button>
+      <button class="btn primary" id="btnGuardarCliente" onclick="guardarClienteModal()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: editar cliente nuevo (clientes_nuevos) -->
+<div class="modal-overlay" id="nuevoEditModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Editar cliente nuevo</h3></div>
+      <button class="modal-close" onclick="closeNuevoEditModal()">&times;</button>
+    </div>
+    <div class="grid">
+      <div class="field full"><label>Razón Social</label><input id="mn_razonSocial"></div>
+      <div class="field"><label>RFC</label><input id="mn_rfc"></div>
+      <div class="field"><label>Giro del Negocio</label><input id="mn_giroDelNegocio"></div>
+      <div class="field"><label>Nombre del Comprador</label><input id="mn_nombreComprador"></div>
+      <div class="field"><label>Teléfono</label><input id="mn_telefono"></div>
+      <div class="field"><label>Nombre Comercial</label><input id="mn_nombreComercial"></div>
+      <div class="field"><label>Sucursal</label><input id="mn_sucursal"></div>
+      <div class="field"><label>Dirección</label><input id="mn_direccion"></div>
+      <div class="field"><label>Ciudad</label><input id="mn_ciudad"></div>
+      <div class="field"><label>Puesto</label><input id="mn_puesto"></div>
+      <div class="field"><label>Correo Electrónico</label><input id="mn_correoElectronico"></div>
+      <div class="field"><label>Código SAP</label><input id="mn_codigo_sap"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button class="btn ghost" onclick="closeNuevoEditModal()">Cancelar</button>
+      <button class="btn primary" id="btnGuardarNuevo" onclick="guardarNuevoEditModal()">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -228,16 +446,20 @@
 <div class="modal-overlay" id="userModal">
   <div class="modal">
     <div class="modal-head">
-      <div><h3 id="userModalTitle">Agregar usuario</h3><p class="sub" id="userModalSub">Se creará el acceso con correo y contraseña</p></div>
+      <div><h3 id="userModalTitle">Agregar usuario</h3><p class="sub" id="userModalSub">Se creará el acceso con correo (o código de empleado) y contraseña</p></div>
       <button class="modal-close" onclick="closeUserModal()">&times;</button>
     </div>
     <div class="grid">
-      <div class="field full"><label>Correo electrónico</label><input id="u_email" type="email" placeholder="correo@empresa.com"></div>
+      <div class="field full"><label>Nombre</label><input id="u_nombre" type="text" placeholder="Ej. Moisés Canedo"></div>
+      <div class="field full"><label>Correo electrónico</label><input id="u_email" type="email" placeholder="correo@empresa.com (opcional si da código)"></div>
+      <div class="field full"><label>Código de empleado</label><input id="u_codigo" type="text" placeholder="Ej. 1042 (opcional si da correo)"></div>
       <div class="field full"><label>Contraseña</label><input id="u_password" type="text" placeholder="Mínimo 6 caracteres"></div>
       <div class="field"><label>Rol</label>
         <select id="u_rol">
           <option value="comercial">comercial</option>
           <option value="oficina">oficina</option>
+          <option value="coordinador">coordinador</option>
+          <option value="gerente">gerente</option>
           <option value="admin">admin</option>
         </select>
       </div>
@@ -250,7 +472,59 @@
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
       <button class="btn ghost" onclick="closeUserModal()">Cancelar</button>
-      <button class="btn primary" onclick="guardarUsuarioModal()">💾 Guardar</button>
+      <button class="btn primary" id="btnGuardarUsuario" onclick="guardarUsuarioModal()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmación genérica (eliminar cliente / usuario, etc.) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal logout-modal">
+    <div class="ic" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">¿Estás seguro?</h3>
+    <p id="confirmMsg">Esta acción no se puede deshacer.</p>
+    <div class="logout-actions">
+      <button class="btn-neutral" id="confirmCancelBtn" onclick="cerrarConfirmModal()">Cancelar</button>
+      <button class="btn-leave" id="confirmOkBtn" onclick="ejecutarConfirmacion()">Sí, continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: mandar cuestionario a la papelera -->
+<div class="modal-overlay" id="deleteQuestModal">
+  <div class="modal logout-modal">
+    <div class="ic">🗑️</div>
+    <h3>¿Mandar a la papelera?</h3>
+    <p id="deleteQuestMsg">Se puede restaurar después desde la Papelera.</p>
+    <div class="logout-actions">
+      <button class="btn-stay" onclick="cancelarEliminarCuestionario()">✅ Cancelar</button>
+      <button class="btn-leave" onclick="eliminarCuestionarioConfirmado()">🗑️ Sí, mandar a papelera</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: eliminar definitivamente desde la papelera -->
+<div class="modal-overlay" id="deletePermModal">
+  <div class="modal logout-modal">
+    <div class="ic">⚠️</div>
+    <h3>¿Eliminar para siempre?</h3>
+    <p id="deletePermMsg">Esta acción NO se puede deshacer.</p>
+    <div class="logout-actions">
+      <button class="btn-neutral" onclick="cancelarEliminarPermanente()">Cancelar</button>
+      <button class="btn-leave" onclick="eliminarPermanenteConfirmado()">⚠️ Sí, eliminar para siempre</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar salida -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal logout-modal">
+    <div class="ic">🚪</div>
+    <h3>¿Salir de tu sesión?</h3>
+    <p>Vas a cerrar sesión en Acción Acuicultura.</p>
+    <div class="logout-actions">
+      <button class="btn-stay" onclick="cancelarSalida()">✅ Seguir aquí</button>
+      <button class="btn-leave" onclick="confirmarSalida()">🚪 Sí, salir</button>
     </div>
   </div>
 </div>
@@ -259,6 +533,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="shared.js?v=19"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 /* ============ Utilidades ============ */
@@ -275,18 +550,12 @@ const GIROS = ["Restaurante","Hotel","Pescadería","Supermercado","Mayoreo Nacio
 
 let usuarioEditandoId = null;
 
+let prospectosPapelera = [];
+
 async function authHeaders(extra = {}){
   const { data: { session } } = await supabaseClient.auth.getSession();
   return { ...extra, ...(session ? { "Authorization": "Bearer " + session.access_token } : {}) };
 }
-function toast(msg, type){
-  const t = document.getElementById("toast");
-  t.textContent = (type === "ok" ? "✓ " : "✘ ") + msg;
-  t.className = "toast show " + (type || "");
-  clearTimeout(toast.__t);
-  toast.__t = setTimeout(() => t.classList.remove("show"), 3200);
-}
-function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function fmtFecha(iso){
   const d = new Date(iso);
   return isNaN(d) ? iso : d.toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}) + " " + d.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
@@ -295,29 +564,66 @@ function contarRespuestas(d){
   return Object.values(d || {}).filter(v => v !== undefined && v !== null && String(v).trim() !== "").length;
 }
 
-/* ============ Guard de sesión (solo admin) ============ */
+/* ============ Guard de sesión (admin y oficina; gerente ya no entra aquí) ============ */
+let miRol = null;
+const esAdmin = () => miRol === "admin";
+const esOficina = () => miRol === "oficina";
+
 async function guardarSesion(){
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session){ window.location.href = "login.html"; return; }
   const { data, error } = await supabaseClient
-    .from("usuarios").select("rol, activo").eq("id", session.user.id).maybeSingle();
-  if (error || !data || !data.activo || data.rol !== "admin"){
+    .from("usuarios").select("rol, activo, nombre").eq("id", session.user.id).maybeSingle();
+  if (error || !data || !data.activo || (data.rol !== "admin" && data.rol !== "oficina")){
     await supabaseClient.auth.signOut();
     window.location.href = "login.html";
     return;
   }
+  miRol = data.rol;
   const badge = document.getElementById("userBadge");
-  badge.textContent = "👤 " + session.user.email;
+  badge.textContent = "👤 " + nombreOCorreo(data.nombre, session.user.email) + (miRol === "oficina" ? " · Oficina" : "");
   badge.style.display = "inline-flex";
+  aplicarRestriccionesOficina();
   document.body.style.opacity = "1";
 }
-async function logout(){
+/* Oficina solo ve Respuestas y Clientes nuevos -- nada de Dashboard,
+   Clientes (catálogo), Usuarios, ni Papelera/Movimientos (esas ya
+   eran solo-admin desde antes). */
+function aplicarRestriccionesOficina(){
+  if (!esOficina()) return;
+  ["dashboard", "clientes", "usuarios"].forEach(sec => {
+    const el = document.querySelector(`.tab-btn[data-sec="${sec}"]`);
+    if (el) el.style.display = "none";
+  });
+  // Oficina no captura cuestionarios ni prospectos -- esos enlaces
+  // solo la regresan a index.html, así que no tiene sentido mostrarlos.
+  const navCuestionario = document.getElementById("navCuestionario");
+  const navProspectos = document.getElementById("navProspectos");
+  if (navCuestionario) navCuestionario.style.display = "none";
+  if (navProspectos) navProspectos.style.display = "none";
+  // Las tarjetas de arriba (Respuestas, Clientes únicos, Usuarios
+  // activos, Con comentarios) son métricas globales del cuestionario
+  // -- a oficina, que solo ve Respuestas y Clientes nuevos, no le
+  // dicen nada.
+  const statsBar = document.getElementById("statsBar");
+  if (statsBar) statsBar.style.display = "none";
+}
+function logout(){
+  document.getElementById("logoutModal").classList.add("show");
+}
+function cancelarSalida(){
+  document.getElementById("logoutModal").classList.remove("show");
+}
+async function confirmarSalida(){
+  await registrarLogout();
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 }
 
 /* ============ Carga de datos ============ */
 async function cargarCuestionarios(){
+  const tbody = document.getElementById("tablaBody");
+  if (tbody && !tbody.children.length) tbody.innerHTML = skeletonRows(5);
   try{
     const res = await fetch("/api/cuestionarios", { headers: await authHeaders() });
     if (!res.ok) throw new Error("red");
@@ -325,6 +631,7 @@ async function cargarCuestionarios(){
     cuestionarios = rows.map(r => {
       const d = (r.data && typeof r.data === "object") ? r.data : r;
       return {
+        id: r.id,
         fecha: r.creado_en || r.guardadoEn || new Date().toISOString(),
         cliente: d.razonSocial || "(sin cliente)",
         creadoPor: r.creado_por || null,
@@ -337,11 +644,52 @@ async function cargarCuestionarios(){
   }
 }
 async function cargarUsuarios(){
-  const { data, error } = await supabaseClient.from("usuarios").select("id, email, rol, activo");
+  const tbodyU = document.getElementById("usersBody");
+  if (tbodyU && !tbodyU.children.length) tbodyU.innerHTML = skeletonRows(5);
+  const { data, error } = await supabaseClient.from("usuarios").select("id, email, rol, activo, ruta, codigo_empleado, nombre");
   if (error){ toast("Error leyendo usuarios: " + error.message, "error"); return; }
   usuarios = data || [];
-  userMap = Object.fromEntries(usuarios.map(u => [u.id, u.email]));
+  userMap = Object.fromEntries(usuarios.map(u => [u.id, nombreOCorreo(u.nombre, u.email)]));
+  await cargarCiudadesFiltro();
   renderUsuarios();
+  renderPapelera();
+}
+
+/* ============ Filtro de ciudad en Usuarios (rutas + ciudades de prospectos) ============ */
+let ciudadesProspectos = [];
+async function cargarCiudadesFiltro(){
+  try{
+    const { data, error } = await supabaseClient.from("prospectos").select("ciudad");
+    if (error) throw error;
+    ciudadesProspectos = (data || []).map(r => (r.ciudad || "").trim()).filter(Boolean);
+  }catch(e){
+    ciudadesProspectos = [];
+  }
+  poblarFiltroCiudad();
+}
+/* Agrupa variantes de la misma ciudad (ej. "Obregón" y "Obregón, Son.")
+   en una sola opción — la más corta de cada grupo representa a todas. */
+function agruparCiudades(lista){
+  const grupos = [];
+  lista.forEach(ciudad => {
+    const existente = grupos.find(g => g.some(c => ciudadesCoinciden(c, ciudad)));
+    if (existente) existente.push(ciudad);
+    else grupos.push([ciudad]);
+  });
+  return grupos
+    .map(g => g.slice().sort((a, b) => a.length - b.length)[0])
+    .sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function poblarFiltroCiudad(){
+  const sel = document.getElementById("userFilterCiudad");
+  if (!sel) return;
+  const actual = sel.value;
+  const rutas = usuarios.map(u => (u.ruta || "").trim()).filter(Boolean);
+  const ciudades = agruparCiudades([...rutas, ...ciudadesProspectos]);
+  sel.innerHTML = `<option value="">Todas las ciudades</option>` +
+    ciudades.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if (ciudades.includes(actual)) sel.value = actual;
 }
 
 /* ============ Render respuestas (paginación 5) ============ */
@@ -366,16 +714,329 @@ function renderTabla(){
     const idx = inicio + i;
     return `
     <tr>
-      <td>${fmtFecha(c.fecha)}</td>
-      <td><b>${escapeHtml(c.cliente)}</b></td>
-      <td>${escapeHtml(capturistaDe(c))}</td>
-      <td>${contarRespuestas(c.data)}</td>
-      <td><button class="btn ghost small" onclick="verDetalle(${idx})">👁 Ver</button></td>
+      <td data-label="Fecha">${fmtFecha(c.fecha)}</td>
+      <td data-label="Cliente">${puntoCategoria(c.data && c.data.segmento)}<b>${escapeHtml(c.cliente)}</b></td>
+      <td data-label="Capturista">${escapeHtml(capturistaDe(c))}</td>
+      <td data-label="Respuestas">${contarRespuestas(c.data)}</td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ghost small" onclick="verDetalle(${idx})">👁 Ver</button>
+        ${esAdmin() ? `<button class="btn danger small" onclick="pedirEliminarCuestionario(${idx})">🗑</button>` : ""}
+      </td>
     </tr>`;
   }).join("");
   document.getElementById("pagAdminInfo").textContent = __filt.length
     ? `Página ${paginaAdmin} de ${totalPag} · ${__filt.length} respuestas` : "";
 }
+/* ============ Pestañas de navegación ============ */
+const SECCIONES = ["dashboard", "respuestas", "papelera", "clientes", "reales", "nuevos", "log", "usuarios"];
+function seccionPorDefecto(){ return esOficina() ? "respuestas" : "dashboard"; }
+function mostrarSeccion(nombre){
+  if (nombre === "papelera") nombre = seccionPorDefecto();
+  if (nombre === "log" && !esAdmin()) nombre = seccionPorDefecto();
+  if (nombre === "reales") nombre = seccionPorDefecto(); // oculto por el momento, para todos
+  // Oficina solo ve Respuestas y Clientes nuevos.
+  if (esOficina() && !["respuestas", "nuevos"].includes(nombre)) nombre = "respuestas";
+  SECCIONES.forEach(s => {
+    const panel = document.getElementById("sec" + s.charAt(0).toUpperCase() + s.slice(1));
+    const tab = document.querySelector(`.tab-btn[data-sec="${s}"]`);
+    if (panel) panel.classList.toggle("show", s === nombre);
+    if (tab) tab.classList.toggle("active", s === nombre);
+  });
+  if (nombre === "dashboard") renderGraficas();
+  if (nombre === "reales") cargarClientesReales();
+  if (nombre === "nuevos") cargarClientesNuevos();
+  if (nombre === "log") cargarLogSesiones();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function actualizarStats(){
+  document.getElementById("stTotal").textContent = cuestionarios.length;
+  document.getElementById("stClientes").textContent = new Set(cuestionarios.map(c => c.cliente)).size;
+  document.getElementById("stUsuarios").textContent = usuarios.filter(u => u.activo).length;
+  document.getElementById("stComent").textContent = cuestionarios.filter(c => c.data.comentarios && String(c.data.comentarios).trim()).length;
+}
+
+let __idxAEliminarCuestionario = null;
+function pedirEliminarCuestionario(idx){
+  const c = __filt[idx];
+  if (!c) return;
+  __idxAEliminarCuestionario = idx;
+  document.getElementById("deleteQuestMsg").textContent =
+    `El cuestionario de "${c.cliente}" capturado por ${capturistaDe(c)} se moverá a la Papelera. Se puede restaurar después.`;
+  document.getElementById("deleteQuestModal").classList.add("show");
+}
+function cancelarEliminarCuestionario(){
+  document.getElementById("deleteQuestModal").classList.remove("show");
+  __idxAEliminarCuestionario = null;
+}
+async function eliminarCuestionarioConfirmado(){
+  const c = __filt[__idxAEliminarCuestionario];
+  if (!c) return cancelarEliminarCuestionario();
+  try{
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const { error } = await supabaseClient.from("cuestionarios")
+      .update({ eliminado_en: new Date().toISOString(), eliminado_por: session ? session.user.id : null })
+      .eq("id", c.id);
+    if (error) throw error;
+    toast("Cuestionario movido a la papelera", "ok");
+    await registrarAccion("eliminar_cuestionario", "cuestionario", c.id, c.cliente || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo mover a la papelera. ¿Corriste setup-papelera-cuestionarios.sql?"), "error");
+    cancelarEliminarCuestionario();
+    return;
+  }
+  cancelarEliminarCuestionario();
+  await cargarCuestionarios();
+  actualizarStats();
+  renderTabla();
+  renderGraficas();
+}
+
+/* ============ Papelera de cuestionarios (solo admin) ============ */
+let papelera = [];
+async function cargarPapelera(){
+  if (!esAdmin()) return;
+  try{
+    const res = await fetch("/api/cuestionarios?papelera=1", { headers: await authHeaders() });
+    if (!res.ok) throw new Error("red");
+    const rows = await res.json();
+    papelera = rows.map(r => ({
+      id: r.id,
+      cliente: r.razonSocial || "(sin cliente)",
+      creadoPor: r.creado_por || null,
+      eliminadoEn: r.eliminado_en || null
+    }));
+  }catch(e){
+    papelera = [];
+  }
+  await cargarProspectosPapelera();
+  renderPapelera();
+}
+
+/* ============ Pestañas internas de la Papelera ============ */
+const PAPELERA_TIPOS = ["cuestionarios", "clientes", "usuarios", "prospectos"];
+function mostrarPapelera(tipo){
+  PAPELERA_TIPOS.forEach(t => {
+    const panel = document.querySelector(`.papelera-panel[data-pap-panel="${t}"]`);
+    const tab = document.querySelector(`.tab-btn[data-pap="${t}"]`);
+    if (panel) panel.classList.toggle("show", t === tipo);
+    if (tab) tab.classList.toggle("active", t === tipo);
+  });
+}
+
+const POR_PAGINA_PAPELERA = 5;
+let pagPapCuest = 1, pagPapClientes = 1, pagPapUsuarios = 1, pagPapProspectos = 1;
+
+function renderPapelera(){
+  const wrap = document.getElementById("papeleraWrap");
+  if (!wrap) return;
+  // Escondida por completo -- ver nota junto a tabPapelera.style.display.
+  wrap.style.display = "none";
+  const statWrap = document.getElementById("statPapelera");
+  if (statWrap) statWrap.style.display = "none";
+  return;
+
+  const totalPagCuest = Math.max(1, Math.ceil(papelera.length / POR_PAGINA_PAPELERA));
+  if (pagPapCuest > totalPagCuest) pagPapCuest = totalPagCuest;
+  const iniCuest = (pagPapCuest - 1) * POR_PAGINA_PAPELERA;
+  document.getElementById("papeleraCuestEmpty").style.display = papelera.length ? "none" : "block";
+  document.getElementById("papeleraCuestBody").innerHTML = papelera.slice(iniCuest, iniCuest + POR_PAGINA_PAPELERA).map(p => `
+    <tr>
+      <td data-label="Cliente"><b>${escapeHtml(p.cliente)}</b></td>
+      <td data-label="Capturista">${escapeHtml(capturistaDe(p))}</td>
+      <td data-label="Eliminado">${p.eliminadoEn ? fmtFecha(p.eliminadoEn) : "—"}</td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ok small" onclick="restaurarCuestionario(${p.id})">♻️ Restaurar</button>
+        <button class="btn danger small" onclick="pedirEliminarPermanente(${p.id})">⚠️ Eliminar para siempre</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagPapCuestInfo").textContent = papelera.length
+    ? `Página ${pagPapCuest} de ${totalPagCuest} · ${papelera.length} cuestionarios` : "";
+  document.getElementById("stPapelera").textContent = papelera.length;
+
+  const clientesInactivos = clientesAdmin.filter(c => c.activo === false);
+  const totalPagClientes = Math.max(1, Math.ceil(clientesInactivos.length / POR_PAGINA_PAPELERA));
+  if (pagPapClientes > totalPagClientes) pagPapClientes = totalPagClientes;
+  const iniClientes = (pagPapClientes - 1) * POR_PAGINA_PAPELERA;
+  document.getElementById("papeleraClientesEmpty").style.display = clientesInactivos.length ? "none" : "block";
+  document.getElementById("papeleraClientesBody").innerHTML = clientesInactivos.slice(iniClientes, iniClientes + POR_PAGINA_PAPELERA).map(c => `
+    <tr>
+      <td data-label="Razón Social"><b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(c.rfc || "—")}</td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ok small" onclick="toggleClienteActivo('${c.id || c.rfc}', false)">♻️ Restaurar</button>
+        <button class="btn danger small" onclick="eliminarCliente('${c.id || c.rfc}')">⚠️ Eliminar para siempre</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagPapClientesInfo").textContent = clientesInactivos.length
+    ? `Página ${pagPapClientes} de ${totalPagClientes} · ${clientesInactivos.length} clientes` : "";
+
+  const usuariosInactivos = usuarios.filter(u => !u.activo);
+  const totalPagUsuarios = Math.max(1, Math.ceil(usuariosInactivos.length / POR_PAGINA_PAPELERA));
+  if (pagPapUsuarios > totalPagUsuarios) pagPapUsuarios = totalPagUsuarios;
+  const iniUsuarios = (pagPapUsuarios - 1) * POR_PAGINA_PAPELERA;
+  document.getElementById("papeleraUsuariosEmpty").style.display = usuariosInactivos.length ? "none" : "block";
+  document.getElementById("papeleraUsuariosBody").innerHTML = usuariosInactivos.slice(iniUsuarios, iniUsuarios + POR_PAGINA_PAPELERA).map(u => `
+    <tr>
+      <td data-label="Usuario">${escapeHtml(nombreOCorreo(u.nombre, u.email))}</td>
+      <td data-label="Rol"><span class="badge rol-${u.rol}">${escapeHtml(u.rol)}</span></td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ok small" onclick="toggleActivo('${u.id}',false)">♻️ Restaurar</button>
+        <button class="btn danger small" onclick="eliminarUsuario('${u.id}')">⚠️ Eliminar para siempre</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagPapUsuariosInfo").textContent = usuariosInactivos.length
+    ? `Página ${pagPapUsuarios} de ${totalPagUsuarios} · ${usuariosInactivos.length} usuarios` : "";
+
+  const totalPagProspectos = Math.max(1, Math.ceil(prospectosPapelera.length / POR_PAGINA_PAPELERA));
+  if (pagPapProspectos > totalPagProspectos) pagPapProspectos = totalPagProspectos;
+  const iniProspectos = (pagPapProspectos - 1) * POR_PAGINA_PAPELERA;
+  document.getElementById("papeleraProspectosEmpty").style.display = prospectosPapelera.length ? "none" : "block";
+  document.getElementById("papeleraProspectosBody").innerHTML = prospectosPapelera.slice(iniProspectos, iniProspectos + POR_PAGINA_PAPELERA).map(p => `
+    <tr>
+      <td data-label="Razón Social"><b>${escapeHtml(p.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(p.rfc || "—")}</td>
+      <td data-label="Prospectado por">${escapeHtml(nombreOCorreo(p.creado_por_nombre, p.creado_por_email))}</td>
+      <td data-label="Eliminado">${p.eliminado_en ? fmtFecha(p.eliminado_en) : "—"}</td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ok small" onclick="restaurarProspecto(${p.id})">♻️ Restaurar</button>
+        <button class="btn danger small" onclick="eliminarProspectoPapelera(${p.id})">⚠️ Eliminar para siempre</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagPapProspectosInfo").textContent = prospectosPapelera.length
+    ? `Página ${pagPapProspectos} de ${totalPagProspectos} · ${prospectosPapelera.length} prospectos` : "";
+
+  document.getElementById("papCountCuest").textContent = papelera.length;
+  document.getElementById("papCountClientes").textContent = clientesInactivos.length;
+  document.getElementById("papCountUsuarios").textContent = usuariosInactivos.length;
+  document.getElementById("papCountProspectos").textContent = prospectosPapelera.length;
+}
+function cambiarPaginaPapCuest(p){
+  const totalPag = Math.max(1, Math.ceil(papelera.length / POR_PAGINA_PAPELERA));
+  if (p < 1 || p > totalPag) return;
+  pagPapCuest = p;
+  renderPapelera();
+}
+function cambiarPaginaPapClientes(p){
+  const totalPag = Math.max(1, Math.ceil(clientesAdmin.filter(c => c.activo === false).length / POR_PAGINA_PAPELERA));
+  if (p < 1 || p > totalPag) return;
+  pagPapClientes = p;
+  renderPapelera();
+}
+function cambiarPaginaPapUsuarios(p){
+  const totalPag = Math.max(1, Math.ceil(usuarios.filter(u => !u.activo).length / POR_PAGINA_PAPELERA));
+  if (p < 1 || p > totalPag) return;
+  pagPapUsuarios = p;
+  renderPapelera();
+}
+function cambiarPaginaPapProspectos(p){
+  const totalPag = Math.max(1, Math.ceil(prospectosPapelera.length / POR_PAGINA_PAPELERA));
+  if (p < 1 || p > totalPag) return;
+  pagPapProspectos = p;
+  renderPapelera();
+}
+
+/* ============ Papelera de prospectos ============ */
+async function cargarProspectosPapelera(){
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("prospectos").select("*")
+      .not("eliminado_en", "is", null)
+      .order("eliminado_en", { ascending: false });
+    if (error) throw error;
+    prospectosPapelera = data || [];
+  }catch(e){
+    prospectosPapelera = [];
+  }
+}
+async function restaurarProspecto(id){
+  const p = prospectosPapelera.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("prospectos")
+      .update({ eliminado_en: null, eliminado_por: null })
+      .eq("id", id);
+    if (error) throw error;
+    toast("Prospecto restaurado", "ok");
+    await registrarAccion("restaurar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo restaurar"), "error");
+  }
+  await cargarProspectosPapelera();
+  renderPapelera();
+}
+function eliminarProspectoPapelera(id){
+  const p = prospectosPapelera.find(x => x.id === id);
+  if (!p) return;
+  pedirConfirmacion({
+    icon: "⚠️",
+    title: "¿Eliminar para siempre?",
+    msg: `Se eliminará para siempre el prospecto "${p.razonSocial || ""}". Esta acción NO se puede deshacer.`,
+    okLabel: "⚠️ Sí, eliminar para siempre",
+    okClass: "btn-leave",
+    onConfirm: () => eliminarProspectoPapeleraConfirmado(id)
+  });
+}
+async function eliminarProspectoPapeleraConfirmado(id){
+  const p = prospectosPapelera.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("prospectos").delete().eq("id", id);
+    if (error) throw error;
+    toast("Prospecto eliminado para siempre", "ok");
+    await registrarAccion("eliminar_prospecto_permanente", "prospecto", id, (p && p.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
+  }
+  await cargarProspectosPapelera();
+  renderPapelera();
+}
+
+async function restaurarCuestionario(id){
+  const p = papelera.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("cuestionarios")
+      .update({ eliminado_en: null, eliminado_por: null })
+      .eq("id", id);
+    if (error) throw error;
+    toast("Cuestionario restaurado", "ok");
+    await registrarAccion("restaurar_cuestionario", "cuestionario", id, (p && p.cliente) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo restaurar"), "error");
+  }
+  await Promise.all([cargarPapelera(), cargarCuestionarios()]);
+  actualizarStats();
+  renderTabla();
+  renderGraficas();
+}
+
+let __idAEliminarPermanente = null;
+function pedirEliminarPermanente(id){
+  const p = papelera.find(x => x.id === id);
+  if (!p) return;
+  __idAEliminarPermanente = id;
+  document.getElementById("deletePermMsg").textContent =
+    `Se eliminará para siempre el cuestionario de "${p.cliente}". Esto NO se puede deshacer.`;
+  document.getElementById("deletePermModal").classList.add("show");
+}
+function cancelarEliminarPermanente(){
+  document.getElementById("deletePermModal").classList.remove("show");
+  __idAEliminarPermanente = null;
+}
+async function eliminarPermanenteConfirmado(){
+  const id = __idAEliminarPermanente;
+  if (!id) return cancelarEliminarPermanente();
+  const p = papelera.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("cuestionarios").delete().eq("id", id);
+    if (error) throw error;
+    toast("Cuestionario eliminado para siempre", "ok");
+    await registrarAccion("eliminar_cuestionario_permanente", "cuestionario", id, (p && p.cliente) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
+  }
+  cancelarEliminarPermanente();
+  await cargarPapelera();
+}
+
 function cambiarPaginaAdmin(p){
   const totalPag = Math.max(1, Math.ceil(__filt.length / POR_PAGINA_ADMIN));
   if (p < 1 || p > totalPag) return;
@@ -423,6 +1084,8 @@ function renderGraficas(){
 
 /* ============ CRUD de clientes (directo de Supabase + paginación 5) ============ */
 async function cargarClientes(){
+  const tbodyC = document.getElementById("clientesBody");
+  if (tbodyC && !tbodyC.children.length) tbodyC.innerHTML = skeletonRows(7);
   try{
     if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
     const { data, error } = await supabaseClient.from("clientes").select("*");
@@ -434,33 +1097,415 @@ async function cargarClientes(){
   }
   pagClientes = 1;
   renderClientes();
+  renderPapelera();
+}
+
+/* ============ Clientes reales (vista clientes_reales) ============ */
+let clientesReales = [];
+let pagReales = 1;
+const POR_PAGINA_REALES = 5;
+let __filtReales = [];
+async function cargarClientesReales(){
+  const tbodyR = document.getElementById("realesBody");
+  if (tbodyR && !tbodyR.children.length) tbodyR.innerHTML = skeletonRows(5);
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes_reales").select("*")
+      .order("creadoEn", { ascending: false });
+    if (error) throw error;
+    clientesReales = data || [];
+  }catch(e){
+    clientesReales = [];
+    toast("Error leyendo clientes reales: " + (e && e.message ? e.message : "¿ya corriste setup-clientes-reales.sql?"), "error");
+  }
+  pagReales = 1;
+  renderClientesReales();
+}
+function buscarClientesReales(){ pagReales = 1; renderClientesReales(); }
+function renderClientesReales(){
+  const q = (document.getElementById("realesSearchBox").value || "").trim().toLowerCase();
+  __filtReales = clientesReales.filter(c =>
+    !q || ((c.razonSocial||"") + " " + (c.rfc||"")).toLowerCase().includes(q)
+  );
+  const totalPag = Math.max(1, Math.ceil(__filtReales.length / POR_PAGINA_REALES));
+  if (pagReales > totalPag) pagReales = totalPag;
+  const inicio = (pagReales - 1) * POR_PAGINA_REALES;
+  const paginado = __filtReales.slice(inicio, inicio + POR_PAGINA_REALES);
+
+  document.getElementById("realesEmpty").style.display = __filtReales.length ? "none" : "block";
+  document.getElementById("realesBody").innerHTML = paginado.map(c => `
+    <tr>
+      <td data-label="Razón Social">${puntoCategoria(c.giroDelNegocio)}<b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(c.rfc || "—")}</td>
+      <td data-label="Sucursal">${escapeHtml(c.sucursal || "—")}</td>
+      <td data-label="Giro">${escapeHtml(c.giroDelNegocio || "—")}</td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ghost small" onclick="openClientModal('${c.id || c.rfc}')">✏️ Editar</button>
+        <button class="btn danger small" onclick="toggleClienteActivo('${c.id || c.rfc}', true)">⛔ Desactivar</button>
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagRealesInfo").textContent = __filtReales.length
+    ? `Página ${pagReales} de ${totalPag} · ${__filtReales.length} clientes reales` : "";
+}
+function cambiarPaginaReales(p){
+  const totalPag = Math.max(1, Math.ceil(__filtReales.length / POR_PAGINA_REALES));
+  if (p < 1 || p > totalPag) return;
+  pagReales = p;
+  renderClientesReales();
+}
+function exportarRealesCSV(){
+  if (!__filtReales.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Razón Social","RFC","Sucursal","Giro"];
+  const filas = __filtReales.map(c => [c.razonSocial || "", c.rfc || "", c.sucursal || "", c.giroDelNegocio || ""]);
+  exportarCSV("clientes_reales_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
+  toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "clientes_reales");
+}
+
+/* ============ Clientes nuevos (tabla clientes_nuevos) ============ */
+let clientesNuevos = [];
+let pagNuevos = 1;
+const POR_PAGINA_NUEVOS = 5;
+let __filtNuevos = [];
+async function cargarClientesNuevos(){
+  const tbodyN = document.getElementById("nuevosBody");
+  if (tbodyN && !tbodyN.children.length) tbodyN.innerHTML = skeletonRows(6);
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes_nuevos").select("*")
+      .order("creado_en", { ascending: false });
+    if (error) throw error;
+    clientesNuevos = data || [];
+  }catch(e){
+    clientesNuevos = [];
+    toast("Error leyendo clientes nuevos: " + (e && e.message ? e.message : "¿ya corriste setup-clientes-nuevos.sql?"), "error");
+  }
+  pagNuevos = 1;
+  renderClientesNuevos();
+}
+function buscarClientesNuevos(){ pagNuevos = 1; renderClientesNuevos(); }
+const ORIGEN_NUEVOS_LABEL = { cuestionario: "📋 Cuestionario", prospecto: "✅ Prospecto aceptado" };
+function renderClientesNuevos(){
+  const q = (document.getElementById("nuevosSearchBox").value || "").trim().toLowerCase();
+  const origen = document.getElementById("nuevosFilterOrigen").value;
+  const estado = document.getElementById("nuevosFilterEstado").value;
+  __filtNuevos = clientesNuevos.filter(c => {
+    const coincide = !q || ((c.razonSocial||"") + " " + (c.rfc||"")).toLowerCase().includes(q);
+    const pasaOrigen = !origen || c.origen === origen;
+    const esActivo = c.activo !== false;
+    const pasaEstado = !estado || (estado === "activos" ? esActivo : !esActivo);
+    return coincide && pasaOrigen && pasaEstado;
+  });
+  const totalPag = Math.max(1, Math.ceil(__filtNuevos.length / POR_PAGINA_NUEVOS));
+  if (pagNuevos > totalPag) pagNuevos = totalPag;
+  const inicio = (pagNuevos - 1) * POR_PAGINA_NUEVOS;
+  const paginado = __filtNuevos.slice(inicio, inicio + POR_PAGINA_NUEVOS);
+
+  document.getElementById("nuevosEmpty").style.display = __filtNuevos.length ? "none" : "block";
+  document.getElementById("nuevosBody").innerHTML = paginado.map(c => {
+    const activo = c.activo !== false;
+    return `
+    <tr>
+      <td data-label="Razón Social">${puntoCategoria(c.giroDelNegocio)}<b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(c.rfc || "—")}</td>
+      <td data-label="Ciudad">${escapeHtml(c.ciudad || "—")}</td>
+      <td data-label="Estado"><span class="badge ${activo ? "act" : "inact"}">${activo ? "Activo" : "Inactivo"}</span></td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ghost small" onclick="verClienteNuevo(${c.id})">👁 Ver</button>
+        <button class="btn ghost small" onclick="openNuevoEditModal(${c.id})">✏️ Editar</button>
+        <button class="btn ${activo ? "danger" : "ok"} small" onclick="toggleClienteNuevoActivo(${c.id},${activo})">${activo ? "Desactivar" : "Activar"}</button>
+      </td>
+    </tr>`;
+  }).join("");
+  document.getElementById("pagNuevosInfo").textContent = __filtNuevos.length
+    ? `Página ${pagNuevos} de ${totalPag} · ${__filtNuevos.length} clientes nuevos` : "";
+}
+function cambiarPaginaNuevos(p){
+  const totalPag = Math.max(1, Math.ceil(__filtNuevos.length / POR_PAGINA_NUEVOS));
+  if (p < 1 || p > totalPag) return;
+  pagNuevos = p;
+  renderClientesNuevos();
+}
+async function toggleClienteNuevoActivo(id, estadoActual){
+  const c = clientesNuevos.find(x => x.id === id);
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { error } = await supabaseClient.from("clientes_nuevos").update({ activo: !estadoActual }).eq("id", id);
+    if (error) throw error;
+    toast(estadoActual ? "Cliente nuevo desactivado" : "Cliente nuevo activado", "ok");
+    await registrarAccion(estadoActual ? "desactivar_cliente_nuevo" : "activar_cliente_nuevo", "cliente_nuevo", id, (c && c.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar. ¿Ya corriste setup-rol-gerente-y-permisos.sql?"), "error");
+  }
+  await cargarClientesNuevos();
+}
+function exportarNuevosCSV(){
+  if (!__filtNuevos.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Razón Social","RFC","Código SAP","Origen","Estado","Giro","Segmento","Consumo total","Comentarios","Fecha"];
+  const filas = __filtNuevos.map(c => [
+    c.razonSocial || "", c.rfc || "", c.codigo_sap || "", ORIGEN_NUEVOS_LABEL[c.origen] || c.origen || "",
+    c.activo !== false ? "Activo" : "Inactivo",
+    c.giroDelNegocio || "", c.segmento || "", c.consumoTotal || "", c.comentarios || "",
+    c.creado_en ? new Date(c.creado_en).toLocaleDateString() : ""
+  ]);
+  exportarCSV("clientes_nuevos_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
+  toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "clientes_nuevos");
+}
+
+/* ============ Ver cliente nuevo (misma ficha de papel que "Ver detalle") ============ */
+function verClienteNuevo(id){
+  const c = clientesNuevos.find(x => x.id === id);
+  if (!c) return;
+  const fecha = c.creado_en
+    ? new Date(c.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+    : "—";
+  const esProspecto = c.origen === "prospecto";
+  document.getElementById("printContent").innerHTML = `
+  <div class="paper">
+    <div class="paper-head">
+      <div class="paper-titles">
+        <h3>Cliente nuevo</h3>
+        <p>Origen: ${escapeHtml(ORIGEN_NUEVOS_LABEL[c.origen] || c.origen || "—")}</p>
+      </div>
+      <div style="text-align:right;font-size:.8rem;"><span style="color:var(--muted);font-weight:700;">Fecha</span><br><b>${escapeHtml(fecha)}</b></div>
+    </div>
+    <div class="paper-sec"><h4>Datos generales</h4><div class="paper-cols"><div>
+      ${campoPapel("Razón Social", c.razonSocial)}${campoPapel("Giro del Negocio", c.giroDelNegocio)}
+      ${campoPapel("Nombre del Comprador", c.nombreComprador)}${campoPapel("Teléfono", c.telefono)}
+      ${campoPapel("RFC", c.rfc)}${campoPapel("Código SAP", c.codigo_sap)}
+    </div><div>
+      ${campoPapel("Nombre Comercial", c.nombreComercial)}${campoPapel("Sucursal", c.sucursal)}
+      ${campoPapel("Dirección", c.direccion)}${campoPapel("Ciudad", c.ciudad)}
+      ${campoPapel("Puesto", c.puesto)}${campoPapel("Correo Electrónico", c.correoElectronico)}
+    </div></div></div>
+    ${esProspecto ? `
+    <div class="paper-sec"><h4>Datos del prospecto</h4><div class="paper-cols"><div>
+      ${campoPapel("Notas", c.notas)}
+    </div><div>
+      ${campoPapel("Frecuencia estimada", c.frecuencia_cantidad ? (c.frecuencia_cantidad + " " + (c.frecuencia_unidad || "")) : "")}
+    </div></div></div>` : `
+    <div class="paper-sec"><h4>Volumen y presentación</h4><div class="paper-cols"><div>
+      ${campoPapel("Consumo actual (Kg/mes)", c.consumoActual)}${campoPapel("Presentación 1", c.presentacion1)}
+      ${campoPapel("Presentación 2", c.presentacion2)}${campoPapel("Presentación 3", c.presentacion3)}
+      ${campoPapel("Consumo total (Kg/mes)", c.consumoTotal)}${campoPapel("Competencia (%)", c.participacionCompetencia)}
+    </div><div>
+      ${campoPapel("Estacionalidad", c.mesesEstacionalidad)}${campoPapel("Camarón (%)", c.proteinaCamaron)}
+      ${campoPapel("Tilapia (%)", c.proteinaTilapia)}${campoPapel("Segmento", c.segmento)}
+      ${campoPapel("Proveedor competencia", c.proveedorCompetencia)}
+    </div></div></div>
+    <div class="paper-sec"><h4>Capacidad financiera</h4><div class="paper-cols"><div>
+      ${campoPapel("Facturación mensual", c.facturacionMensual)}${campoPapel("Condición de compra", c.condicionCompra)}
+    </div><div>${campoPapel("Establecimiento", c.establecimiento)}</div></div></div>
+    <div class="paper-sec"><h4>Necesidades logísticas</h4><div class="paper-cols"><div>
+      ${campoPapel("Frecuencia", c.frecuencia)}${campoPapel("Días de recepción", c.diasRecepcion)}
+      ${campoPapel("Horario", c.horarioRecepcion)}
+    </div><div>
+      ${campoPapel("Volumen por entrega (Kg)", c.volumenPromedio)}${campoPapel("Ubicación entrega", c.ubicacionEntrega)}
+      ${campoPapel("Requerimientos especiales", c.requerimientosEspeciales)}
+    </div></div></div>
+    <div class="paper-sec paper-comment"><h4>Comentarios</h4>
+      <div class="paper-field"><div class="val">${c.comentarios && String(c.comentarios).trim() ? escapeHtml(c.comentarios) : "—"}</div></div>
+    </div>
+    <div class="paper-sec"><h4>Evidencia fotográfica</h4>
+      ${c.fotoUrl
+        ? `<img src="${escapeHtml(c.fotoUrl)}" alt="Foto de evidencia" style="max-width:100%;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);">`
+        : `<p style="color:var(--muted);margin:0;">—</p>`}
+    </div>`}
+  </div>`;
+  document.getElementById("detailOverlay").classList.add("show");
+  document.getElementById("detailOverlay").scrollTop = 0;
+}
+
+/* ============ Editar cliente nuevo ============ */
+let nuevoEditandoId = null;
+function openNuevoEditModal(id){
+  const c = clientesNuevos.find(x => x.id === id);
+  if (!c) return;
+  nuevoEditandoId = id;
+  document.getElementById("mn_razonSocial").value = c.razonSocial || "";
+  document.getElementById("mn_rfc").value = c.rfc || "";
+  document.getElementById("mn_giroDelNegocio").value = c.giroDelNegocio || "";
+  document.getElementById("mn_nombreComprador").value = c.nombreComprador || "";
+  document.getElementById("mn_telefono").value = c.telefono || "";
+  document.getElementById("mn_nombreComercial").value = c.nombreComercial || "";
+  document.getElementById("mn_sucursal").value = c.sucursal || "";
+  document.getElementById("mn_direccion").value = c.direccion || "";
+  document.getElementById("mn_ciudad").value = c.ciudad || "";
+  document.getElementById("mn_puesto").value = c.puesto || "";
+  document.getElementById("mn_correoElectronico").value = c.correoElectronico || "";
+  document.getElementById("mn_codigo_sap").value = c.codigo_sap || "";
+  document.getElementById("nuevoEditModal").classList.add("show");
+}
+function closeNuevoEditModal(){ document.getElementById("nuevoEditModal").classList.remove("show"); }
+
+let guardandoNuevo = false;
+async function guardarNuevoEditModal(){
+  if (guardandoNuevo || !nuevoEditandoId) return;
+  const datos = {
+    razonSocial: document.getElementById("mn_razonSocial").value.trim(),
+    rfc: document.getElementById("mn_rfc").value.trim(),
+    giroDelNegocio: document.getElementById("mn_giroDelNegocio").value.trim(),
+    nombreComprador: document.getElementById("mn_nombreComprador").value.trim(),
+    telefono: document.getElementById("mn_telefono").value.trim(),
+    nombreComercial: document.getElementById("mn_nombreComercial").value.trim(),
+    sucursal: document.getElementById("mn_sucursal").value.trim(),
+    direccion: document.getElementById("mn_direccion").value.trim(),
+    ciudad: document.getElementById("mn_ciudad").value.trim(),
+    puesto: document.getElementById("mn_puesto").value.trim(),
+    correoElectronico: document.getElementById("mn_correoElectronico").value.trim(),
+    codigo_sap: document.getElementById("mn_codigo_sap").value.trim()
+  };
+  if (!datos.razonSocial) return toast("Razón Social es obligatoria", "error");
+
+  guardandoNuevo = true;
+  const btn = document.getElementById("btnGuardarNuevo");
+  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { error } = await supabaseClient.from("clientes_nuevos").update(datos).eq("id", nuevoEditandoId);
+    if (error) throw error;
+    toast("Cliente actualizado", "ok");
+    await registrarAccion("editar_cliente_nuevo", "cliente_nuevo", nuevoEditandoId, datos.razonSocial);
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar"), "error");
+  }
+  guardandoNuevo = false;
+  if (btn) { btn.disabled = false; btn.textContent = "💾 Guardar"; }
+  closeNuevoEditModal();
+  await cargarClientesNuevos();
+}
+
+/* ============ Historial de accesos (tabla log_sesiones, solo admin) ============ */
+let logSesiones = [];
+let pagLog = 1;
+const POR_PAGINA_LOG = 8;
+let __filtLog = [];
+async function cargarLogSesiones(){
+  if (!esAdmin()) return;
+  const tbodyL = document.getElementById("logBody");
+  if (tbodyL && !tbodyL.children.length) tbodyL.innerHTML = skeletonRows(2);
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("log_sesiones").select("*")
+      .order("creado_en", { ascending: false });
+    if (error) throw error;
+    logSesiones = data || [];
+  }catch(e){
+    logSesiones = [];
+    toast("Error leyendo el historial: " + (e && e.message ? e.message : "¿ya corriste setup-log-sesiones.sql?"), "error");
+  }
+  pagLog = 1;
+  renderLogSesiones();
+}
+function buscarLogSesiones(){ pagLog = 1; renderLogSesiones(); }
+function renderLogSesiones(){
+  const q = (document.getElementById("logSearchBox").value || "").trim().toLowerCase();
+  const tipo = document.getElementById("logFilterTipo").value;
+  __filtLog = logSesiones.filter(r => {
+    const coincide = !q || (r.usuario_email || "").toLowerCase().includes(q);
+    const pasaTipo = !tipo || (tipo.startsWith("entidad:") ? r.entidad === tipo.slice(8) : r.tipo === tipo);
+    return coincide && pasaTipo;
+  });
+  const totalPag = Math.max(1, Math.ceil(__filtLog.length / POR_PAGINA_LOG));
+  if (pagLog > totalPag) pagLog = totalPag;
+  const inicio = (pagLog - 1) * POR_PAGINA_LOG;
+  const paginado = __filtLog.slice(inicio, inicio + POR_PAGINA_LOG);
+
+  document.getElementById("logEmpty").style.display = __filtLog.length ? "none" : "block";
+  document.getElementById("logBody").innerHTML = paginado.map(r => {
+    const cat = categoriaLogSesion(r);
+    const nombreMostrar = userMap[r.usuario_id];
+    return `
+    <tr>
+      <td data-label="Movimiento">${escapeHtml(frasearLogSesion(r, nombreMostrar))}</td>
+      <td data-label="Tipo"><span class="badge ${cat.cls}">${escapeHtml(cat.label)}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("pagLogInfo").textContent = __filtLog.length
+    ? `Página ${pagLog} de ${totalPag} · ${__filtLog.length} movimientos` : "";
+}
+function cambiarPaginaLog(p){
+  const totalPag = Math.max(1, Math.ceil(__filtLog.length / POR_PAGINA_LOG));
+  if (p < 1 || p > totalPag) return;
+  pagLog = p;
+  renderLogSesiones();
+}
+function exportarLogCSV(){
+  if (!__filtLog.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Usuario", "Tipo", "Fecha y hora", "Mensaje"];
+  const filas = __filtLog.map(r => [
+    userMap[r.usuario_id] || formatearUsuario(r.usuario_email), categoriaLogSesion(r).label,
+    new Date(r.creado_en).toLocaleString("es-MX"), frasearLogSesion(r, userMap[r.usuario_id])
+  ]);
+  exportarCSV("historial_movimientos_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
+  toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "historial_movimientos");
 }
 
 function buscarClientes(){ pagClientes = 1; renderClientes(); }
 
 function renderClientes(){
   const q = (document.getElementById("clientSearchBox").value || "").trim().toLowerCase();
-  __filtClientes = clientesAdmin.filter(c => !q || ((c.razonSocial||"") + " " + (c.rfc||"") + " " + (c.sucursal||"")).toLowerCase().includes(q));
+  const estado = document.getElementById("clientFilterEstado").value;
+  __filtClientes = clientesAdmin.filter(c => {
+    const coincide = !q || ((c.razonSocial||"") + " " + (c.rfc||"") + " " + (c.sucursal||"")).toLowerCase().includes(q);
+    const esActivo = c.activo !== false; // sin columna "activo" aún (o null) = se trata como activo
+    const pasaEstado = !estado || (estado === "activos" ? esActivo : !esActivo);
+    return coincide && pasaEstado;
+  });
   const totalPag = Math.max(1, Math.ceil(__filtClientes.length / POR_PAGINA_CLIENTES));
   if (pagClientes > totalPag) pagClientes = totalPag;
   const inicio = (pagClientes - 1) * POR_PAGINA_CLIENTES;
   const paginado = __filtClientes.slice(inicio, inicio + POR_PAGINA_CLIENTES);
 
   document.getElementById("clientesEmpty").style.display = __filtClientes.length ? "none" : "block";
-  document.getElementById("clientesBody").innerHTML = paginado.map(c => `
+  document.getElementById("clientesBody").innerHTML = paginado.map(c => {
+    const activo = c.activo !== false;
+    return `
     <tr>
-      <td><b>${escapeHtml(c.razonSocial || "—")}</b></td>
-      <td>${escapeHtml(c.rfc || "—")}</td>
-      <td>${escapeHtml(c.sucursal || "—")}</td>
-      <td>${escapeHtml(c.direccion || "—")}</td>
-      <td>${escapeHtml(c.giroDelNegocio || "—")}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="Razón Social">${puntoCategoria(c.giroDelNegocio)}<b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(c.rfc || "—")}</td>
+      <td data-label="Sucursal">${escapeHtml(c.sucursal || "—")}</td>
+      <td data-label="Dirección">${escapeHtml(c.direccion || "—")}</td>
+      <td data-label="Giro">${escapeHtml(c.giroDelNegocio || "—")}</td>
+      <td data-label="Estado"><span class="badge ${activo ? "act" : "inact"}">${activo ? "Activo" : "Inactivo"}</span></td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
         <button class="btn ghost small" onclick="openClientModal('${c.id || c.rfc}')">✏️</button>
-        <button class="btn danger small" onclick="eliminarCliente('${c.id || c.rfc}')">🗑</button>
+        <button class="btn ${activo ? "danger" : "ok"} small" onclick="toggleClienteActivo('${c.id || c.rfc}', ${activo})">${activo ? "Desactivar" : "Activar"}</button>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
   document.getElementById("pagClientesInfo").textContent = __filtClientes.length
     ? `Página ${pagClientes} de ${totalPag} · ${__filtClientes.length} clientes` : "";
+}
+
+function toggleClienteActivo(ref, estadoActual){
+  const c = clientesAdmin.find(x => (x.id && String(x.id) === String(ref)) || x.rfc === ref);
+  if (!c) return;
+  pedirConfirmacion({
+    icon: estadoActual ? "⛔" : "✅",
+    title: estadoActual ? "¿Desactivar cliente?" : "¿Activar cliente?",
+    msg: estadoActual
+      ? `"${c.razonSocial || ""}" dejará de aparecer en el filtro "Solo activos".`
+      : `"${c.razonSocial || ""}" volverá a aparecer en el filtro "Solo activos".`,
+    okLabel: estadoActual ? "⛔ Sí, desactivar" : "✅ Sí, activar",
+    okClass: estadoActual ? "btn-leave" : "btn-stay",
+    onConfirm: () => toggleClienteActivoConfirmado(c, estadoActual)
+  });
+}
+async function toggleClienteActivoConfirmado(c, estadoActual){
+  try{
+    if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
+    const { data, error } = await supabaseClient.from("clientes").update({ activo: !estadoActual }).eq("id", c.id).select();
+    if (error) throw error;
+    if (!data || !data.length) throw new Error("Supabase no confirmó el cambio (revisa las políticas RLS de \"clientes\")");
+    toast(estadoActual ? "Cliente desactivado" : "Cliente activado", "ok");
+    await registrarAccion(estadoActual ? "desactivar_cliente" : "activar_cliente", "cliente", c.id, c.razonSocial || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar. ¿Ya corriste setup-clientes-activo.sql?"), "error");
+  }
+  await Promise.all([cargarClientes(), cargarClientesReales()]);
 }
 
 function cambiarPaginaClientes(p){
@@ -468,6 +1513,17 @@ function cambiarPaginaClientes(p){
   if (p < 1 || p > totalPag) return;
   pagClientes = p;
   renderClientes();
+}
+function exportarClientesCSV(){
+  if (!__filtClientes.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Razón Social","RFC","Sucursal","Dirección","Giro","Estado"];
+  const filas = __filtClientes.map(c => [
+    c.razonSocial || "", c.rfc || "", c.sucursal || "", c.direccion || "",
+    c.giroDelNegocio || "", c.activo !== false ? "Activo" : "Inactivo"
+  ]);
+  exportarCSV("clientes_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
+  toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "clientes");
 }
 
 function openClientModal(ref){
@@ -495,7 +1551,9 @@ function openClientModal(ref){
 }
 function closeClientModal(){ document.getElementById("clientModal").classList.remove("show"); }
 
+let guardandoCliente = false;
 async function guardarClienteModal(){
+  if (guardandoCliente) return;
   const datos = {
     razonSocial: document.getElementById("m_razonSocial").value.trim(),
     rfc: document.getElementById("m_rfc").value.trim(),
@@ -507,6 +1565,12 @@ async function guardarClienteModal(){
     direccion: document.getElementById("m_direccion").value.trim()
   };
   if(!datos.razonSocial || !datos.rfc) return toast("Razón Social y RFC son obligatorios", "error");
+  if (clienteEditandoId && (!datos.telefono || !datos.giroDelNegocio))
+    return toast("Al editar, Teléfono y Giro del Negocio también son obligatorios", "error");
+
+  guardandoCliente = true;
+  const btnGuardarCliente = document.getElementById("btnGuardarCliente");
+  if (btnGuardarCliente) { btnGuardarCliente.disabled = true; btnGuardarCliente.textContent = "Guardando…"; }
 
   if(clienteEditandoId){
     try{
@@ -514,6 +1578,7 @@ async function guardarClienteModal(){
       const { error } = await supabaseClient.from("clientes").update(datos).eq("id", clienteEditandoId);
       if(error) throw error;
       toast("Cliente actualizado", "ok");
+      await registrarAccion("editar_cliente", "cliente", clienteEditandoId, datos.razonSocial || "");
     }catch(e){
       const idx = clientesAdmin.findIndex(c => c.id === clienteEditandoId || c.rfc === clienteEditandoId);
       if(idx >= 0) clientesAdmin[idx] = { ...clientesAdmin[idx], ...datos };
@@ -525,24 +1590,37 @@ async function guardarClienteModal(){
       const { error } = await supabaseClient.from("clientes").insert(datos);
       if (error) throw error;
       toast("Cliente creado", "ok");
+      await registrarAccion("crear_cliente", "cliente", null, datos.razonSocial || "");
     }catch(e){
       clientesAdmin.push(datos);
       toast(e && e.message ? "Error: " + e.message : "Cliente creado (local)", e && e.message ? "error" : "ok");
     }
   }
+  guardandoCliente = false;
+  if (btnGuardarCliente) { btnGuardarCliente.disabled = false; btnGuardarCliente.textContent = "💾 Guardar"; }
   closeClientModal();
-  await cargarClientes();
+  await Promise.all([cargarClientes(), cargarClientesReales()]);
 }
 
-async function eliminarCliente(ref){
+function eliminarCliente(ref){
   const c = clientesAdmin.find(x => (x.id && String(x.id) === String(ref)) || x.rfc === ref);
   if(!c) return;
-  if(!confirm("¿Eliminar al cliente '" + (c.razonSocial || "") + "'?")) return;
+  pedirConfirmacion({
+    icon: "🗑️",
+    title: "¿Eliminar cliente?",
+    msg: `Se eliminará a "${c.razonSocial || ""}". Esta acción no se puede deshacer.`,
+    okLabel: "🗑️ Sí, eliminar",
+    okClass: "btn-leave",
+    onConfirm: () => eliminarClienteConfirmado(c)
+  });
+}
+async function eliminarClienteConfirmado(c){
   try{
     if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
     const { error } = await supabaseClient.from("clientes").delete().eq("id", c.id);
     if(error) throw error;
     toast("Cliente eliminado", "ok");
+    await registrarAccion("eliminar_cliente", "cliente", c.id, c.razonSocial || "");
   }catch(e){
     if(c.id){
       toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
@@ -555,110 +1633,196 @@ async function eliminarCliente(ref){
 }
 
 /* ============ Render usuarios ============ */
+function ciudadesCoinciden(a, b){
+  const x = (a || "").trim().toLowerCase();
+  const y = (b || "").trim().toLowerCase();
+  if (!x || !y) return false;
+  return x.includes(y) || y.includes(x);
+}
+
+let pagUsuarios = 1;
+const POR_PAGINA_USUARIOS = 5;
+let __filtUsuarios = [];
+function buscarUsuarios(){ pagUsuarios = 1; renderUsuarios(); }
 function renderUsuarios(){
-  document.getElementById("usersEmpty").style.display = usuarios.length ? "none" : "block";
-  document.getElementById("usersBody").innerHTML = usuarios.map(u => `
+  const q = (document.getElementById("userSearchBox").value || "").trim().toLowerCase();
+  const ciudadFiltro = (document.getElementById("userFilterCiudad") || {}).value || "";
+  __filtUsuarios = usuarios
+    .filter(u => !ciudadFiltro || ciudadesCoinciden(u.ruta, ciudadFiltro))
+    .filter(u => !q || ((u.email||"") + " " + (u.rol||"") + " " + (u.codigo_empleado||"") + " " + (u.nombre||"")).toLowerCase().includes(q));
+  const totalPag = Math.max(1, Math.ceil(__filtUsuarios.length / POR_PAGINA_USUARIOS));
+  if (pagUsuarios > totalPag) pagUsuarios = totalPag;
+  const inicio = (pagUsuarios - 1) * POR_PAGINA_USUARIOS;
+  const paginado = __filtUsuarios.slice(inicio, inicio + POR_PAGINA_USUARIOS);
+
+  document.getElementById("usersEmpty").style.display = __filtUsuarios.length ? "none" : "block";
+  document.getElementById("usersBody").innerHTML = paginado.map(u => {
+    const detalle = formatearUsuario(u.email) + (u.codigo_empleado && !(u.email||"").endsWith("@interno.accionacuicola.local") ? ` · cód. ${escapeHtml(u.codigo_empleado)}` : "");
+    const usuarioTxt = u.nombre
+      ? `<b>${escapeHtml(u.nombre)}</b><br><small style="color:var(--muted);">${escapeHtml(detalle)}</small>`
+      : escapeHtml(detalle);
+    return `
     <tr>
-      <td>${escapeHtml(u.email || "—")}</td>
-      <td><span class="badge rol-${u.rol}">${escapeHtml(u.rol)}</span></td>
-      <td><span class="badge ${u.activo ? "act" : "inact"}">${u.activo ? "Activo" : "Inactivo"}</span></td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <td data-label="Usuario">${usuarioTxt}</td>
+      <td data-label="Rol"><span class="badge rol-${u.rol}">${escapeHtml(u.rol)}</span></td>
+      <td data-label="Ruta">
+        <input type="text" value="${escapeHtml(u.ruta || "")}" placeholder="Sin ruta (ve solo lo suyo)"
+          onchange="cambiarRuta('${u.id}', this.value)"
+          style="width:100%;min-width:120px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font:inherit;font-size:.78rem;">
+      </td>
+      <td data-label="Estado"><span class="badge ${u.activo ? "act" : "inact"}">${u.activo ? "Activo" : "Inactivo"}</span></td>
+      <td data-label="Acciones" class="td-actions" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
         <button class="btn ghost small" onclick="openUserModal('${u.id}')">✏️</button>
-        <button class="btn danger small" onclick="eliminarUsuario('${u.id}')">🗑</button>
         <select onchange="cambiarRol('${u.id}','${u.rol}',this.value)" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font:inherit;font-size:.78rem;">
-          ${["comercial","oficina","admin"].map(r => `<option value="${r}" ${r===u.rol?"selected":""}>${r}</option>`).join("")}
+          ${["comercial","oficina","coordinador","gerente","admin"].map(r => `<option value="${r}" ${r===u.rol?"selected":""}>${r}</option>`).join("")}
         </select>
         <button class="btn ${u.activo ? "danger" : "ok"} small" onclick="toggleActivo('${u.id}',${u.activo})">${u.activo ? "Desactivar" : "Activar"}</button>
       </td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
+  document.getElementById("pagUsuariosInfo").textContent = __filtUsuarios.length
+    ? `Página ${pagUsuarios} de ${totalPag} · ${__filtUsuarios.length} usuarios` : "";
+}
+function cambiarPaginaUsuarios(p){
+  const totalPag = Math.max(1, Math.ceil(__filtUsuarios.length / POR_PAGINA_USUARIOS));
+  if (p < 1 || p > totalPag) return;
+  pagUsuarios = p;
+  renderUsuarios();
+}
+async function cambiarRuta(id, nuevaRuta){
+  const ruta = nuevaRuta.trim() || null;
+  const u = usuarios.find(x => String(x.id) === String(id));
+  const { error } = await supabaseClient.from("usuarios").update({ ruta }).eq("id", id);
+  if (error) return toast("Error: " + error.message, "error");
+  toast(ruta ? `Ruta asignada: ${ruta}` : "Ruta quitada (vuelve a ver solo lo suyo)", "ok");
+  await registrarAccion("cambiar_ruta_usuario", "usuario", id, (u ? nombreOCorreo(u.nombre, u.email) + ": " : "") + (ruta || "sin ruta"));
+  await cargarUsuarios();
 }
 async function cambiarRol(id, antes, nuevo){
   if (antes === nuevo) return;
+  const u = usuarios.find(x => String(x.id) === String(id));
   const { error } = await supabaseClient.from("usuarios").update({ rol: nuevo }).eq("id", id);
   if (error) return toast("Error: " + error.message, "error");
   toast("Rol actualizado a " + nuevo, "ok");
+  await registrarAccion("cambiar_rol_usuario", "usuario", id, (u ? nombreOCorreo(u.nombre, u.email) + ": " : "") + antes + " → " + nuevo);
   await cargarUsuarios();
 }
 async function toggleActivo(id, estado){
+  const u = usuarios.find(x => String(x.id) === String(id));
   const { error } = await supabaseClient.from("usuarios").update({ activo: !estado }).eq("id", id);
   if (error) return toast("Error: " + error.message, "error");
   toast(estado ? "Usuario desactivado" : "Usuario activado", "ok");
+  await registrarAccion(estado ? "desactivar_usuario" : "activar_usuario", "usuario", id, (u && nombreOCorreo(u.nombre, u.email)) || "");
   await cargarUsuarios();
 }
 
 /* ============ CRUD de usuarios (por RPC de Supabase) ============ */
 function openUserModal(ref){
   usuarioEditandoId = null;
+  document.getElementById("u_nombre").value = "";
   document.getElementById("u_email").value = "";
+  document.getElementById("u_codigo").value = "";
   document.getElementById("u_password").value = "";
   document.getElementById("u_password").placeholder = "Mínimo 6 caracteres";
   document.getElementById("u_rol").value = "comercial";
   document.getElementById("u_activo").value = "true";
   document.getElementById("userModalTitle").textContent = "Agregar usuario";
-  document.getElementById("userModalSub").textContent = "Se creará el acceso con correo y contraseña";
+  document.getElementById("userModalSub").textContent = "Se creará el acceso con correo (o código de empleado) y contraseña";
   if (ref){
     const u = usuarios.find(x => String(x.id) === String(ref));
     if (u){
       usuarioEditandoId = u.id;
-      document.getElementById("u_email").value = u.email || "";
+      document.getElementById("u_nombre").value = u.nombre || "";
+      // Si el correo es el interno ficticio (cuenta creada solo con código),
+      // no lo mostramos como "correo real" -- solo el código.
+      const esInterno = (u.email || "").endsWith("@interno.accionacuicola.local");
+      document.getElementById("u_email").value = esInterno ? "" : (u.email || "");
+      document.getElementById("u_codigo").value = u.codigo_empleado || "";
       document.getElementById("u_password").value = "";
       document.getElementById("u_password").placeholder = "Déjalo vacío para no cambiarla";
       document.getElementById("u_rol").value = u.rol || "comercial";
       document.getElementById("u_activo").value = u.activo ? "true" : "false";
       document.getElementById("userModalTitle").textContent = "Editar usuario";
-      document.getElementById("userModalSub").textContent = "Cambia correo, contraseña, rol o estado";
+      document.getElementById("userModalSub").textContent = "Cambia correo, código, contraseña, rol o estado";
     }
   }
   document.getElementById("userModal").classList.add("show");
 }
 function closeUserModal(){ document.getElementById("userModal").classList.remove("show"); }
 
+let guardandoUsuario = false;
 async function guardarUsuarioModal(){
+  if (guardandoUsuario) return;
+  const nombre = document.getElementById("u_nombre").value.trim();
   const email = document.getElementById("u_email").value.trim();
+  const codigo = document.getElementById("u_codigo").value.trim();
   const password = document.getElementById("u_password").value;
   const rol = document.getElementById("u_rol").value;
   const activo = document.getElementById("u_activo").value === "true";
-  if (!email) return toast("El correo es obligatorio", "error");
+  if (!email && !codigo) return toast("Da un correo o un código de empleado", "error");
   if (!usuarioEditandoId && !password) return toast("La contraseña es obligatoria al crear", "error");
+
+  guardandoUsuario = true;
+  const btnGuardarUsuario = document.getElementById("btnGuardarUsuario");
+  if (btnGuardarUsuario) { btnGuardarUsuario.disabled = true; btnGuardarUsuario.textContent = "Guardando…"; }
 
   try{
     if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
     if (usuarioEditandoId){
       const { error } = await supabaseClient.rpc("admin_editar_usuario", {
         p_uid: usuarioEditandoId,
-        p_email: email,
+        p_email: email || null,
         p_password: password || null,
         p_rol: rol,
-        p_activo: activo
+        p_activo: activo,
+        p_codigo_empleado: codigo || null,
+        p_nombre: nombre || null
       });
       if (error) throw error;
       toast("Usuario actualizado", "ok");
+      await registrarAccion("editar_usuario", "usuario", usuarioEditandoId, nombre || email || codigo);
     }else{
       const { error } = await supabaseClient.rpc("admin_crear_usuario", {
-        p_email: email,
+        p_email: email || null,
         p_password: password,
         p_rol: rol,
-        p_activo: activo
+        p_activo: activo,
+        p_codigo_empleado: codigo || null,
+        p_nombre: nombre || null
       });
       if (error) throw error;
       toast("Usuario creado", "ok");
+      await registrarAccion("crear_usuario", "usuario", null, nombre || email || codigo);
     }
   }catch(e){
     toast("Error: " + (e && e.message ? e.message : "no se pudo crear/editar"), "error");
   }
+  guardandoUsuario = false;
+  if (btnGuardarUsuario) { btnGuardarUsuario.disabled = false; btnGuardarUsuario.textContent = "💾 Guardar"; }
   closeUserModal();
   await cargarUsuarios();
 }
 
-async function eliminarUsuario(id){
+function eliminarUsuario(id){
   const u = usuarios.find(x => String(x.id) === String(id));
   if (!u) return;
-  if (!confirm("¿Eliminar al usuario '" + (u.email || "") + "'? Se borrará su acceso y su registro.")) return;
+  pedirConfirmacion({
+    icon: "🗑️",
+    title: "¿Eliminar usuario?",
+    msg: `Se borrará el acceso y el registro de "${nombreOCorreo(u.nombre, u.email)}". Esta acción no se puede deshacer.`,
+    okLabel: "🗑️ Sí, eliminar",
+    okClass: "btn-leave",
+    onConfirm: () => eliminarUsuarioConfirmado(id)
+  });
+}
+async function eliminarUsuarioConfirmado(id){
+  const u = usuarios.find(x => String(x.id) === String(id));
   try{
     if (typeof supabaseClient === "undefined") throw new Error("sin supabase");
     const { error } = await supabaseClient.rpc("admin_eliminar_usuario", { p_uid: id });
     if (error) throw error;
     toast("Usuario eliminado", "ok");
+    await registrarAccion("eliminar_usuario", "usuario", id, (u && nombreOCorreo(u.nombre, u.email)) || "");
   }catch(e){
     toast("Error: " + (e && e.message ? e.message : "no se pudo eliminar"), "error");
   }
@@ -747,6 +1911,7 @@ function exportCSV(){
   a.click();
   URL.revokeObjectURL(a.href);
   toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "respuestas");
 }
 
 /* ============ Inicio (con fix de pantalla en blanco) ============ */
@@ -770,20 +1935,21 @@ function fatal(msg){
   document.getElementById("m_giroDelNegocio").innerHTML =
     `<option value="">Selecciona…</option>` + GIROS.map(g => `<option value="${g}">${g}</option>`).join("");
 
-  await Promise.all([cargarCuestionarios(), cargarUsuarios(), cargarClientes()]);
+  await Promise.all([cargarCuestionarios(), cargarUsuarios(), cargarClientes(), cargarPapelera(), cargarClientesReales(), cargarClientesNuevos()]);
 
   const set = new Set(cuestionarios.map(c => capturistaDe(c)).filter(Boolean));
   document.getElementById("filterUser").innerHTML =
     `<option value="">Todos los capturistas</option>` +
     [...set].map(u => `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
 
-  document.getElementById("stTotal").textContent = cuestionarios.length;
-  document.getElementById("stClientes").textContent = new Set(cuestionarios.map(c => c.cliente)).size;
-  document.getElementById("stUsuarios").textContent = usuarios.filter(u => u.activo).length;
-  document.getElementById("stComent").textContent = cuestionarios.filter(c => c.data.comentarios && String(c.data.comentarios).trim()).length;
+  actualizarStats();
 
+  // Papelera se dejó de usar para prospectos y no aporta lo suficiente
+  // para el resto -- se esconde por completo, para todos.
+  document.getElementById("tabPapelera").style.display = "none";
+  document.getElementById("tabLog").style.display = esAdmin() ? "" : "none";
   renderTabla();
-  renderGraficas();
+  mostrarSeccion(seccionPorDefecto());
 })();
 </script>
 </body>

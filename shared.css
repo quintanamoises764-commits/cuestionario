@@ -1,0 +1,166 @@
+/* ===========================================================
+   Acción Acuicultura · estilos compartidos entre index/login/
+   cuestionario/prospectos/admin. Cárgalo ANTES del <style> propio
+   de cada página, así el <style> de la página puede sobreescribir
+   detalles específicos si hace falta.
+   =========================================================== */
+
+:root{
+  --primary:#0e7490;
+  --primary-dark:#155e75;
+  --primary-light:#e0f2fe;
+  --accent:#f59e0b;
+  --bg:#f4f7f9;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
+  --ok:#059669;
+  --error:#dc2626;
+  --radius:16px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 2px 6px rgba(15,23,42,.06);
+  --shadow-md:0 8px 24px -8px rgba(15,23,42,.14);
+  --shadow-lg:0 20px 45px -15px rgba(15,23,42,.22);
+}
+
+/* Oscuro: por preferencia del sistema si el usuario nunca lo tocó a mano... */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --primary:#22b8d6; --primary-dark:#67e3f5; --primary-light:#0e3746;
+    --accent:#fbbf24; --bg:#0b141c; --card:#122029; --text:#e7eef4;
+    --muted:#93a7b8; --border:#283844; --ok:#34d399; --error:#f87171;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.3);
+    --shadow-md:0 8px 24px -8px rgba(0,0,0,.5);
+    --shadow-lg:0 20px 45px -15px rgba(0,0,0,.6);
+  }
+}
+/* ...y siempre si el usuario lo forzó a mano con el switch */
+:root[data-theme="dark"]{
+  --primary:#22b8d6; --primary-dark:#67e3f5; --primary-light:#0e3746;
+  --accent:#fbbf24; --bg:#0b141c; --card:#122029; --text:#e7eef4;
+  --muted:#93a7b8; --border:#283844; --ok:#34d399; --error:#f87171;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.3);
+  --shadow-md:0 8px 24px -8px rgba(0,0,0,.5);
+  --shadow-lg:0 20px 45px -15px rgba(0,0,0,.6);
+}
+
+/* ===== Botón / interruptor de tema =====
+   Oculto por el momento: modo oscuro desactivado (ver shared.js). */
+.theme-toggle{
+  display:none;
+}
+
+/* ===== Ondas animadas al pie de la barra superior =====
+   Compartida por cuestionario, prospectos, admin y el encabezado de
+   "Mis cuestionarios" (.page-head) -- shared.js inserta ahí dos <svg>
+   reales (.ola-fondo, .ola-frente), no un background-image. Cada uno
+   mide el doble de ancho (200%) y ya trae el dibujo repetido DOS
+   veces dentro de su propio viewBox, así que deslizarlo exactamente
+   -50% (= un dibujo completo) siempre cierra sin costura, sea cual
+   sea el ancho real de la barra. */
+.topbar,.page-head{ position:relative; overflow:hidden; }
+.ola{ position:absolute; left:0; bottom:-1px; width:200%; height:38px; display:block; will-change:transform; pointer-events:none; }
+.ola-fondo{ opacity:.55; animation:waveBack 13s linear infinite; }
+.ola-frente{ animation:waveFront 9s linear infinite; }
+@keyframes waveFront{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+@keyframes waveBack{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
+
+/* ===== Botones ===== */
+.btn{border:none;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;font-size:.84rem;cursor:pointer;transition:transform .15s;}
+.btn.primary{background:linear-gradient(135deg,var(--primary),#0891b2);color:#fff;}
+.btn.ghost{background:var(--card);border:1.5px solid var(--border);color:var(--primary-dark);}
+.btn.small{padding:6px 10px;font-size:.76rem;border-radius:8px;}
+.btn.ok{background:#ecfdf5;color:var(--ok);border:1px solid #a7f3d0;}
+.btn.danger{background:#fef2f2;color:var(--error);border:1px solid #fecaca;}
+:root[data-theme="dark"] .btn.ok{background:#0d2b22;border-color:#155e46;}
+:root[data-theme="dark"] .btn.danger{background:#341015;border-color:#5c1a22;}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .btn.ok{background:#0d2b22;border-color:#155e46;}
+  :root:not([data-theme="light"]) .btn.danger{background:#341015;border-color:#5c1a22;}
+}
+
+/* ===== Toast (con check animado en éxito) ===== */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:12px 18px;border-radius:13px;font-size:.86rem;font-weight:600;z-index:300;opacity:0;transition:all .4s;max-width:92vw;text-align:center;display:flex;align-items:center;gap:9px;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{background:linear-gradient(135deg,#059669,#10b981);}
+.toast.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
+.toast .tick{width:18px;height:18px;flex-shrink:0;}
+.toast .tick circle{stroke:#fff;stroke-width:2;fill:none;stroke-dasharray:63;stroke-dashoffset:63;animation:tick-circle .5s ease forwards;}
+.toast .tick path{stroke:#fff;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:20;stroke-dashoffset:20;animation:tick-check .3s ease forwards .35s;}
+@keyframes tick-circle{to{stroke-dashoffset:0;}}
+@keyframes tick-check{to{stroke-dashoffset:0;}}
+
+/* ===== Modal genérico de confirmación ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,20,28,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:200;padding:16px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--card);border-radius:18px;padding:22px;max-width:540px;width:100%;max-height:86vh;overflow-y:auto;box-shadow:0 20px 45px -15px rgba(15,23,42,.3);color:var(--text);}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.modal h3{margin:0;color:var(--primary-dark);font-size:1rem;}
+.modal .sub{margin:4px 0 0;font-size:.78rem;color:var(--muted);}
+.modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.logout-modal{max-width:380px;text-align:center;}
+.logout-modal .ic{font-size:2.4rem;margin-bottom:6px;}
+.logout-modal h3{margin:0 0 6px;font-size:1.05rem;color:var(--text);}
+.logout-modal p{margin:0 0 20px;color:var(--muted);font-size:.86rem;}
+.logout-actions{display:flex;gap:10px;}
+.logout-actions button{flex:1;border:none;border-radius:11px;padding:12px;font:inherit;font-weight:800;font-size:.86rem;cursor:pointer;transition:transform .15s;}
+.logout-actions button:hover{transform:translateY(-1px);}
+.btn-stay{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+.btn-leave{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;}
+.btn-neutral{background:#f1f5f9;color:var(--text);}
+:root[data-theme="dark"] .btn-neutral{background:#1c2b35;color:var(--text);}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn-neutral { background:#1c2b35;color:var(--text); } }
+
+/* ===== Paginador ===== */
+.paginador{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.paginador .info{font-size:.8rem;color:var(--muted);font-weight:700;}
+
+/* ===== Badges ===== */
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:800;text-transform:uppercase;}
+.badge.rol-admin{background:#fef3c7;color:#92400e;}
+.badge.rol-comercial{background:#e0f2fe;color:#075985;}
+.badge.rol-oficina{background:#f0fdfa;color:#0f766e;}
+.badge.rol-gerente{background:#ede9fe;color:#5b21b6;}
+.badge.rol-coordinador{background:#fce7f3;color:#9d174d;}
+.badge.act{background:#ecfdf5;color:#047857;}
+.badge.inact{background:#fef2f2;color:#b91c1c;}
+.badge.st-nuevo{background:#e0f2fe;color:#075985;}
+.badge.st-en_seguimiento{background:#fef3c7;color:#92400e;}
+.badge.st-revisado{background:#ede9fe;color:#6d28d9;}
+.badge.st-calificado{background:#ecfdf5;color:#047857;}
+.badge.st-rechazado{background:#fef2f2;color:#b91c1c;}
+.badge.pend{background:#fef3c7;color:#92400e;}
+/* en oscuro los pasteles saturados quedan chillantes sobre tarjeta oscura: los apagamos un poco */
+:root[data-theme="dark"] .badge{filter:brightness(.85) saturate(.9);}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .badge { filter:brightness(.85) saturate(.9); } }
+
+/* ===== Tablas responsivas ===== */
+.table-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:rgba(128,128,128,.06);}
+.empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:.88rem;}
+.empty .ic{display:block;font-size:1.8rem;margin-bottom:8px;opacity:.6;}
+@media(max-width:640px){
+  .table-scroll table, .table-scroll thead, .table-scroll tbody, .table-scroll tr, .table-scroll td{display:block;width:100%;}
+  .table-scroll thead{position:absolute;left:-9999px;top:-9999px;}
+  .table-scroll tr{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+  .table-scroll tr:hover td{background:none;}
+  .table-scroll td{border:none;border-bottom:1px solid var(--border);padding:8px 0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;}
+  .table-scroll td:last-child{border-bottom:none;}
+  .table-scroll td::before{content:attr(data-label);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  .table-scroll td[data-label=""]::before{display:none;}
+  .table-scroll td.td-actions{flex-direction:row;flex-wrap:wrap;align-items:center;}
+}
+
+/* ===== Franja de color por categoría (giro / segmento) ===== */
+.cat-dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:7px;flex-shrink:0;vertical-align:middle;}
+
+/* ===== Skeleton loader ===== */
+.skeleton-row td{padding:14px 10px;}
+.skeleton-bar{height:13px;border-radius:6px;width:100%;max-width:160px;
+  background:linear-gradient(90deg, var(--border) 25%, rgba(148,163,184,.35) 37%, var(--border) 63%);
+  background-size:400% 100%;animation:skeleton-shimmer 1.4s ease infinite;}
+@keyframes skeleton-shimmer{0%{background-position:100% 50%;}100%{background-position:0 50%;}}

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acción Acuicultura · Prospectos</title>
+<link rel="stylesheet" href="shared.css?v=19">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .topbar{background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 60%,#0891b2 130%);color:#fff;padding:20px 22px 40px;}
+  .topbar .inner{max-width:980px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{
+    width:54px;height:54px;border-radius:14px;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    padding:7px;flex-shrink:0;
+    box-shadow:0 8px 20px -8px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.7);
+  }
+  .logo img{width:100%;height:100%;object-fit:contain;display:block;}
+  .brand h1{margin:0;font-size:1.05rem;}
+  .brand p{margin:2px 0 0;font-size:.75rem;opacity:.85;}
+  .topbar .btn{background:#fff;color:var(--primary-dark);border:none;border-radius:11px;padding:9px 14px;font-weight:700;font-size:.8rem;cursor:pointer;text-decoration:none;display:inline-block;}
+  .topbar .btn.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);}
+  .topbar .btn.admin{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;}
+  main{max-width:980px;margin:0 auto;padding:22px 16px 60px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px 24px;margin-bottom:18px;}
+  .card h2{margin:0 0 14px;font-size:.95rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-dark);display:flex;align-items:center;gap:9px;}
+  .card p.hint{margin:-8px 0 16px;font-size:.82rem;color:var(--muted);}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  .toolbar input{flex:1;min-width:180px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;}
+  .toolbar input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
+  .toolbar select{padding:10px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.84rem;background:var(--card);color:var(--text);}
+  .estatus-select{padding:5px 8px;border-radius:8px;border:1.5px solid var(--border);font:inherit;font-size:.76rem;font-weight:700;background:var(--card);color:var(--text);}
+  /* Tabla simplificada para todos: solo empresa, quién lo prospectó, kilos y acciones.
+     RFC, Sucursal, Volumen estimado y Estatus no se borran -- se siguen guardando y se
+     ven completos en "Ver" (ficha de detalle) y al editar; solo se ocultan de esta lista. */
+  .col-gestion{display:none;}
+  .modal-lg{max-width:640px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:.7rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;}
+  .field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.88rem;background:var(--card);color:var(--text);}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,116,144,.12);}
+  .subhead{font-size:.7rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin:2px 0 8px;}
+  .talla-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+  .talla-row input,.talla-row select{padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font:inherit;font-size:.86rem;}
+  .talla-wrap{flex:2;display:flex;flex-direction:column;gap:6px;}
+  .talla-wrap select,.talla-wrap input{width:100%;}
+  .talla-row input.cajas{flex:1;}
+  .talla-row .rm{background:#fef2f2;color:var(--error);border:1px solid #fecaca;border-radius:9px;width:34px;height:34px;flex-shrink:0;cursor:pointer;font-size:.9rem;}
+  .freq-row{display:flex;gap:8px;align-items:center;}
+  .freq-row span{font-size:.84rem;color:var(--muted);white-space:nowrap;}
+  .freq-row input{width:70px;padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font:inherit;}
+  .freq-row select{flex:1;padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font:inherit;}
+  .vol-summary{font-size:.78rem;color:var(--muted);}
+  .vol-summary b{color:var(--text);}
+  /* ===== Ficha de detalle (Ver prospecto) ===== */
+  .ficha-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;border-bottom:2px solid var(--primary-dark);padding-bottom:14px;margin-bottom:16px;}
+  .ficha-head h2{margin:0;font-size:1.15rem;color:var(--primary-dark);line-height:1.3;}
+  .ficha-head .sub{margin:4px 0 0;font-size:.8rem;color:var(--muted);font-weight:600;}
+  .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;}
+  @media(max-width:520px){.ficha-grid{grid-template-columns:1fr;}}
+  .ficha-campo{padding:10px 0;border-bottom:1px dashed var(--border);}
+  .ficha-campo .lbl{font-size:.66rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .ficha-campo .val{font-size:.92rem;font-weight:700;margin-top:3px;color:var(--text);}
+  .ficha-campo .val.empty{color:#c3cbd4;font-weight:500;}
+  .ficha-seccion{grid-column:1/-1;margin-top:14px;}
+  .ficha-seccion h4{margin:0 0 8px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-dark);}
+  .ficha-nota{background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;font-size:.86rem;white-space:pre-wrap;color:var(--text);}
+  .ficha-nota.empty{color:#c3cbd4;}
+  .ficha-tallas{display:flex;flex-wrap:wrap;gap:8px;}
+  .ficha-talla-chip{background:var(--primary-light);color:var(--primary-dark);border-radius:99px;padding:6px 14px;font-size:.82rem;font-weight:700;}
+  .ficha-footer{grid-column:1/-1;margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.76rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  /* ===== Modal salir ===== */
+  .logout-modal{max-width:380px;text-align:center;}
+  .logout-modal .ic{font-size:2.4rem;margin-bottom:6px;}
+  .logout-modal h3{margin:0 0 6px;font-size:1.05rem;color:var(--text);}
+  .logout-modal p{margin:0 0 20px;color:var(--muted);font-size:.86rem;}
+  .logout-actions{display:flex;gap:10px;}
+  .logout-actions button{flex:1;border:none;border-radius:11px;padding:12px;font:inherit;font-weight:800;font-size:.86rem;cursor:pointer;transition:transform .15s;}
+  .logout-actions button:hover{transform:translateY(-1px);}
+  .btn-stay{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+  .btn-leave{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;}
+  .btn-neutral{background:#fff;color:var(--text);border:1.5px solid var(--border) !important;}
+</style>
+</head>
+<body style="opacity:0;transition:opacity .35s ease;">
+
+<div id="fatalError" style="display:none;background:#fef2f2;color:#b91c1c;padding:14px;text-align:center;font-size:.85rem;border-bottom:1px solid #fecaca;"></div>
+
+<header class="topbar">
+  <div class="inner">
+    <div class="brand">
+      <div class="logo"><img src="accion_acuicola.png" alt="Acción Acuacultura"></div>
+      <div><h1>Acción Acuicultura</h1><p>Prospectos</p></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span class="badge st-calificado" id="userBadge" style="display:none;"></span>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+      <a href="index.html" class="btn ghost">🏠 Inicio</a>
+      <a href="cuestionario.html" id="navCuestionario" class="btn ghost">📝 Cuestionario</a>
+      <button type="button" class="btn admin" id="btnAdmin" onclick="window.location.href='admin.html'" style="display:none;">⚙️ Panel Admin</button>
+      <button class="btn ghost" onclick="logout()">🚪 Salir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2 id="prospectosTitulo">🌱 Prospectos</h2>
+    <p class="hint" id="prospectosHint">Da de alta prospectos. El coordinador les da el visto bueno; el gerente confirma la aprobación final -- ahí pasan a Clientes nuevos.</p>
+    <div class="toolbar">
+      <input type="text" id="prospectoSearchBox" placeholder="Buscar por razón social, RFC o sucursal…" oninput="buscarProspectos()">
+      <select id="prospectoFilterEstatus" onchange="buscarProspectos()">
+        <option value="">Todos los estatus</option>
+        <option value="nuevo">Pendientes</option>
+        <option value="revisado">Revisados</option>
+        <option value="rechazado">Rechazados</option>
+      </select>
+      <select id="prospectoFilterCiudad" onchange="buscarProspectos()">
+        <option value="">Todas las ciudades</option>
+      </select>
+      <select id="prospectoFilterAutor" onchange="buscarProspectos()">
+        <option value="todos">Todos los pedidos</option>
+        <option value="mios">Solo los míos</option>
+      </select>
+      <button class="btn ghost" onclick="exportarProspectosCSV()">⬇ Exportar CSV</button>
+      <button class="btn primary" onclick="openProspectoModal()">+ Agregar prospecto</button>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Razón Social</th><th class="col-gestion">RFC</th><th class="col-gestion">Sucursal</th><th>Prospectado por</th><th class="col-gestion">Volumen estimado</th><th>Kilos totales</th><th class="col-gestion">Estatus</th><th></th></tr></thead>
+      <tbody id="prospectosBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="prospectosEmpty" style="display:none;">Sin prospectos registrados.</div>
+    <div class="paginador" id="pagProspectosWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaProspectos(pagProspectos-1)">← Anterior</button>
+      <span class="info" id="pagProspectosInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaProspectos(pagProspectos+1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="card" id="cardConfirmados" style="display:none;">
+    <h2>✅ Prospectos que ya confirmé como cliente</h2>
+    <p class="hint">Una vez que confirmas un prospecto, sale de la lista de arriba y se convierte en cliente -- aquí queda tu historial de confirmaciones.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Razón Social</th><th>RFC</th><th>Ciudad</th><th>Confirmado el</th><th>Estado</th></tr></thead>
+      <tbody id="confirmadosBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="confirmadosEmpty" style="display:none;">Todavía no has confirmado ningún prospecto como cliente.</div>
+    <div class="paginador" id="pagConfirmadosWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaConfirmados(pagConfirmados-1)">← Anterior</button>
+      <span class="info" id="pagConfirmadosInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaConfirmados(pagConfirmados+1)">Siguiente →</button>
+    </div>
+  </div>
+</main>
+
+<!-- Modal: agregar / editar prospecto -->
+<div class="modal-overlay" id="prospectoModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3 id="prospectoModalTitle">Agregar prospecto</h3></div>
+      <button class="modal-close" onclick="closeProspectoModal()">&times;</button>
+    </div>
+    <div class="grid">
+      <div class="field full"><label>Razón Social</label><input id="p_razonSocial"></div>
+      <div class="field"><label>RFC</label><input id="p_rfc"></div>
+      <div class="field"><label>Giro del Negocio</label>
+        <select id="p_giroDelNegocio">
+          <option value="">Selecciona…</option>
+          <option>Restaurante</option><option>Hotel</option><option>Pescadería</option>
+          <option>Supermercado</option><option>Mayoreo Nacional</option><option>Mayoreo Rutas</option>
+          <option>Autoservicio Regional</option><option>Industrial</option>
+        </select>
+      </div>
+      <div class="field"><label>Nombre del Comprador</label><input id="p_nombreComprador"></div>
+      <div class="field"><label>Teléfono</label><input id="p_telefono"></div>
+      <div class="field"><label>Nombre Comercial</label><input id="p_nombreComercial"></div>
+      <div class="field"><label>Sucursal</label><input id="p_sucursal"></div>
+      <div class="field"><label>Dirección</label><input id="p_direccion"></div>
+      <div class="field full">
+        <label>Ciudad / Ruta</label>
+        <div style="display:flex;gap:8px;">
+          <input id="p_ciudad" placeholder="Ej. Ciudad Obregón" style="flex:1;">
+          <button type="button" class="btn ghost small" id="btnDetectarCiudad" onclick="detectarCiudad()" style="flex-shrink:0;">📍 Detectar</button>
+        </div>
+        <small style="color:var(--muted);font-size:.72rem;">No hace falta que sea exacto — "Hermosillo" y "Hermosillo, Sonora" cuentan como la misma ciudad.</small>
+      </div>
+      <div class="field full"><label>Notas</label><input id="p_notas" placeholder="Seguimiento, requisitos pendientes…"></div>
+    </div>
+
+    <div style="margin-top:18px;">
+      <p class="subhead">Tallas de camarón y cajas que ocuparía</p>
+      <div id="p_tallas_rows"></div>
+      <button type="button" class="btn ghost small" onclick="agregarFilaTalla()">+ Agregar talla</button>
+    </div>
+
+    <div style="margin-top:18px;">
+      <p class="subhead">Frecuencia estimada de compra</p>
+      <div class="freq-row">
+        <span>Cada</span>
+        <input type="number" id="p_frecCantidad" min="1" step="1" value="1">
+        <select id="p_frecUnidad">
+          <option value="dia">día(s)</option>
+          <option value="semana" selected>semana(s)</option>
+          <option value="mes">mes(es)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button class="btn ghost" onclick="closeProspectoModal()">Cancelar</button>
+      <button class="btn primary" id="btnGuardarProspecto" onclick="guardarProspectoModal()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ver detalle de prospecto (solo lectura) -->
+<div class="modal-overlay" id="verProspectoModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" style="float:right;" onclick="document.getElementById('verProspectoModal').classList.remove('show')">&times;</button>
+    <div id="verProspectoBody"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+      <button class="btn ghost" onclick="document.getElementById('verProspectoModal').classList.remove('show')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmación genérica (eliminar / convertir prospecto) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal logout-modal">
+    <div class="ic" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">¿Estás seguro?</h3>
+    <p id="confirmMsg">Esta acción no se puede deshacer.</p>
+    <div class="logout-actions">
+      <button class="btn-neutral" id="confirmCancelBtn" onclick="cerrarConfirmModal()">Cancelar</button>
+      <button class="btn-leave" id="confirmOkBtn" onclick="ejecutarConfirmacion()">Sí, continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar salida -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal logout-modal">
+    <div class="ic">🚪</div>
+    <h3>¿Salir de tu sesión?</h3>
+    <p>Vas a cerrar sesión en Acción Acuicultura.</p>
+    <div class="logout-actions">
+      <button class="btn-stay" onclick="cancelarSalida()">✅ Seguir aquí</button>
+      <button class="btn-leave" onclick="confirmarSalida()">🚪 Sí, salir</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="shared.js?v=19"></script>
+<script>
+/* ============ Utilidades ============ */
+function fatal(msg){
+  const el = document.getElementById("fatalError");
+  if (el){ el.style.display = "block"; el.textContent = "⚠ " + msg; }
+  document.body.style.opacity = "1";
+}
+
+/* ============ Sesión (comercial, gerente, admin -- oficina no entra aquí) ============ */
+let miRol = null;
+let miRuta = null;
+let miId = null;
+let miNombre = null;
+let miCorreoOEmail = null;
+// "Gestionar" = ve todos los prospectos (no solo los propios) y puede
+// editar/rechazar -- admin, coordinador (revisa) y gerente (confirma).
+const puedeGestionar = () => miRol === "admin" || miRol === "coordinador" || miRol === "gerente";
+// Da el primer visto bueno (nuevo -> revisado) o rechaza de entrada.
+// Solo coordinador -- admin ya no marca revisado, solo acepta/rechaza
+// después de que el coordinador ya lo dejó "revisado".
+const puedeRevisar = () => miRol === "coordinador";
+// Confirma como cliente nuevo -- solo sobre lo que el coordinador ya
+// dejó "revisado"; si sigue "nuevo", ni le aparece el botón.
+const puedeConfirmar = () => miRol === "admin" || miRol === "gerente";
+// Rechazar: coordinador puede hacerlo desde su revisión inicial
+// ("nuevo"); admin/gerente son la segunda validación, así que solo
+// pueden rechazar lo que el coordinador ya dejó "revisado".
+function puedeRechazar(p){
+  if (p.estatus === "rechazado") return false;
+  if (miRol === "coordinador") return true;
+  if (miRol === "admin" || miRol === "gerente") return p.estatus === "revisado";
+  return false;
+}
+
+async function guardarSesion(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session){ window.location.href = "login.html"; return; }
+  const { data, error } = await supabaseClient
+    .from("usuarios").select("rol, activo, ruta, nombre").eq("id", session.user.id).maybeSingle();
+  if (error || !data || !data.activo){
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+    return;
+  }
+  // Oficina ya no prospecta -- solo entra al Panel Admin. Si llega
+  // aquí, se le regresa a index.html sin cerrarle la sesión.
+  if (data.rol === "oficina"){
+    window.location.href = "index.html";
+    return;
+  }
+  miRol = data.rol;
+  miRuta = data.ruta || null;
+  miId = session.user.id;
+  miNombre = data.nombre || null;
+  miCorreoOEmail = nombreOCorreo(miNombre, session.user.email);
+  const badge = document.getElementById("userBadge");
+  const etiqueta = { admin: "Admin", coordinador: "Coordinador", gerente: "Gerente", comercial: "Comercial" }[data.rol] || data.rol;
+  badge.textContent = etiqueta + ": " + miCorreoOEmail;
+  badge.style.display = "inline-flex";
+  // El Panel Admin ya solo lo maneja admin (gerente ya no entra ahí).
+  document.getElementById("btnAdmin").style.display = data.rol === "admin" ? "" : "none";
+  // Coordinador solo revisa prospectos -- no tiene acceso a
+  // cuestionario.html (ni aparece en PERMISOS ahí), así que este
+  // enlace solo lo rebotaba sin hacer nada.
+  document.getElementById("navCuestionario").style.display = data.rol === "coordinador" ? "none" : "";
+
+  if (puedeGestionar()) {
+    document.getElementById("prospectoFilterAutor").style.display = "none";
+  }
+
+  if (!puedeGestionar()) {
+    document.getElementById("prospectosTitulo").textContent = "🌱 Mis solicitudes de prospecto";
+    document.getElementById("prospectosHint").textContent = "Manda una solicitud de prospecto nuevo. Aquí ves la empresa, quién la prospectó y los kilos estimados; el seguimiento y la aprobación las hace el equipo de administración.";
+    document.getElementById("prospectoFilterEstatus").style.display = "none";
+    document.getElementById("prospectoFilterCiudad").style.display = "none";
+  }
+
+  if (puedeConfirmar()) {
+    document.getElementById("cardConfirmados").style.display = "";
+    await cargarConfirmados();
+  }
+
+  document.body.style.opacity = "1";
+}
+function logout(){
+  document.getElementById("logoutModal").classList.add("show");
+}
+function cancelarSalida(){
+  document.getElementById("logoutModal").classList.remove("show");
+}
+async function confirmarSalida(){
+  await registrarLogout();
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+
+/* ============ CRUD de prospectos (paginación 5) ============ */
+let prospectos = [];
+let prospectoEditandoId = null;
+let pagProspectos = 1;
+const POR_PAGINA_PROSPECTOS = 5;
+let __filtProspectos = [];
+const FREC_LABEL = { dia: "día", semana: "semana", mes: "mes" };
+/* Flujo de dos validaciones: nuevo (pendiente) -> revisado (visto
+   bueno del coordinador) -> confirmado (por gerente, ahí se crea en
+   clientes_nuevos, así que "confirmado" nunca queda guardado como
+   estatus -- la fila se borra). Si el coordinador no lo validó
+   primero (sigue "nuevo"), gerente no puede confirmarlo. rechazado
+   puede pasar en cualquiera de los dos pasos. */
+const ESTATUS_INFO = {
+  nuevo: { label: "Pendiente", cls: "st-nuevo" },
+  revisado: { label: "Revisado", cls: "st-revisado" },
+  rechazado: { label: "Rechazado", cls: "st-rechazado" }
+};
+function infoEstatus(p){
+  if (p.estatus === "revisado" && p.revisado_por_nombre){
+    return { label: `Revisado por ${p.revisado_por_nombre} · Coordinador`, cls: "st-revisado" };
+  }
+  return ESTATUS_INFO[p.estatus] || ESTATUS_INFO.nuevo;
+}
+
+function resumenVolumen(p){
+  const tallas = Array.isArray(p.volumen_tallas) ? p.volumen_tallas : [];
+  const cajas = tallas.reduce((s, t) => s + (Number(t.cajas) || 0), 0);
+  if (!tallas.length && !p.frecuencia_cantidad) return "—";
+  const partes = [];
+  if (tallas.length) partes.push(`${cajas} caja${cajas === 1 ? "" : "s"} (${tallas.length} talla${tallas.length === 1 ? "" : "s"})`);
+  if (p.frecuencia_cantidad) partes.push(`cada ${p.frecuencia_cantidad} ${FREC_LABEL[p.frecuencia_unidad] || p.frecuencia_unidad || ""}${p.frecuencia_cantidad == 1 ? "" : "s"}`);
+  return partes.join(" · ") || "—";
+}
+/* No hay un peso fijo por talla, así que del total de cajas se
+   reparte: 70% son cajas de 20 kg y 30% son cajas de 18 kg (no un
+   promedio por caja -- cajas reales de cada peso). */
+function totalCajas(p){
+  const tallas = Array.isArray(p.volumen_tallas) ? p.volumen_tallas : [];
+  return tallas.reduce((s, t) => s + (Number(t.cajas) || 0), 0);
+}
+function repartoCajas(p){
+  const total = totalCajas(p);
+  const cajas20 = Math.round(total * 0.7);
+  const cajas18 = total - cajas20;
+  return { cajas20, cajas18 };
+}
+function kilosTotales(p){
+  const { cajas20, cajas18 } = repartoCajas(p);
+  return cajas20 * 20 + cajas18 * 18;
+}
+function fmtKilos(p){
+  const cajas = totalCajas(p);
+  if (!cajas) return "—";
+  return kilosTotales(p).toLocaleString("es-MX", { maximumFractionDigits: 1 }) + " kg";
+}
+function tituloKilos(p){
+  const { cajas20, cajas18 } = repartoCajas(p);
+  const partes = [];
+  if (cajas20) partes.push(`${cajas20} caja${cajas20 === 1 ? "" : "s"} de 20 kg`);
+  if (cajas18) partes.push(`${cajas18} caja${cajas18 === 1 ? "" : "s"} de 18 kg`);
+  return partes.join(" + ");
+}
+function tituloVolumen(p){
+  const tallas = Array.isArray(p.volumen_tallas) ? p.volumen_tallas : [];
+  return tallas.map(t => `${escapeHtml(t.talla || "?")}: ${t.cajas || 0} caja(s)`).join("\n");
+}
+
+async function cargarProspectos(){
+  const tbodyP = document.getElementById("prospectosBody");
+  if (tbodyP && !tbodyP.children.length) tbodyP.innerHTML = skeletonRows(7);
+  try{
+    const { data, error } = await supabaseClient.from("prospectos").select("*")
+      .is("eliminado_en", null)
+      .order("creado_en", { ascending: false });
+    if (error) throw error;
+    prospectos = data || [];
+  }catch(e){
+    prospectos = [];
+    toast("Error leyendo prospectos: " + (e && e.message ? e.message : "sin conexión"), "error");
+  }
+  pagProspectos = 1;
+  renderProspectos();
+}
+
+function buscarProspectos(){ pagProspectos = 1; renderProspectos(); }
+
+function ciudadesCoinciden(a, b){
+  const x = (a || "").trim().toLowerCase();
+  const y = (b || "").trim().toLowerCase();
+  if (!x || !y) return false;
+  return x.includes(y) || y.includes(x);
+}
+
+/* Agrupa variantes de la misma ciudad (ej. "Obregón" y "Obregón, Son.")
+   en una sola opción — la más corta de cada grupo representa a todas. */
+function agruparCiudades(lista){
+  const grupos = [];
+  lista.forEach(ciudad => {
+    const existente = grupos.find(g => g.some(c => ciudadesCoinciden(c, ciudad)));
+    if (existente) existente.push(ciudad);
+    else grupos.push([ciudad]);
+  });
+  return grupos
+    .map(g => g.slice().sort((a, b) => a.length - b.length)[0])
+    .sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function poblarFiltroCiudadProspectos(){
+  const sel = document.getElementById("prospectoFilterCiudad");
+  if (!sel) return;
+  const actual = sel.value;
+  const crudas = prospectos.map(p => (p.ciudad || "").trim()).filter(Boolean);
+  const ciudades = agruparCiudades(crudas);
+  sel.innerHTML = `<option value="">Todas las ciudades</option>` +
+    ciudades.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if (ciudades.includes(actual)) sel.value = actual;
+}
+
+function renderProspectos(){
+  poblarFiltroCiudadProspectos();
+  const q = (document.getElementById("prospectoSearchBox").value || "").trim().toLowerCase();
+  const fe = document.getElementById("prospectoFilterEstatus").value;
+  const fc = document.getElementById("prospectoFilterCiudad").value;
+  const fa = document.getElementById("prospectoFilterAutor").value;
+  __filtProspectos = prospectos.filter(p =>
+    (!q || ((p.razonSocial||"") + " " + (p.rfc||"") + " " + (p.sucursal||"")).toLowerCase().includes(q)) &&
+    (!fe || (fe === "nuevo" ? (p.estatus || "nuevo") === "nuevo" : p.estatus === fe)) &&
+    (!fc || ciudadesCoinciden(p.ciudad, fc)) &&
+    (fa !== "mios" || p.creado_por === miId)
+  );
+  const totalPag = Math.max(1, Math.ceil(__filtProspectos.length / POR_PAGINA_PROSPECTOS));
+  if (pagProspectos > totalPag) pagProspectos = totalPag;
+  const inicio = (pagProspectos - 1) * POR_PAGINA_PROSPECTOS;
+  const paginado = __filtProspectos.slice(inicio, inicio + POR_PAGINA_PROSPECTOS);
+
+  document.getElementById("prospectosEmpty").style.display = __filtProspectos.length ? "none" : "block";
+  document.getElementById("prospectosBody").innerHTML = paginado.map(p => `
+    <tr>
+      <td data-label="Razón Social">${puntoCategoria(p.giroDelNegocio)}<b>${escapeHtml(p.razonSocial || "—")}</b></td>
+      <td data-label="RFC" class="col-gestion">${escapeHtml(p.rfc || "—")}</td>
+      <td data-label="Sucursal" class="col-gestion">${escapeHtml(p.sucursal || "—")}</td>
+      <td data-label="Prospectado por">${escapeHtml(nombreOCorreo(p.creado_por_nombre, p.creado_por_email))}</td>
+      <td data-label="Volumen estimado" class="vol-summary col-gestion" title="${tituloVolumen(p)}">${resumenVolumen(p)}</td>
+      <td data-label="Kilos totales" class="vol-summary">${fmtKilos(p)}</td>
+      <td data-label="Estatus" class="col-gestion"><span class="badge ${infoEstatus(p).cls}">${escapeHtml(infoEstatus(p).label)}</span></td>
+      <td data-label="" class="td-actions" style="white-space:nowrap;">
+        <button class="btn ghost small" onclick="verProspecto(${p.id})">👁 Ver</button>
+        ${puedeGestionar() ? `<button class="btn ghost small" onclick="openProspectoModal(${p.id})">✏️</button>` : ""}
+        ${puedeConfirmar() && p.estatus === "revisado" ? `<button class="btn ok small" onclick="convertirACliente(${p.id})">✅ Confirmar cliente</button>` : ""}
+        ${puedeRevisar() && (p.estatus || "nuevo") === "nuevo" ? `<button class="btn ok small" onclick="marcarRevisado(${p.id})">👍 Marcar revisado</button>` : ""}
+        ${puedeRechazar(p) ? `<button class="btn danger small" onclick="rechazarProspecto(${p.id})">❌ Rechazar</button>` : ""}
+      </td>
+    </tr>`).join("");
+  document.getElementById("pagProspectosInfo").textContent = __filtProspectos.length
+    ? `Página ${pagProspectos} de ${totalPag} · ${__filtProspectos.length} prospectos` : "";
+}
+
+function cambiarPaginaProspectos(p){
+  const totalPag = Math.max(1, Math.ceil(__filtProspectos.length / POR_PAGINA_PROSPECTOS));
+  if (p < 1 || p > totalPag) return;
+  pagProspectos = p;
+  renderProspectos();
+}
+function exportarProspectosCSV(){
+  if (!__filtProspectos.length) return toast("No hay datos para exportar", "error");
+  const headers = ["Razón Social","RFC","Sucursal","Giro","Prospectado por","Volumen estimado","Kilos totales","Estatus"];
+  const filas = __filtProspectos.map(p => [
+    p.razonSocial || "", p.rfc || "", p.sucursal || "", p.giroDelNegocio || "",
+    nombreOCorreo(p.creado_por_nombre, p.creado_por_email), resumenVolumen(p), fmtKilos(p), infoEstatus(p).label
+  ]);
+  exportarCSV("prospectos_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
+  toast("CSV exportado", "ok");
+  registrarAccion("descargar_csv", "reporte", null, "prospectos");
+}
+
+async function marcarRevisado(id){
+  const p = prospectos.find(x => x.id === id);
+  try{
+    const ahora = new Date().toISOString();
+    const { error } = await supabaseClient.from("prospectos").update({
+      estatus: "revisado",
+      revisado_por: miId,
+      revisado_por_nombre: miNombre || miCorreoOEmail,
+      revisado_en: ahora
+    }).eq("id", id);
+    if (error) throw error;
+    if (p){
+      p.estatus = "revisado";
+      p.revisado_por = miId;
+      p.revisado_por_nombre = miNombre || miCorreoOEmail;
+      p.revisado_en = ahora;
+    }
+    toast("Marcado como revisado -- ahora espera la confirmación del gerente", "ok");
+    await registrarAccion("revisar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar"), "error");
+  }
+  renderProspectos();
+}
+
+async function rechazarProspecto(id){
+  const p = prospectos.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("prospectos").update({ estatus: "rechazado" }).eq("id", id);
+    if (error) throw error;
+    if (p) p.estatus = "rechazado";
+    toast("Prospecto rechazado", "ok");
+    await registrarAccion("rechazar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar"), "error");
+  }
+  renderProspectos();
+}
+
+/* ---- Detectar ciudad por GPS (mismo método que usa cuestionario.html) ---- */
+async function ciudadDesdeCoords(lat, lng){
+  try{
+    const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&zoom=10&accept-language=es";
+    const res = await fetch(url, { headers: { "Accept-Language": "es" } });
+    if (!res.ok) throw new Error();
+    const j = await res.json();
+    if (j && j.address){
+      const a = j.address;
+      const ciudad = a.city || a.town || a.municipality || a.village;
+      if (ciudad) return a.state ? (ciudad + ", " + a.state) : ciudad;
+    }
+  }catch(e){}
+  try{
+    const res = await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lng + "&localityLanguage=es");
+    if (!res.ok) throw new Error();
+    const j = await res.json();
+    const ciudad = j.city || j.locality;
+    if (ciudad) return j.principalSubdivision ? (ciudad + ", " + j.principalSubdivision) : ciudad;
+  }catch(e){}
+  return null;
+}
+
+function detectarCiudad(){
+  const btn = document.getElementById("btnDetectarCiudad");
+  const input = document.getElementById("p_ciudad");
+  if (!navigator.geolocation){
+    toast("Tu dispositivo no soporta geolocalización", "error");
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "⏳ Ubicando…";
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    const ciudad = await ciudadDesdeCoords(lat, lng);
+    if (ciudad){
+      input.value = ciudad;
+      toast("Ciudad detectada: " + ciudad, "ok");
+    } else {
+      toast("No se pudo detectar la ciudad, escríbela a mano", "error");
+    }
+    btn.disabled = false;
+    btn.textContent = "📍 Detectar";
+  }, (err) => {
+    toast("No se pudo obtener tu ubicación: " + (err && err.message ? err.message : "permiso denegado"), "error");
+    btn.disabled = false;
+    btn.textContent = "📍 Detectar";
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+}
+
+/* ---- Filas dinámicas de talla + cajas ---- */
+const TALLAS_PRESET = ["16/20", "21/25", "26/30", "31/40", "41/50", "61/70"];
+
+function onCambiaTallaSelect(sel){
+  const custom = sel.closest(".talla-wrap").querySelector(".talla-custom");
+  if (sel.value === "__otro__"){
+    custom.style.display = "";
+    custom.focus();
+  } else {
+    custom.style.display = "none";
+    custom.value = "";
+  }
+}
+
+function filaTallaHtml(talla, cajas){
+  const esCustom = talla && !TALLAS_PRESET.includes(talla);
+  return `<div class="talla-row">
+    <div class="talla-wrap">
+      <select class="talla-select" onchange="onCambiaTallaSelect(this)">
+        <option value="">Selecciona talla…</option>
+        ${TALLAS_PRESET.map(t => `<option value="${t}" ${t === talla ? "selected" : ""}>${t}</option>`).join("")}
+        <option value="__otro__" ${esCustom ? "selected" : ""}>Otra (escribir)</option>
+      </select>
+      <input class="talla-custom" placeholder="Escribe la talla (ej. 8/12)" value="${escapeHtml(esCustom ? talla : "")}" style="display:${esCustom ? "" : "none"};">
+    </div>
+    <input class="cajas" type="number" min="0" step="1" placeholder="Cajas" value="${cajas === undefined || cajas === null ? "" : cajas}">
+    <button type="button" class="rm" onclick="this.closest('.talla-row').remove()">🗑</button>
+  </div>`;
+}
+function agregarFilaTalla(talla, cajas){
+  document.getElementById("p_tallas_rows").insertAdjacentHTML("beforeend", filaTallaHtml(talla, cajas));
+}
+function renderFilasTallas(tallas){
+  const cont = document.getElementById("p_tallas_rows");
+  cont.innerHTML = "";
+  (tallas && tallas.length ? tallas : [{}]).forEach(t => agregarFilaTalla(t.talla, t.cajas));
+}
+function leerFilasTallas(){
+  return [...document.querySelectorAll("#p_tallas_rows .talla-row")]
+    .map(row => {
+      const sel = row.querySelector(".talla-select");
+      const talla = (sel.value === "__otro__" ? row.querySelector(".talla-custom").value : sel.value).trim();
+      return { talla, cajas: Number(row.querySelector(".cajas").value) || 0 };
+    })
+    .filter(t => t.talla || t.cajas);
+}
+
+function campoVer(label, valor){
+  const vacio = !valor;
+  return `<div class="ficha-campo">
+    <div class="lbl">${escapeHtml(label)}</div>
+    <div class="val ${vacio ? "empty" : ""}">${vacio ? "—" : escapeHtml(String(valor))}</div>
+  </div>`;
+}
+function verProspecto(id){
+  const p = prospectos.find(x => x.id === id);
+  if (!p) return;
+  const tallas = Array.isArray(p.volumen_tallas) ? p.volumen_tallas : [];
+  const frecTxt = p.frecuencia_cantidad ? `Cada ${p.frecuencia_cantidad} ${FREC_LABEL[p.frecuencia_unidad] || p.frecuencia_unidad || ""}${p.frecuencia_cantidad == 1 ? "" : "s"}` : null;
+
+  const head = `
+    <div class="ficha-head">
+      <div>
+        <h2>${escapeHtml(p.razonSocial || "Sin razón social")}</h2>
+        <p class="sub">${escapeHtml(p.rfc || "Sin RFC")}${p.ciudad ? " · " + escapeHtml(p.ciudad) : ""}</p>
+      </div>
+      <span class="badge ${infoEstatus(p).cls}">${escapeHtml(infoEstatus(p).label)}</span>
+    </div>`;
+
+  const grid = `<div class="ficha-grid">
+    ${campoVer("Giro del Negocio", p.giroDelNegocio)}
+    ${campoVer("Teléfono", p.telefono)}
+    ${campoVer("Nombre del Comprador", p.nombreComprador)}
+    ${campoVer("Nombre Comercial", p.nombreComercial)}
+    ${campoVer("Sucursal", p.sucursal)}
+    ${campoVer("Dirección", p.direccion)}
+
+    <div class="ficha-seccion">
+      <h4>Notas</h4>
+      <div class="ficha-nota ${p.notas ? "" : "empty"}">${p.notas ? escapeHtml(p.notas) : "Sin notas."}</div>
+    </div>
+
+    <div class="ficha-seccion">
+      <h4>Tallas y volumen</h4>
+      ${tallas.length
+        ? `<div class="ficha-tallas">${tallas.map(t => `<span class="ficha-talla-chip">${escapeHtml(t.talla || "?")} · ${t.cajas || 0} caja(s)</span>`).join("")}</div>`
+        : `<div class="ficha-nota empty">Sin tallas capturadas.</div>`}
+      ${tallas.length ? `<p style="margin:10px 0 0;font-size:.86rem;color:var(--text);">⚖️ Kilos totales estimados: <b>${escapeHtml(fmtKilos(p))}</b> <span style="color:var(--muted);">(${escapeHtml(tituloKilos(p))})</span></p>` : ""}
+      ${frecTxt ? `<p style="margin:10px 0 0;font-size:.86rem;color:var(--text);">📅 ${escapeHtml(frecTxt)}</p>` : ""}
+    </div>
+
+    <div class="ficha-footer">
+      <span>👤 Prospectado por: ${escapeHtml(nombreOCorreo(p.creado_por_nombre, p.creado_por_email))}</span>
+      <span>🗓️ ${p.creado_en ? escapeHtml(new Date(p.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })) : ""}</span>
+      ${p.revisado_por_nombre ? `<span>👍 Revisado por: ${escapeHtml(p.revisado_por_nombre)} (Coordinador)${p.revisado_en ? " · " + escapeHtml(new Date(p.revisado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })) : ""}</span>` : ""}
+    </div>
+  </div>`;
+
+  document.getElementById("verProspectoBody").innerHTML = head + grid;
+  document.getElementById("verProspectoModal").classList.add("show");
+}
+
+function openProspectoModal(id){
+  prospectoEditandoId = null;
+  ["p_razonSocial","p_rfc","p_nombreComprador","p_telefono","p_nombreComercial","p_sucursal","p_direccion","p_notas"]
+    .forEach(elId => document.getElementById(elId).value = "");
+  document.getElementById("p_ciudad").value = miRuta || "";
+  document.getElementById("p_giroDelNegocio").value = "";
+  document.getElementById("p_frecCantidad").value = "1";
+  document.getElementById("p_frecUnidad").value = "semana";
+  renderFilasTallas([]);
+  document.getElementById("prospectoModalTitle").textContent = "Agregar prospecto";
+  if (id){
+    const p = prospectos.find(x => x.id === id);
+    if (p){
+      prospectoEditandoId = p.id;
+      document.getElementById("prospectoModalTitle").textContent = "Editar prospecto";
+      document.getElementById("p_razonSocial").value = p.razonSocial || "";
+      document.getElementById("p_rfc").value = p.rfc || "";
+      document.getElementById("p_giroDelNegocio").value = p.giroDelNegocio || "";
+      document.getElementById("p_nombreComprador").value = p.nombreComprador || "";
+      document.getElementById("p_telefono").value = p.telefono || "";
+      document.getElementById("p_nombreComercial").value = p.nombreComercial || "";
+      document.getElementById("p_sucursal").value = p.sucursal || "";
+      document.getElementById("p_direccion").value = p.direccion || "";
+      document.getElementById("p_ciudad").value = p.ciudad || "";
+      document.getElementById("p_notas").value = p.notas || "";
+      document.getElementById("p_frecCantidad").value = p.frecuencia_cantidad || "1";
+      document.getElementById("p_frecUnidad").value = p.frecuencia_unidad || "semana";
+      renderFilasTallas(p.volumen_tallas || []);
+    }
+  }
+  document.getElementById("prospectoModal").classList.add("show");
+}
+function closeProspectoModal(){ document.getElementById("prospectoModal").classList.remove("show"); }
+
+let guardandoProspecto = false;
+async function guardarProspectoModal(){
+  if (guardandoProspecto) return;
+  const datos = {
+    razonSocial: document.getElementById("p_razonSocial").value.trim(),
+    rfc: document.getElementById("p_rfc").value.trim(),
+    giroDelNegocio: document.getElementById("p_giroDelNegocio").value,
+    nombreComprador: document.getElementById("p_nombreComprador").value.trim(),
+    telefono: document.getElementById("p_telefono").value.trim(),
+    nombreComercial: document.getElementById("p_nombreComercial").value.trim(),
+    sucursal: document.getElementById("p_sucursal").value.trim(),
+    direccion: document.getElementById("p_direccion").value.trim(),
+    ciudad: document.getElementById("p_ciudad").value.trim(),
+    notas: document.getElementById("p_notas").value.trim(),
+    volumen_tallas: leerFilasTallas(),
+    frecuencia_cantidad: Number(document.getElementById("p_frecCantidad").value) || null,
+    frecuencia_unidad: document.getElementById("p_frecUnidad").value
+  };
+  if (!datos.razonSocial) return toast("La Razón Social es obligatoria", "error");
+  if (prospectoEditandoId && (!datos.rfc || !datos.telefono || !datos.giroDelNegocio))
+    return toast("Al editar, RFC, Teléfono y Giro del Negocio también son obligatorios", "error");
+
+  guardandoProspecto = true;
+  const btnGuardarProspecto = document.getElementById("btnGuardarProspecto");
+  if (btnGuardarProspecto) { btnGuardarProspecto.disabled = true; btnGuardarProspecto.textContent = "Guardando…"; }
+
+  try{
+    if (prospectoEditandoId){
+      const { error } = await supabaseClient.from("prospectos").update(datos).eq("id", prospectoEditandoId);
+      if (error) throw error;
+      toastGuardado();
+      await registrarAccion("editar_prospecto", "prospecto", prospectoEditandoId, datos.razonSocial || "");
+    }else{
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const { error } = await supabaseClient.from("prospectos").insert({
+        ...datos,
+        creado_por: session ? session.user.id : null,
+        creado_por_email: session ? session.user.email : null,
+        creado_por_nombre: miNombre
+      });
+      if (error) throw error;
+      toastGuardado();
+      await registrarAccion("crear_prospecto", "prospecto", null, datos.razonSocial || "");
+    }
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo guardar"), "error");
+    return;
+  }finally{
+    guardandoProspecto = false;
+    if (btnGuardarProspecto) { btnGuardarProspecto.disabled = false; btnGuardarProspecto.textContent = "💾 Guardar"; }
+  }
+  closeProspectoModal();
+  await cargarProspectos();
+}
+
+function eliminarProspecto(id){
+  const p = prospectos.find(x => x.id === id);
+  if (!p) return;
+  pedirConfirmacion({
+    icon: "🗑️",
+    title: "¿Mandar a la papelera?",
+    msg: `"${p.razonSocial || ""}" se moverá a la Papelera. Se puede restaurar después desde el Panel Admin.`,
+    okLabel: "🗑️ Sí, mandar a papelera",
+    okClass: "btn-leave",
+    onConfirm: () => eliminarProspectoConfirmado(id)
+  });
+}
+async function eliminarProspectoConfirmado(id){
+  const p = prospectos.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("prospectos")
+      .update({ eliminado_en: new Date().toISOString(), eliminado_por: miId })
+      .eq("id", id);
+    if (error) throw error;
+    toast("Prospecto movido a la papelera", "ok");
+    await registrarAccion("eliminar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo mover a la papelera. ¿Corriste setup-papelera-prospectos.sql?"), "error");
+  }
+  await cargarProspectos();
+}
+
+/* Confirma un prospecto ya revisado por el coordinador: inserta en
+   "clientes_nuevos" y borra de "prospectos". */
+function convertirACliente(id){
+  const p = prospectos.find(x => x.id === id);
+  if (!p) return;
+  if (p.estatus !== "revisado"){
+    toast("El coordinador todavía no le da el visto bueno a este prospecto", "error");
+    return;
+  }
+  if (!p.rfc){
+    toast("El prospecto necesita RFC antes de convertirlo en cliente", "error");
+    return;
+  }
+  pedirConfirmacion({
+    icon: "✅",
+    title: "¿Confirmar como cliente?",
+    msg: `"${p.razonSocial || ""}" dejará de aparecer en Prospectos y pasará a la lista de Clientes.`,
+    okLabel: "✅ Sí, convertir",
+    okClass: "btn-stay",
+    onConfirm: () => convertirAClienteConfirmado(id)
+  });
+}
+async function convertirAClienteConfirmado(id){
+  const p = prospectos.find(x => x.id === id);
+  if (!p) return;
+  try{
+    const { error: errCliente } = await supabaseClient.from("clientes_nuevos").insert({
+      origen: "prospecto",
+      creado_por: p.creado_por || miId || null, // quién lo prospectó, no quién lo aprueba -- así le podemos avisar a la persona correcta
+      confirmado_por: miId || null,
+      confirmado_por_nombre: miNombre || miCorreoOEmail || null,
+      razonSocial: p.razonSocial,
+      rfc: p.rfc,
+      giroDelNegocio: p.giroDelNegocio,
+      nombreComprador: p.nombreComprador,
+      telefono: p.telefono,
+      nombreComercial: p.nombreComercial,
+      sucursal: p.sucursal,
+      direccion: p.direccion,
+      ciudad: p.ciudad,
+      notas: p.notas,
+      volumen_tallas: p.volumen_tallas,
+      frecuencia_cantidad: p.frecuencia_cantidad,
+      frecuencia_unidad: p.frecuencia_unidad
+    });
+    if (errCliente) throw errCliente;
+
+    const { error: errBorrado } = await supabaseClient.from("prospectos").delete().eq("id", id);
+    if (errBorrado) throw errBorrado;
+
+    toast("¡" + (p.razonSocial || "Prospecto") + " ahora es cliente!", "ok");
+    await registrarAccion("aceptar_prospecto", "prospecto", id, p.razonSocial || "");
+  }catch(e){
+    toast("Error al convertir: " + (e && e.message ? e.message : "inténtalo de nuevo"), "error");
+    return;
+  }
+  await cargarProspectos();
+  if (puedeConfirmar()) await cargarConfirmados();
+}
+
+/* ============ Historial de confirmaciones (admin/gerente) ============
+   Cuando confirmas un prospecto, la fila se borra de "prospectos" y
+   pasa a "clientes_nuevos" -- sin esto, quien confirma pierde el
+   rastro de lo que ya aprobó. Se filtra por confirmado_por = yo. */
+let confirmados = [];
+let pagConfirmados = 1;
+const POR_PAGINA_CONFIRMADOS = 5;
+async function cargarConfirmados(){
+  try{
+    const { data, error } = await supabaseClient.from("clientes_nuevos").select("*")
+      .eq("origen", "prospecto").eq("confirmado_por", miId)
+      .order("creado_en", { ascending: false });
+    if (error) throw error;
+    confirmados = data || [];
+  }catch(e){
+    confirmados = [];
+    toast("Error leyendo confirmaciones: " + (e && e.message ? e.message : "¿ya corriste setup-clientes-nuevos-confirmado-por.sql?"), "error");
+  }
+  pagConfirmados = 1;
+  renderConfirmados();
+}
+function renderConfirmados(){
+  const totalPag = Math.max(1, Math.ceil(confirmados.length / POR_PAGINA_CONFIRMADOS));
+  if (pagConfirmados > totalPag) pagConfirmados = totalPag;
+  const inicio = (pagConfirmados - 1) * POR_PAGINA_CONFIRMADOS;
+  const paginado = confirmados.slice(inicio, inicio + POR_PAGINA_CONFIRMADOS);
+
+  document.getElementById("confirmadosEmpty").style.display = confirmados.length ? "none" : "block";
+  document.getElementById("confirmadosBody").innerHTML = paginado.map(c => {
+    const activo = c.activo !== false;
+    return `
+    <tr>
+      <td data-label="Razón Social"><b>${escapeHtml(c.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(c.rfc || "—")}</td>
+      <td data-label="Ciudad">${escapeHtml(c.ciudad || "—")}</td>
+      <td data-label="Confirmado el">${c.creado_en ? escapeHtml(new Date(c.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })) : "—"}</td>
+      <td data-label="Estado"><span class="badge ${activo ? "act" : "inact"}">${activo ? "Activo" : "Inactivo"}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("pagConfirmadosInfo").textContent = confirmados.length
+    ? `Página ${pagConfirmados} de ${totalPag} · ${confirmados.length} confirmados` : "";
+}
+function cambiarPaginaConfirmados(p){
+  const totalPag = Math.max(1, Math.ceil(confirmados.length / POR_PAGINA_CONFIRMADOS));
+  if (p < 1 || p > totalPag) return;
+  pagConfirmados = p;
+  renderConfirmados();
+}
+
+(async () => {
+  try{
+    await guardarSesion();
+  }catch(e){
+    console.error("Error al iniciar prospectos:", e);
+    fatal("No se pudo cargar: " + (e && e.message ? e.message : e));
+    return;
+  }
+  await cargarProspectos();
+})();
+</script>
+</body>
+</html>

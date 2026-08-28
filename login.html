@@ -4,33 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura · Iniciar sesión</title>
+<link rel="stylesheet" href="shared.css?v=19">
 <style>
-  :root{
-    --primary:#0e7490;
-    --primary-dark:#155e75;
-    --primary-light:#e0f2fe;
-    --accent:#f59e0b;
-    --bg:#f4f7f9;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --border:#e2e8f0;
-    --error:#dc2626;
-    --shadow-md:0 8px 24px -8px rgba(15,23,42,.14);
-    --shadow-lg:0 20px 45px -15px rgba(15,23,42,.22);
-  }
   *{box-sizing:border-box;}
   body{
     margin:0;min-height:100vh;
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
     background:linear-gradient(120deg,#0b3c4d 0%,#0e7490 55%,#0891b2 130%);
     display:flex;align-items:center;justify-content:center;
-    padding:20px;
+    padding:20px;position:relative;overflow:hidden;
   }
+  /* Manchas suaves de fondo, mismo lenguaje visual que el resto de la app */
+  body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+  body::before{width:420px;height:420px;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);top:-120px;left:-110px;}
+  body::after{width:480px;height:480px;background:radial-gradient(circle,rgba(245,158,11,.16),transparent 70%);bottom:-160px;right:-120px;}
+  /* Burbujas subiendo -- guiño al tema de acuicultura, le da vida al fondo */
+  .burbuja{
+    position:fixed;bottom:-10vh;border-radius:50%;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+    pointer-events:none;z-index:0;animation:subirBurbuja linear infinite;
+  }
+  @keyframes subirBurbuja{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.85;}
+    90%{opacity:.5;}
+    100%{transform:translateY(-115vh) translateX(var(--deriva,24px));opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){ .burbuja{animation:none;display:none;} }
   .card{
-    background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);
+    background:#fff;border-radius:20px;
+    box-shadow:var(--shadow-lg);
     padding:34px 30px;max-width:380px;width:100%;
+    position:relative;z-index:2;
+    animation:cardIn .55s cubic-bezier(.22,.68,0,1) both;
   }
+  @keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(.97);}to{opacity:1;transform:none;}}
+  .top-actions{position:relative;z-index:2;}
   .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
   .logo{
     width:54px;height:54px;border-radius:14px;background:#fff;
@@ -65,10 +74,23 @@
   .msg.error{display:block;background:#fef2f2;color:var(--error);border:1px solid #fecaca;}
   .msg.ok{display:block;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;}
   .footer-note{margin-top:18px;text-align:center;font-size:.74rem;color:var(--muted);}
+  .top-actions{display:flex;justify-content:center;margin-bottom:14px;}
 </style>
 </head>
 <body>
 
+<span class="burbuja" style="left:8%;width:18px;height:18px;animation-duration:14s;animation-delay:0s;--deriva:14px;"></span>
+<span class="burbuja" style="left:20%;width:12px;height:12px;animation-duration:10s;animation-delay:2s;--deriva:-18px;"></span>
+<span class="burbuja" style="left:32%;width:26px;height:26px;animation-duration:17s;animation-delay:5s;--deriva:20px;"></span>
+<span class="burbuja" style="left:48%;width:9px;height:9px;animation-duration:9s;animation-delay:1s;--deriva:-10px;"></span>
+<span class="burbuja" style="left:63%;width:20px;height:20px;animation-duration:15s;animation-delay:4s;--deriva:16px;"></span>
+<span class="burbuja" style="left:76%;width:14px;height:14px;animation-duration:11s;animation-delay:7s;--deriva:-22px;"></span>
+<span class="burbuja" style="left:88%;width:22px;height:22px;animation-duration:16s;animation-delay:3s;--deriva:12px;"></span>
+<span class="burbuja" style="left:57%;width:11px;height:11px;animation-duration:12s;animation-delay:8.5s;--deriva:-14px;"></span>
+
+<div class="top-actions">
+  <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+</div>
 <div class="card">
   <div class="brand">
     <div class="logo"><img src="accion_acuicola.png" alt="Acción Acuacultura"></div>
@@ -80,8 +102,8 @@
 
   <form id="loginForm">
     <div class="field">
-      <label>Correo electrónico</label>
-      <input type="email" id="email" required autocomplete="username">
+      <label>Número de empleado</label>
+      <input type="text" id="email" required autocomplete="username" placeholder="Ej. 1042">
     </div>
     <div class="field">
       <label>Contraseña</label>
@@ -96,6 +118,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="shared.js?v=19"></script>
 <script>
 const form = document.getElementById("loginForm");
 const msg = document.getElementById("msg");
@@ -106,7 +129,7 @@ const btn = document.getElementById("loginBtn");
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
     const ok = await tieneRolValido(session.user.id);
-    if (ok) window.location.href = "cuestionario.html";   // ← corregido (antes: cuestionario.html)
+    if (ok) window.location.href = "index.html";
   }
 })();
 
@@ -117,7 +140,7 @@ async function tieneRolValido(userId){
     .eq("id", userId)
     .maybeSingle();
   if (error || !data || !data.activo) return false;
-  return ["comercial", "oficina", "admin"].includes(data.rol);
+  return ["comercial", "oficina", "coordinador", "gerente", "admin"].includes(data.rol);
 }
 
 form.addEventListener("submit", async (e) => {
@@ -127,14 +150,31 @@ form.addEventListener("submit", async (e) => {
   btn.disabled = true;
   btn.textContent = "Entrando…";
 
-  const email = document.getElementById("email").value.trim();
+  const entrada = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+
+  let email = entrada;
+  if (!entrada.includes("@")) {
+    // No es correo -> es código de empleado. Se busca cuál es el
+    // correo real de esa cuenta en vez de adivinar el dominio interno
+    // -- si el admin le puso correo real Y código, su cuenta de Auth
+    // usa el correo real, no el ficticio "@interno...".
+    const { data: correoReal, error: lookupErr } = await supabaseClient.rpc("email_por_codigo_empleado", { p_codigo: entrada });
+    if (lookupErr || !correoReal) {
+      msg.className = "msg error";
+      msg.textContent = "Correo/código o contraseña incorrectos.";
+      btn.disabled = false;
+      btn.textContent = "Iniciar sesión";
+      return;
+    }
+    email = correoReal;
+  }
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     msg.className = "msg error";
-    msg.textContent = "Correo o contraseña incorrectos.";
+    msg.textContent = "Correo/código o contraseña incorrectos.";
     btn.disabled = false;
     btn.textContent = "Iniciar sesión";
     return;
@@ -152,7 +192,8 @@ form.addEventListener("submit", async (e) => {
 
   msg.className = "msg ok";
   msg.textContent = "¡Bienvenido! Entrando…";
-  window.location.href = "cuestionario.html";   // ← corregido (antes: cuestionario.html)
+  await registrarLogin();
+  window.location.href = "index.html";
 });
 </script>
 </body>
