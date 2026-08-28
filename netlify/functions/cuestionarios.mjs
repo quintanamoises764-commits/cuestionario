@@ -1,19 +1,22 @@
+
+
+
+
+
+
+
 import { createClient } from "@supabase/supabase-js";
 
-// Endpoint: /api/cuestionarios
-// GET  -> devuelve todos los cuestionarios guardados
-// POST -> guarda un cuestionario nuevo
+// Endpoint: /api/clients
+// GET    -> lista clientes (activos por defecto; con ?todos=1 el admin ve todos)
+// POST   -> crea un cliente nuevo
+// PUT    -> edita o activa/desactiva (solo admin)
+// DELETE -> desactiva (eliminación suave, solo admin)
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-function textoOnull(v) {
-  if (v === undefined || v === null) return null;
-  const t = String(v).trim();
-  return t === "" ? null : t;
-}
 
 async function usuarioDesdeToken(req) {
   const auth = req.headers.get("authorization") || "";
@@ -24,83 +27,106 @@ async function usuarioDesdeToken(req) {
   return data.user;
 }
 
-export default async (req) => {
-  if (req.method === "GET") {
-    const { data, error } = await supabase
-      .from("cuestionarios")
-      .select("*")
-      .order("guardadoEn", { ascending: false });
+async function esAdmin(req) {
+  const usuario = await usuarioDesdeToken(req);
+  if (!usuario) return false;
+  const { data } = await supabase
+    .from("usuarios")
+    .select("rol, activo")
+    .eq("id", usuario.id)
+    .maybeSingle();
+  return !!(data && data.activo && data.rol === "admin");
+}
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+function textoOnull(v) {
+  if (v === undefined || v === null) return null;
+  const t = String(v).trim();
+  return t === "" ? null : t;
+}
+
+export default async (req) => {
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
+
+  // ---------- GET ----------
+  if (req.method === "GET") {
+    // Este endpoint usa la service role key, que se salta RLS por
+    // completo -- sin exigir sesión aquí, cualquiera sin loguearse
+    // podía traerse todo el catálogo de clientes (RFC, teléfono,
+    // comprador) con un simple GET.
+    if (!(await usuarioDesdeToken(req))) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
     }
-    return new Response(JSON.stringify(data || []), {
-      headers: { "Content-Type": "application/json" },
-    });
+    const todos = url.searchParams.get("todos") === "1";
+    if (todos && !(await esAdmin(req))) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
+    }
+    let query = supabase.from("clientes").select("*").order("razonSocial");
+    if (!todos) query = query.eq("activo", true);
+    const { data, error } = await query;
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify(data || []), { headers: { "Content-Type": "application/json" } });
   }
 
+  // ---------- POST (crear) ----------
   if (req.method === "POST") {
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 });
+    // Mismo motivo que en GET: service role key salta RLS, así que
+    // sin este check cualquiera sin loguearse podía insertar clientes.
+    if (!(await usuarioDesdeToken(req))) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
     }
-
-    const usuario = await usuarioDesdeToken(req);
-
-    const row = {
-      creado_por: usuario ? usuario.id : null,
-      razonSocial: textoOnull(body.razonSocial),
-      giroDelNegocio: textoOnull(body.giroDelNegocio),
-      nombreComprador: textoOnull(body.nombreComprador),
-      telefono: textoOnull(body.telefono),
-      rfc: textoOnull(body.rfc),
-      nombreComercial: textoOnull(body.nombreComercial),
-      ciudadRuta: textoOnull(body.ciudadRuta),
-      puesto: textoOnull(body.puesto),
-      correoElectronico: textoOnull(body.correoElectronico),
-      fechaCaptura: textoOnull(body.fechaCaptura),
-      consumoActual: textoOnull(body.consumoActual),
-      mesesEstacionalidad: textoOnull(body.mesesEstacionalidad),
-      presentacion1: textoOnull(body.presentacion1),
-      presentacion2: textoOnull(body.presentacion2),
-      presentacion3: textoOnull(body.presentacion3),
-      proteinaCamaron: textoOnull(body.proteinaCamaron),
-      proteinaTilapia: textoOnull(body.proteinaTilapia),
-      consumoTotal: textoOnull(body.consumoTotal),
-      segmento: textoOnull(body.segmento),
-      participacionCompetencia: textoOnull(body.participacionCompetencia),
-      proveedorCompetencia: textoOnull(body.proveedorCompetencia),
-      facturacionMensual: textoOnull(body.facturacionMensual),
-      establecimiento: textoOnull(body.establecimiento),
-      condicionCompra: textoOnull(body.condicionCompra),
-      frecuencia: textoOnull(body.frecuencia),
-      horarioRecepcion: textoOnull(body.horarioRecepcion),
-      diasRecepcion: textoOnull(body.diasRecepcion),
-      volumenPromedio: textoOnull(body.volumenPromedio),
-      ubicacionEntrega: textoOnull(body.ubicacionEntrega),
-      requerimientosEspeciales: textoOnull(body.requerimientosEspeciales),
-      comentarios: textoOnull(body.comentarios),
-    };
-
+    let body;
+    try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
+    if (!textoOnull(body.razonSocial) || !textoOnull(body.rfc)) {
+      return new Response(JSON.stringify({ error: "Razón Social y RFC son obligatorios" }), { status: 400 });
+    }
     const { data, error } = await supabase
-      .from("cuestionarios")
-      .insert(row)
+      .from("clientes")
+      .insert([{
+        razonSocial: textoOnull(body.razonSocial),
+        rfc: textoOnull(body.rfc),
+        giroDelNegocio: textoOnull(body.giroDelNegocio),
+        nombreComprador: textoOnull(body.nombreComprador),
+        telefono: textoOnull(body.telefono),
+        nombreComercial: textoOnull(body.nombreComercial),
+        ciudadRuta: textoOnull(body.ciudadRuta),
+        activo: true
+      }])
       .select()
       .single();
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
+  }
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-    }
+  // ---------- PUT (editar / activar-desactivar, solo admin) ----------
+  if (req.method === "PUT") {
+    if (!(await esAdmin(req))) return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
+    if (!id) return new Response(JSON.stringify({ error: "Falta el id" }), { status: 400 });
 
-    return new Response(JSON.stringify({ ok: true, cuestionario: data }), {
-      headers: { "Content-Type": "application/json" },
+    let body;
+    try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
+
+    const patch = {};
+    ["razonSocial","rfc","giroDelNegocio","nombreComprador","telefono","nombreComercial","ciudadRuta"].forEach(k => {
+      if (body[k] !== undefined) patch[k] = textoOnull(body[k]);
     });
+    if (body.activo !== undefined) patch.activo = !!body.activo;
+
+    const { data, error } = await supabase.from("clientes").update(patch).eq("id", id).select().single();
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // ---------- DELETE (desactivar, solo admin) ----------
+  if (req.method === "DELETE") {
+    if (!(await esAdmin(req))) return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
+    if (!id) return new Response(JSON.stringify({ error: "Falta el id" }), { status: 400 });
+    const { data, error } = await supabase.from("clientes").update({ activo: false }).eq("id", id).select().single();
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
   }
 
   return new Response("Método no permitido", { status: 405 });
 };
 
-export const config = { path: "/api/cuestionarios" };
-
+export const config = { path: "/api/clients" };
