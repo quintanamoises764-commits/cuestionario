@@ -1,22 +1,19 @@
-
-
-
-
-
-
-
 import { createClient } from "@supabase/supabase-js";
 
-// Endpoint: /api/clients
-// GET    -> lista clientes (activos por defecto; con ?todos=1 el admin ve todos)
-// POST   -> crea un cliente nuevo
-// PUT    -> edita o activa/desactiva (solo admin)
-// DELETE -> desactiva (eliminación suave, solo admin)
+// Endpoint: /api/cuestionarios
+// GET  -> devuelve todos los cuestionarios guardados
+// POST -> guarda un cuestionario nuevo
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+function textoOnull(v) {
+  if (v === undefined || v === null) return null;
+  const t = String(v).trim();
+  return t === "" ? null : t;
+}
 
 async function usuarioDesdeToken(req) {
   const auth = req.headers.get("authorization") || "";
@@ -27,106 +24,83 @@ async function usuarioDesdeToken(req) {
   return data.user;
 }
 
-async function esAdmin(req) {
+// Solo usuarios con sesión activa (comercial, oficina o admin) pueden leer o
+// escribir cuestionarios: esta tabla contiene datos sensibles del cliente.
+async function usuarioActivoDesdeToken(req) {
   const usuario = await usuarioDesdeToken(req);
-  if (!usuario) return false;
-  const { data } = await supabase
+  if (!usuario) return null;
+  const { data: perfil } = await supabase
     .from("usuarios")
     .select("rol, activo")
     .eq("id", usuario.id)
     .maybeSingle();
-  return !!(data && data.activo && data.rol === "admin");
-}
-
-function textoOnull(v) {
-  if (v === undefined || v === null) return null;
-  const t = String(v).trim();
-  return t === "" ? null : t;
+  if (!perfil || !perfil.activo) return null;
+  return { ...usuario, rol: perfil.rol };
 }
 
 export default async (req) => {
-  const url = new URL(req.url);
-  const id = url.searchParams.get("id");
-
-  // ---------- GET ----------
   if (req.method === "GET") {
-    // Este endpoint usa la service role key, que se salta RLS por
-    // completo -- sin exigir sesión aquí, cualquiera sin loguearse
-    // podía traerse todo el catálogo de clientes (RFC, teléfono,
-    // comprador) con un simple GET.
-    if (!(await usuarioDesdeToken(req))) {
+    const usuario = await usuarioActivoDesdeToken(req);
+    if (!usuario) {
       return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
     }
-    const todos = url.searchParams.get("todos") === "1";
-    if (todos && !(await esAdmin(req))) {
+
+    const url = new URL(req.url);
+    const verPapelera = url.searchParams.get("papelera") === "1";
+    // La papelera es solo de admin -- ni gerente ni oficina la ven.
+    if (verPapelera && usuario.rol !== "admin") {
       return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
     }
-    let query = supabase.from("clientes").select("*").order("razonSocial");
-    if (!todos) query = query.eq("activo", true);
+
+    // comercial solo ve lo que él mismo capturó; admin, gerente y
+    // oficina ven todo (admin/oficina lo necesitan para "Respuestas"
+    // en el Panel Admin; gerente para "Mis cuestionarios").
+    let query = supabase.from("cuestionarios").select("*").order("guardadoEn", { ascending: false });
+    query = verPapelera ? query.not("eliminado_en", "is", null) : query.is("eliminado_en", null);
+    if (usuario.rol !== "admin" && usuario.rol !== "gerente" && usuario.rol !== "oficina") {
+      query = query.eq("creado_por", usuario.id);
+    }
     const { data, error } = await query;
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-    return new Response(JSON.stringify(data || []), { headers: { "Content-Type": "application/json" } });
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+    return new Response(JSON.stringify(data || []), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  // ---------- POST (crear) ----------
   if (req.method === "POST") {
-    // Mismo motivo que en GET: service role key salta RLS, así que
-    // sin este check cualquiera sin loguearse podía insertar clientes.
-    if (!(await usuarioDesdeToken(req))) {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 });
+    }
+
+    const usuario = await usuarioActivoDesdeToken(req);
+    if (!usuario) {
       return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
     }
-    let body;
-    try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
-    if (!textoOnull(body.razonSocial) || !textoOnull(body.rfc)) {
-      return new Response(JSON.stringify({ error: "Razón Social y RFC son obligatorios" }), { status: 400 });
-    }
-    const { data, error } = await supabase
-      .from("clientes")
-      .insert([{
-        razonSocial: textoOnull(body.razonSocial),
-        rfc: textoOnull(body.rfc),
-        giroDelNegocio: textoOnull(body.giroDelNegocio),
-        nombreComprador: textoOnull(body.nombreComprador),
-        telefono: textoOnull(body.telefono),
-        nombreComercial: textoOnull(body.nombreComercial),
-        ciudadRuta: textoOnull(body.ciudadRuta),
-        activo: true
-      }])
-      .select()
-      .single();
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
-  }
 
-  // ---------- PUT (editar / activar-desactivar, solo admin) ----------
-  if (req.method === "PUT") {
-    if (!(await esAdmin(req))) return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
-    if (!id) return new Response(JSON.stringify({ error: "Falta el id" }), { status: 400 });
-
-    let body;
-    try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
-
-    const patch = {};
-    ["razonSocial","rfc","giroDelNegocio","nombreComprador","telefono","nombreComercial","ciudadRuta"].forEach(k => {
-      if (body[k] !== undefined) patch[k] = textoOnull(body[k]);
-    });
-    if (body.activo !== undefined) patch.activo = !!body.activo;
-
-    const { data, error } = await supabase.from("clientes").update(patch).eq("id", id).select().single();
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
-  }
-
-  // ---------- DELETE (desactivar, solo admin) ----------
-  if (req.method === "DELETE") {
-    if (!(await esAdmin(req))) return new Response(JSON.stringify({ error: "No autorizado" }), { status: 403 });
-    if (!id) return new Response(JSON.stringify({ error: "Falta el id" }), { status: 400 });
-    const { data, error } = await supabase.from("clientes").update({ activo: false }).eq("id", id).select().single();
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-    return new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
-  }
-
-  return new Response("Método no permitido", { status: 405 });
-};
-
-export const config = { path: "/api/clients" };
+    const row = {
+      creado_por: usuario.id,
+      razonSocial: textoOnull(body.razonSocial),
+      giroDelNegocio: textoOnull(body.giroDelNegocio),
+      nombreComprador: textoOnull(body.nombreComprador),
+      telefono: textoOnull(body.telefono),
+      rfc: textoOnull(body.rfc),
+      nombreComercial: textoOnull(body.nombreComercial),
+      ciudadRuta: textoOnull(body.ciudadRuta),
+      puesto: textoOnull(body.puesto),
+      correoElectronico: textoOnull(body.correoElectronico),
+      fechaCaptura: textoOnull(body.fechaCaptura),
+      consumoActual: textoOnull(body.consumoActual),
+      mesesEstacionalidad: textoOnull(body.mesesEstacionalidad),
+      presentacion1: textoOnull(body.presentacion1),
+      presentacion2: textoOnull(body.presentacion2),
+      presentacion3: textoOnull(body.presentacion3),
+      proteinaCamaron: textoOnull(body.proteinaCamaron),
+      proteinaTilapia: textoOnull(body.proteinaTilapia),
+      consumoTotal: textoOnull(body.consumoTotal),
+      
