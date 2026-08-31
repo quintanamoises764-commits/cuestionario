@@ -103,4 +103,37 @@ export default async (req) => {
       proteinaCamaron: textoOnull(body.proteinaCamaron),
       proteinaTilapia: textoOnull(body.proteinaTilapia),
       consumoTotal: textoOnull(body.consumoTotal),
-      
+      segmento: textoOnull(body.segmento),
+      participacionCompetencia: textoOnull(body.participacionCompetencia),
+      proveedorCompetencia: textoOnull(body.proveedorCompetencia),
+      facturacionMensual: textoOnull(body.facturacionMensual),
+      establecimiento: textoOnull(body.establecimiento),
+      condicionCompra: textoOnull(body.condicionCompra),
+      frecuencia: textoOnull(body.frecuencia),
+      horarioRecepcion: textoOnull(body.horarioRecepcion),
+      diasRecepcion: textoOnull(body.diasRecepcion),
+      volumenPromedio: textoOnull(body.volumenPromedio),
+      ubicacionEntrega: textoOnull(body.ubicacionEntrega),
+      requerimientosEspeciales: textoOnull(body.requerimientosEspeciales),
+      comentarios: textoOnull(body.comentarios),
+    };
+
+    const { data, error } = await supabase
+      .from("cuestionarios")
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ ok: true, cuestionario: data }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return new Response("Método no permitido", { status: 405 });
+};
+
+export const config = { path: "/api/cuestionarios" };
