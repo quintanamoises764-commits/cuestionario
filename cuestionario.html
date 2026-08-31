@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuacultura · Conocimiento Profundo del Cliente</title>
-<link rel="stylesheet" href="shared.css?v=19">
+<link rel="stylesheet" href="shared.css?v=25">
 <style>
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -776,7 +776,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="shared.js?v=19"></script>
+<script src="shared.js?v=25"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
@@ -1987,15 +1987,55 @@ async function guardarClienteNuevoDesdeCuestionario(data){
       fotoUrl: data.fotoUrl || null
     };
 
-    // Intentar usar la función RPC con parámetro JSON
+    // Intentar usar la función RPC (setup-funcion-mover-cliente.sql) --
+    // recibe parámetros individuales p_*, no un solo objeto JSON.
     try {
-      const { error: rpcError } = await supabaseClient.rpc("mover_cliente_a_nuevos", { params: fila });
-      if (!rpcError) {
+      const { data: rpcData, error: rpcError } = await supabaseClient.rpc("mover_cliente_a_nuevos", {
+        p_origen: fila.origen,
+        p_creado_por: fila.creado_por,
+        p_razon_social: fila.razonSocial,
+        p_rfc: fila.rfc,
+        p_giro_del_negocio: fila.giroDelNegocio,
+        p_nombre_comprador: fila.nombreComprador,
+        p_telefono: fila.telefono,
+        p_nombre_comercial: fila.nombreComercial,
+        p_sucursal: fila.sucursal,
+        p_direccion: fila.direccion,
+        p_puesto: fila.puesto,
+        p_correo_electronico: fila.correoElectronico,
+        p_fecha_captura: fila.fechaCaptura,
+        p_consumo_actual: fila.consumoActual,
+        p_meses_estacionalidad: fila.mesesEstacionalidad,
+        p_presentacion1: fila.presentacion1,
+        p_presentacion2: fila.presentacion2,
+        p_presentacion3: fila.presentacion3,
+        p_proteina_camaron: fila.proteinaCamaron,
+        p_proteina_tilapia: fila.proteinaTilapia,
+        p_consumo_total: fila.consumoTotal,
+        p_segmento: fila.segmento,
+        p_participacion_competencia: fila.participacionCompetencia,
+        p_proveedor_competencia: fila.proveedorCompetencia,
+        p_facturacion_mensual: fila.facturacionMensual,
+        p_establecimiento: fila.establecimiento,
+        p_condicion_compra: fila.condicionCompra,
+        p_frecuencia: fila.frecuencia,
+        p_horario_recepcion: fila.horarioRecepcion,
+        p_dias_recepcion: fila.diasRecepcion,
+        p_volumen_promedio: fila.volumenPromedio,
+        p_ubicacion_entrega: fila.ubicacionEntrega,
+        p_requerimientos_especiales: fila.requerimientosEspeciales,
+        p_comentarios: fila.comentarios,
+        p_foto_url: fila.fotoUrl
+      });
+      // La función devuelve boolean (true/false) -- si algo falla
+      // adentro, lo atrapa con EXCEPTION y regresa false SIN generar
+      // rpcError, así que hay que revisar el valor, no solo el error.
+      if (!rpcError && rpcData === true) {
         toast(`"${fila.razonSocial}" quedó guardado como cliente nuevo`, "ok");
         console.log(`✅ Cliente movido usando RPC: ${rfc}`);
         return; // ¡Éxito! La función RPC hizo todo el trabajo
       } else {
-        console.warn("⚠️ Función RPC falló, intentando método alternativo...", rpcError);
+        console.warn("⚠️ Función RPC falló, intentando método alternativo...", rpcError || "la función regresó false");
       }
     } catch (rpcErr) {
       console.warn("⚠️ Error al llamar RPC:", rpcErr);
