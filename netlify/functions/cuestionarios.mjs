@@ -91,7 +91,8 @@ export default async (req) => {
       telefono: textoOnull(body.telefono),
       rfc: textoOnull(body.rfc),
       nombreComercial: textoOnull(body.nombreComercial),
-      ciudadRuta: textoOnull(body.ciudadRuta),
+      sucursal: textoOnull(body.sucursal),
+      direccion: textoOnull(body.direccion),
       puesto: textoOnull(body.puesto),
       correoElectronico: textoOnull(body.correoElectronico),
       fechaCaptura: textoOnull(body.fechaCaptura),
@@ -116,6 +117,7 @@ export default async (req) => {
       ubicacionEntrega: textoOnull(body.ubicacionEntrega),
       requerimientosEspeciales: textoOnull(body.requerimientosEspeciales),
       comentarios: textoOnull(body.comentarios),
+      fotoUrl: textoOnull(body.fotoUrl),
     };
 
     const { data, error } = await supabase
