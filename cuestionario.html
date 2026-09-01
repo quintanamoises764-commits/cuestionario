@@ -1608,6 +1608,14 @@ function verCuestionario(idx){
   const linkGps = tieneGps
     ? ` <a href="https://www.google.com/maps?q=${escapeHtml(d.latitud)},${escapeHtml(d.longitud)}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;">📍 Ver en Google Maps</a>`
     : "";
+  /* Vista previa sin salir de la página -- el mismo truco que usa medio
+     internet para meter un Google Maps chiquito sin API key ni costo:
+     la URL de embed de siempre, con output=embed. */
+  const mapaMini = tieneGps
+    ? `<iframe src="https://maps.google.com/maps?q=${escapeHtml(d.latitud)},${escapeHtml(d.longitud)}&z=16&output=embed"
+        style="width:100%;max-width:320px;height:180px;border:0;border-radius:10px;margin-top:8px;display:block;"
+        loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
+    : "";
 
   const html = `
     <div class="paper">
@@ -1644,6 +1652,7 @@ function verCuestionario(idx){
         <div class="paper-field" style="margin-top:14px;">
           <span class="lbl">Ubicación de la visita</span>
           <div class="val ${(d.ubicacionGps || "").trim() ? "" : "empty"}">${d.ubicacionGps ? escapeHtml(d.ubicacionGps) : "—"}${linkGps}</div>
+          ${mapaMini}
         </div>
       </div>
 
