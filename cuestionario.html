@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuacultura · Conocimiento Profundo del Cliente</title>
-<link rel="stylesheet" href="shared.css?v=25">
+<link rel="stylesheet" href="shared.css?v=26">
 <style>
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -495,14 +495,21 @@
           <label>Correo Electrónico</label>
           <input type="email" name="correoElectronico" placeholder="correo@empresa.com">
         </div>
-        <div class="field full">
+        <!-- Ubicación (GPS): se captura sola en segundo plano (ver
+             capturarUbicacionAutomatica() en el <script>), sin que el
+             capturista tenga que ver ni tocar nada. El bloque sigue
+             aquí, solo oculto -- capturarUbicacion() necesita estos
+             mismos elementos (input, botón, texto de estado) para
+             guardar el resultado y, si algo falla, poder reintentar
+             desde la consola sin rehacer la lógica. -->
+        <div class="field full" style="display:none;">
           <label>📍 Ubicación de la visita (dirección)</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" name="ubicacionGps" id="ubicacionGps" placeholder="Av. Hidalgo 45, Col. Centro…" style="flex:1;min-width:200px;">
-            <button type="button" class="btn ghost small" onclick="capturarUbicacion()" style="white-space:nowrap;">📍 Capturar</button>
+            <button type="button" class="btn ghost small" onclick="capturarUbicacion()" style="white-space:nowrap;">📍 Volver a capturar</button>
             <button type="button" class="btn link small" id="btnLimpiarGps" onclick="limpiarGps()" style="display:none;">✖ Limpiar</button>
           </div>
-          <p class="desc" id="gpsStatus" style="margin:6px 0 0;">Toca "Capturar" para tomar tu ubicación actual (convierte el GPS en dirección con calles).</p>
+          <p class="desc" id="gpsStatus" style="margin:6px 0 0;">📍 Se captura sola al abrir el formulario (tu navegador puede pedirte permiso de ubicación la primera vez). Si hace falta, usa "Volver a capturar".</p>
           <input type="hidden" name="latitud" id="latitud">
           <input type="hidden" name="longitud" id="longitud">
         </div>
@@ -776,7 +783,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="shared.js?v=25"></script>
+<script src="shared.js?v=26"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
@@ -1134,6 +1141,19 @@ async function reverseGeocode(lat, lng){
   return null; // sin dirección → se usan las coordenadas
 }
 
+/* Se dispara sola al abrir el formulario (ver init() al final del
+   archivo) -- así el capturista no tiene que acordarse de tocar
+   "Capturar". El navegador sigue pidiendo permiso de ubicación la
+   primera vez (eso no se puede saltar), pero ya no depende de que
+   alguien presione un botón. Si ya hay una ubicación (por ejemplo,
+   restaurada de un borrador sin terminar) no la pisa; para eso sigue
+   estando el botón "Capturar" manual. */
+function capturarUbicacionAutomatica(){
+  const lat = document.getElementById("latitud");
+  if (lat && lat.value) return;
+  capturarUbicacion();
+}
+
 function capturarUbicacion(){
   const status = document.getElementById("gpsStatus");
   const btnLimpiar = document.getElementById("btnLimpiarGps");
@@ -1159,8 +1179,11 @@ function capturarUbicacion(){
       : "✅ Ubicación capturada (coordenadas)";
     btnLimpiar.style.display = "";
     guardarBorrador();
+    console.log("📍 Ubicación capturada:", txt);
   }, (err) => {
-    status.textContent = "⚠ No se pudo obtener la ubicación: " + (err && err.message ? err.message : "permiso denegado");
+    const motivo = err && err.message ? err.message : "permiso denegado";
+    status.textContent = "⚠ No se pudo obtener la ubicación: " + motivo;
+    console.warn("📍 No se pudo capturar la ubicación (código " + (err && err.code) + "):", motivo);
   }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
 }
 
@@ -1749,6 +1772,47 @@ function canvasToBlobAsync(canvas, calidad){
   return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", calidad));
 }
 
+/* Entre más bajo, más permisivo (deja pasar fotos más borrosas).
+   Bájalo si rechaza fotos que en realidad se ven bien; súbelo si deja
+   pasar fotos claramente borrosas. */
+const UMBRAL_NITIDEZ = 25;
+
+/* Detector de foto borrosa: mide qué tan marcados están los bordes de
+   la imagen (varianza del Laplaciano, la técnica clásica y liviana
+   para esto -- sin librerías). Una foto nítida tiene bordes marcados
+   (varianza alta); una borrosa los tiene difuminados (varianza baja).
+   Se mide sobre una copia chica (240px) para que sea instantáneo y
+   para que el resultado no dependa del tamaño de la foto original. */
+function calcularNitidez(canvasOrigen){
+  const w = 240;
+  const h = Math.max(1, Math.round(canvasOrigen.height * (w / canvasOrigen.width)));
+  const tmp = document.createElement("canvas");
+  tmp.width = w;
+  tmp.height = h;
+  const tctx = tmp.getContext("2d");
+  tctx.drawImage(canvasOrigen, 0, 0, w, h);
+  const { data } = tctx.getImageData(0, 0, w, h);
+
+  const gris = new Float32Array(w * h);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++){
+    gris[p] = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+  }
+
+  let suma = 0, sumaCuad = 0, n = 0;
+  for (let y = 1; y < h - 1; y++){
+    for (let x = 1; x < w - 1; x++){
+      const i = y * w + x;
+      const lap = gris[i - 1] + gris[i + 1] + gris[i - w] + gris[i + w] - 4 * gris[i];
+      suma += lap;
+      sumaCuad += lap * lap;
+      n++;
+    }
+  }
+  if (!n) return UMBRAL_NITIDEZ; // imagen demasiado chica para medir, no bloquear
+  const media = suma / n;
+  return (sumaCuad / n) - (media * media);
+}
+
 /* Comprime bajando la calidad JPEG en pasos hasta caber en maxBytes (o hasta
    el piso de calidad, para no dejar la foto ilegible). */
 async function comprimirCanvas(canvas, maxBytes = 140 * 1024, calidadPiso = 0.35){
@@ -1773,6 +1837,11 @@ async function tomarFoto(){
   canvas.width = Math.round(video.videoWidth * escala);
   canvas.height = Math.round(video.videoHeight * escala);
   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  if (calcularNitidez(canvas) < UMBRAL_NITIDEZ) {
+    toast("📷 La foto salió borrosa, tómala de nuevo", "error");
+    return; // la cámara sigue abierta para reintentar de una vez
+  }
 
   const blob = await comprimirCanvas(canvas);
   if (!blob) {
@@ -1915,7 +1984,13 @@ cuestionarioForm.addEventListener("submit", async (e) => {
         throw new Error(err.error || "red");
       }
       cuestionarioGuardado = true;
-    } catch (errCuestionario) { /* sigue guardado local; abajo probamos clientes_nuevos igual */ }
+    } catch (errCuestionario) {
+      // Sigue guardado local; abajo probamos clientes_nuevos igual.
+      // El console.error es para poder ver el motivo real sin tener
+      // que andar navegando la pestaña Network -- quítalo cuando ya
+      // no lo necesites para depurar.
+      console.error("❌ Falló guardar en 'cuestionarios':", errCuestionario.message || errCuestionario);
+    }
 
     await guardarClienteNuevoDesdeCuestionario(data);
     await registrarAccion("crear_cuestionario", "cuestionario", null, data.razonSocial || "");
@@ -2245,6 +2320,7 @@ async function confirmarSalida(){
   await cargarCuestionarios();
   renderSteps();
   await restaurarBorrador();
+  capturarUbicacionAutomatica();
 })();
 </script>
 </body>
