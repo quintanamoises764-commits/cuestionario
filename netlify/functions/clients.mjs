@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import { createClient } from "@supabase/supabase-js";
 
 // Endpoint: /api/clients
@@ -89,7 +82,6 @@ export default async (req) => {
         nombreComprador: textoOnull(body.nombreComprador),
         telefono: textoOnull(body.telefono),
         nombreComercial: textoOnull(body.nombreComercial),
-        ciudadRuta: textoOnull(body.ciudadRuta),
         activo: true
       }])
       .select()
@@ -107,7 +99,7 @@ export default async (req) => {
     try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 }); }
 
     const patch = {};
-    ["razonSocial","rfc","giroDelNegocio","nombreComprador","telefono","nombreComercial","ciudadRuta"].forEach(k => {
+    ["razonSocial","rfc","giroDelNegocio","nombreComprador","telefono","nombreComercial"].forEach(k => {
       if (body[k] !== undefined) patch[k] = textoOnull(body[k]);
     });
     if (body.activo !== undefined) patch.activo = !!body.activo;
