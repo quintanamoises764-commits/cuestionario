@@ -118,6 +118,9 @@ export default async (req) => {
       requerimientosEspeciales: textoOnull(body.requerimientosEspeciales),
       comentarios: textoOnull(body.comentarios),
       fotoUrl: textoOnull(body.fotoUrl),
+      ubicacionGps: textoOnull(body.ubicacionGps),
+      latitud: textoOnull(body.latitud),
+      longitud: textoOnull(body.longitud),
     };
 
     const { data, error } = await supabase
@@ -139,3 +142,4 @@ export default async (req) => {
 };
 
 export const config = { path: "/api/cuestionarios" };
+
