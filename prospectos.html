@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura · Prospectos</title>
-<link rel="stylesheet" href="shared.css?v=19">
+<link rel="stylesheet" href="shared.css?v=26">
 <style>
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
@@ -118,7 +118,6 @@
         <option value="">Todos los estatus</option>
         <option value="nuevo">Pendientes</option>
         <option value="revisado">Revisados</option>
-        <option value="rechazado">Rechazados</option>
       </select>
       <select id="prospectoFilterCiudad" onchange="buscarProspectos()">
         <option value="">Todas las ciudades</option>
@@ -263,7 +262,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="shared.js?v=19"></script>
+<script src="shared.js?v=26"></script>
 <script>
 /* ============ Utilidades ============ */
 function fatal(msg){
@@ -433,8 +432,11 @@ async function cargarProspectos(){
   const tbodyP = document.getElementById("prospectosBody");
   if (tbodyP && !tbodyP.children.length) tbodyP.innerHTML = skeletonRows(7);
   try{
+    // Rechazados y confirmados no se borran, solo se marcan inactivos
+    // -- se revisan aparte en el Panel Admin ("Historial de prospectos").
     const { data, error } = await supabaseClient.from("prospectos").select("*")
       .is("eliminado_en", null)
+      .eq("activo", true)
       .order("creado_en", { ascending: false });
     if (error) throw error;
     prospectos = data || [];
@@ -565,10 +567,12 @@ async function marcarRevisado(id){
 async function rechazarProspecto(id){
   const p = prospectos.find(x => x.id === id);
   try{
-    const { error } = await supabaseClient.from("prospectos").update({ estatus: "rechazado" }).eq("id", id);
+    const { error } = await supabaseClient.from("prospectos").update({ estatus: "rechazado", activo: false }).eq("id", id);
     if (error) throw error;
-    if (p) p.estatus = "rechazado";
-    toast("Prospecto rechazado", "ok");
+    // No se borra -- solo se saca de esta lista. Sigue en la base de
+    // datos y se puede revisar/reactivar desde el Panel Admin.
+    prospectos = prospectos.filter(x => x.id !== id);
+    toast("Prospecto rechazado -- ya no aparece en esta lista", "ok");
     await registrarAccion("rechazar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
   }catch(e){
     toast("Error: " + (e && e.message ? e.message : "no se pudo actualizar"), "error");
@@ -846,7 +850,9 @@ async function eliminarProspectoConfirmado(id){
 }
 
 /* Confirma un prospecto ya revisado por el coordinador: inserta en
-   "clientes_nuevos" y borra de "prospectos". */
+   "clientes_nuevos" (ahí vive el registro real del cliente, con su
+   código SAP y su propio activo/inactivo) y marca el prospecto como
+   inactivo -- ya no se borra, se queda como historial en "prospectos". */
 function convertirACliente(id){
   const p = prospectos.find(x => x.id === id);
   if (!p) return;
@@ -861,7 +867,7 @@ function convertirACliente(id){
   pedirConfirmacion({
     icon: "✅",
     title: "¿Confirmar como cliente?",
-    msg: `"${p.razonSocial || ""}" dejará de aparecer en Prospectos y pasará a la lista de Clientes.`,
+    msg: `"${p.razonSocial || ""}" pasará a la lista de Clientes y ya no aparecerá aquí -- sus datos se conservan.`,
     okLabel: "✅ Sí, convertir",
     okClass: "btn-stay",
     onConfirm: () => convertirAClienteConfirmado(id)
@@ -892,8 +898,9 @@ async function convertirAClienteConfirmado(id){
     });
     if (errCliente) throw errCliente;
 
-    const { error: errBorrado } = await supabaseClient.from("prospectos").delete().eq("id", id);
-    if (errBorrado) throw errBorrado;
+    const { error: errActualizar } = await supabaseClient.from("prospectos")
+      .update({ estatus: "confirmado", activo: false }).eq("id", id);
+    if (errActualizar) throw errActualizar;
 
     toast("¡" + (p.razonSocial || "Prospecto") + " ahora es cliente!", "ok");
     await registrarAccion("aceptar_prospecto", "prospecto", id, p.razonSocial || "");

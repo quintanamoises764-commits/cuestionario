@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acción Acuicultura · Panel Admin</title>
-<link rel="stylesheet" href="shared.css?v=19">
+<link rel="stylesheet" href="shared.css?v=26">
 <style>
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
@@ -112,6 +112,7 @@
     <button type="button" class="tab-btn" data-sec="respuestas" onclick="mostrarSeccion('respuestas')">📥 Respuestas</button>
     <button type="button" class="tab-btn" id="tabPapelera" data-sec="papelera" onclick="mostrarSeccion('papelera')" style="display:none;">🗑️ Papelera</button>
     <button type="button" class="tab-btn" id="tabLog" data-sec="log" onclick="mostrarSeccion('log')" style="display:none;">🕓 Movimientos</button>
+    <button type="button" class="tab-btn" id="tabHistorial" data-sec="historial" onclick="mostrarSeccion('historial')" style="display:none;">📜 Historial de prospectos</button>
     <button type="button" class="tab-btn" data-sec="clientes" onclick="mostrarSeccion('clientes')">🏢 Clientes</button>
     <button type="button" class="tab-btn" data-sec="reales" onclick="mostrarSeccion('reales')" style="display:none;">✅ Reales</button>
     <button type="button" class="tab-btn" data-sec="nuevos" onclick="mostrarSeccion('nuevos')">🆕 Clientes nuevos</button>
@@ -317,6 +318,35 @@
       <button class="btn ghost small" onclick="cambiarPaginaNuevos(pagNuevos-1)">← Anterior</button>
       <span class="info" id="pagNuevosInfo"></span>
       <button class="btn ghost small" onclick="cambiarPaginaNuevos(pagNuevos+1)">Siguiente →</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="seccion-panel" id="secHistorial">
+  <div class="card">
+    <h2>📜 Historial de prospectos</h2>
+    <p style="margin:-8px 0 16px;font-size:.82rem;color:var(--muted);">Todos los prospectos que se han dado de alta, estén donde estén en el proceso: pendientes y revisados, rechazados y confirmados como cliente. Nada se borra -- solo cambia de estado. Los rechazados se pueden reactivar si fue un error.</p>
+    <div class="toolbar">
+      <input type="text" id="historialSearchBox" placeholder="Buscar por razón social o RFC…" oninput="buscarHistorial()">
+      <select id="historialFilterEstado" onchange="buscarHistorial()">
+        <option value="">Todos los estados</option>
+        <option value="nuevo">Pendientes</option>
+        <option value="revisado">Revisados</option>
+        <option value="rechazado">Rechazados</option>
+        <option value="confirmado">Confirmados (ya son cliente)</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Razón Social</th><th>RFC</th><th>Ciudad</th><th>Prospectado por</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="historialBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="historialEmpty" style="display:none;">Sin prospectos registrados.</div>
+    <div class="paginador" id="pagHistorialWrap">
+      <button class="btn ghost small" onclick="cambiarPaginaHistorial(pagHistorial-1)">← Anterior</button>
+      <span class="info" id="pagHistorialInfo"></span>
+      <button class="btn ghost small" onclick="cambiarPaginaHistorial(pagHistorial+1)">Siguiente →</button>
     </div>
   </div>
   </div>
@@ -533,7 +563,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="shared.js?v=19"></script>
+<script src="shared.js?v=26"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 /* ============ Utilidades ============ */
@@ -728,11 +758,12 @@ function renderTabla(){
     ? `Página ${paginaAdmin} de ${totalPag} · ${__filt.length} respuestas` : "";
 }
 /* ============ Pestañas de navegación ============ */
-const SECCIONES = ["dashboard", "respuestas", "papelera", "clientes", "reales", "nuevos", "log", "usuarios"];
+const SECCIONES = ["dashboard", "respuestas", "papelera", "clientes", "reales", "nuevos", "historial", "log", "usuarios"];
 function seccionPorDefecto(){ return esOficina() ? "respuestas" : "dashboard"; }
 function mostrarSeccion(nombre){
   if (nombre === "papelera") nombre = seccionPorDefecto();
   if (nombre === "log" && !esAdmin()) nombre = seccionPorDefecto();
+  if (nombre === "historial") nombre = seccionPorDefecto(); // oculto por el momento, no interesa tanto
   if (nombre === "reales") nombre = seccionPorDefecto(); // oculto por el momento, para todos
   // Oficina solo ve Respuestas y Clientes nuevos.
   if (esOficina() && !["respuestas", "nuevos"].includes(nombre)) nombre = "respuestas";
@@ -745,6 +776,7 @@ function mostrarSeccion(nombre){
   if (nombre === "dashboard") renderGraficas();
   if (nombre === "reales") cargarClientesReales();
   if (nombre === "nuevos") cargarClientesNuevos();
+  if (nombre === "historial") cargarHistorialProspectos();
   if (nombre === "log") cargarLogSesiones();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1251,6 +1283,89 @@ function exportarNuevosCSV(){
   exportarCSV("clientes_nuevos_" + new Date().toISOString().slice(0,10) + ".csv", headers, filas);
   toast("CSV exportado", "ok");
   registrarAccion("descargar_csv", "reporte", null, "clientes_nuevos");
+}
+
+/* ============ Historial de prospectos (solo admin) ============
+   Todo prospecto vive siempre en "prospectos" -- ya no se borra al
+   confirmarse como cliente, solo se marca "activo=false" (igual que
+   un rechazo). Por eso este historial es una sola consulta, con el
+   estatus como filtro: nuevo, revisado, rechazado o confirmado. */
+let historialProspectos = [];
+let pagHistorial = 1;
+const POR_PAGINA_HISTORIAL = 10;
+let __filtHistorial = [];
+async function cargarHistorialProspectos(){
+  try{
+    const { data, error } = await supabaseClient.from("prospectos").select("*")
+      .is("eliminado_en", null)
+      .order("creado_en", { ascending: false });
+    if (error) throw error;
+    historialProspectos = data || [];
+  }catch(e){
+    historialProspectos = [];
+    toast("Error leyendo historial: " + (e && e.message ? e.message : "sin conexión"), "error");
+  }
+  pagHistorial = 1;
+  renderHistorial();
+}
+function buscarHistorial(){ pagHistorial = 1; renderHistorial(); }
+const HISTORIAL_ESTADO_INFO = {
+  nuevo: { label: "Pendiente", cls: "st-nuevo" },
+  revisado: { label: "Revisado", cls: "st-revisado" },
+  rechazado: { label: "Rechazado", cls: "st-rechazado" },
+  confirmado: { label: "Confirmado (cliente)", cls: "act" }
+};
+function infoEstadoHistorial(p){
+  return HISTORIAL_ESTADO_INFO[p.estatus] || HISTORIAL_ESTADO_INFO.nuevo;
+}
+function renderHistorial(){
+  const q = (document.getElementById("historialSearchBox").value || "").trim().toLowerCase();
+  const fe = document.getElementById("historialFilterEstado").value;
+  __filtHistorial = historialProspectos.filter(p =>
+    (!q || ((p.razonSocial||"") + " " + (p.rfc||"")).toLowerCase().includes(q)) &&
+    (!fe || (p.estatus || "nuevo") === fe)
+  );
+  const totalPag = Math.max(1, Math.ceil(__filtHistorial.length / POR_PAGINA_HISTORIAL));
+  if (pagHistorial > totalPag) pagHistorial = totalPag;
+  const inicio = (pagHistorial - 1) * POR_PAGINA_HISTORIAL;
+  const paginado = __filtHistorial.slice(inicio, inicio + POR_PAGINA_HISTORIAL);
+
+  document.getElementById("historialEmpty").style.display = __filtHistorial.length ? "none" : "block";
+  document.getElementById("historialBody").innerHTML = paginado.map(p => {
+    const info = infoEstadoHistorial(p);
+    const fecha = p.creado_en ? new Date(p.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+    return `
+    <tr>
+      <td data-label="Razón Social"><b>${escapeHtml(p.razonSocial || "—")}</b></td>
+      <td data-label="RFC">${escapeHtml(p.rfc || "—")}</td>
+      <td data-label="Ciudad">${escapeHtml(p.ciudad || "—")}</td>
+      <td data-label="Prospectado por">${escapeHtml(nombreOCorreo(p.creado_por_nombre, p.creado_por_email))}</td>
+      <td data-label="Estado"><span class="badge ${info.cls}">${escapeHtml(info.label)}</span></td>
+      <td data-label="Fecha">${fecha}</td>
+      <td data-label="" class="td-actions">${p.estatus === "rechazado" ? `<button class="btn ghost small" onclick="reactivarProspecto(${p.id})">↩️ Reactivar</button>` : ""}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById("pagHistorialInfo").textContent = __filtHistorial.length
+    ? `Página ${pagHistorial} de ${totalPag} · ${__filtHistorial.length} prospectos` : "";
+}
+async function reactivarProspecto(id){
+  const p = historialProspectos.find(x => x.id === id);
+  try{
+    const { error } = await supabaseClient.from("prospectos").update({ estatus: "nuevo", activo: true }).eq("id", id);
+    if (error) throw error;
+    if (p){ p.estatus = "nuevo"; }
+    toast("Prospecto reactivado -- vuelve a aparecer como pendiente en Prospectos", "ok");
+    await registrarAccion("reactivar_prospecto", "prospecto", id, (p && p.razonSocial) || "");
+    renderHistorial();
+  }catch(e){
+    toast("Error: " + (e && e.message ? e.message : "no se pudo reactivar"), "error");
+  }
+}
+function cambiarPaginaHistorial(p){
+  const totalPag = Math.max(1, Math.ceil(__filtHistorial.length / POR_PAGINA_HISTORIAL));
+  if (p < 1 || p > totalPag) return;
+  pagHistorial = p;
+  renderHistorial();
 }
 
 /* ============ Ver cliente nuevo (misma ficha de papel que "Ver detalle") ============ */
@@ -1948,6 +2063,7 @@ function fatal(msg){
   // para el resto -- se esconde por completo, para todos.
   document.getElementById("tabPapelera").style.display = "none";
   document.getElementById("tabLog").style.display = esAdmin() ? "" : "none";
+  document.getElementById("tabHistorial").style.display = "none"; // oculto por el momento, para todos
   renderTabla();
   mostrarSeccion(seccionPorDefecto());
 })();

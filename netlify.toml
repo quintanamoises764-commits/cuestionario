@@ -23,3 +23,13 @@
   status = 404
   force = true
 
+# Mismo motivo que arriba: sin esto, cualquiera podía bajarse el
+# código fuente de las funciones de Netlify (con la lógica de permisos
+# y de qué tablas toca cada endpoint) desde
+# tusitio.netlify.app/netlify/functions/algo.mjs.
+[[redirects]]
+  from = "/netlify/functions/*"
+  to = "/login.html"
+  status = 404
+  force = true
+

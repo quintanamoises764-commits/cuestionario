@@ -110,6 +110,7 @@ const ACCION_TEXTO = {
   cambiar_estatus_prospecto: "cambió el estatus de un prospecto",
   revisar_prospecto: "marcó un prospecto como revisado",
   rechazar_prospecto: "rechazó un prospecto",
+  reactivar_prospecto: "reactivó un prospecto rechazado",
   eliminar_prospecto: "mandó un prospecto a la papelera",
   restaurar_prospecto: "restauró un prospecto",
   eliminar_prospecto_permanente: "eliminó un prospecto para siempre",
